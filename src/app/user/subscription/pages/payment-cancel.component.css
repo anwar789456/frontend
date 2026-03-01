@@ -1,0 +1,197 @@
+.payment-cancel-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+  padding: 3rem;
+  text-align: center;
+}
+
+/* Cancel Icon */
+.cancel-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: scaleIn 0.5s ease-out;
+}
+
+.cancel-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Heading */
+.card h1 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+.card .message {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.6s ease-out 0.3s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Info Box */
+.info-box {
+  background: #fff8f8;
+  border-left: 4px solid #ff9a9e;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 4px;
+  animation: fadeIn 0.6s ease-out 0.4s both;
+}
+
+.info-box p {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0.25rem 0;
+}
+
+.info-box p:first-child {
+  color: #ff9a9e;
+  font-weight: 600;
+}
+
+/* Reason Section */
+.reason-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: left;
+  animation: fadeIn 0.6s ease-out 0.5s both;
+}
+
+.reason-section h3 {
+  color: #333;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.reason-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reason-section li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.reason-section li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #ff9a9e;
+  font-weight: bold;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: fadeIn 0.6s ease-out 0.6s both;
+}
+
+.btn {
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  outline: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 154, 158, 0.4);
+}
+
+.btn-secondary {
+  background: #f8f9fa;
+  color: #333;
+  border: 2px solid #e9ecef;
+}
+
+.btn-secondary:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .payment-cancel-container {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 2rem 1.5rem;
+  }
+
+  .card h1 {
+    font-size: 1.5rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}

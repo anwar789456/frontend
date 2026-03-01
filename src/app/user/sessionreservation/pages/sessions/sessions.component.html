@@ -1,0 +1,152 @@
+<div class="p-8 w-full">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-2 anim-fade-up">
+    <h1 class="text-2xl font-bold text-[#0f1724] font-['SN_Pro']">Sessions & Certifications</h1>
+    <button class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      History
+    </button>
+  </div>
+  <p class="text-sm text-gray-500 mb-8">Get ready to earn your certificates and showcase your skills!</p>
+
+  <!-- Upcoming Exam Card -->
+  @for (session of sessions; track session.id) {
+    <div class="bg-gradient-to-r from-[#e6f6ff] to-[#f0f9ff] border border-[#bde4ff] rounded-2xl p-6 mb-8 flex items-start gap-6 anim-pop anim-pulse-glow">
+      <div class="flex-1">
+        <span class="inline-block bg-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Upcoming Exam</span>
+        <h2 class="text-xl font-bold text-[#0f1724] font-['SN_Pro'] mb-2">{{ session.title }}</h2>
+        <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
+          <span class="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+            {{ session.date }}
+          </span>
+          <span class="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {{ session.time }} ({{ session.duration }})
+          </span>
+        </div>
+
+        <div class="mb-2">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-medium text-[#0f1724]">Readiness Score</span>
+            <span class="text-sm font-bold text-[#38a9f3]">{{ session.readinessScore }}%</span>
+          </div>
+          <div class="h-3 bg-white rounded-full overflow-hidden border border-gray-200">
+            <div class="h-full bg-gradient-to-r from-[#38a9f3] to-[#56c416] rounded-full transition-all" [style.width.%]="session.readinessScore"></div>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">{{ session.tip }}</p>
+        </div>
+
+        <button class="mt-3 bg-[#38a9f3] text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-[#2196e3] transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+          </svg>
+          Prepare for Session
+        </button>
+      </div>
+      <div class="w-48 h-48 shrink-0 rounded-xl overflow-hidden anim-float">
+        <img src="https://api.dicebear.com/7.x/shapes/svg?seed=trophy" alt="Trophy" class="w-full h-full object-cover" />
+      </div>
+    </div>
+  }
+
+  <!-- Your Certifications Path -->
+  <h2 class="text-lg font-bold text-[#0f1724] font-['SN_Pro'] mb-5 anim-fade-up anim-delay-2">Your Certifications Path</h2>
+  <div class="grid grid-cols-3 gap-4 mb-8">
+    @for (cert of certifications; track cert.id) {
+      <div
+        class="border rounded-xl p-5 relative hover-grow anim-fade-up"
+        [class.border-gray-200]="cert.status === 'PASSED'"
+        [class.border-[#38a9f3]]="cert.status === 'ACTIVE'"
+        [class.border-2]="cert.status === 'ACTIVE'"
+        [class.bg-[#56c416]]="cert.status === 'LOCKED'"
+        [class.text-white]="cert.status === 'LOCKED'"
+        [class.opacity-80]="cert.status === 'LOCKED'"
+      >
+        @if (cert.status === 'ACTIVE') {
+          <span class="absolute top-3 right-3 bg-[#38a9f3] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Active</span>
+        }
+
+        <div class="mb-3">
+          @if (cert.status === 'PASSED') {
+            <div class="w-10 h-10 rounded-full bg-[#56c416]/10 flex items-center justify-center text-[#56c416] text-lg">✓</div>
+          } @else if (cert.status === 'ACTIVE') {
+            <div class="w-10 h-10 rounded-lg bg-[#e6f6ff] flex items-center justify-center text-[#38a9f3] text-sm font-bold">{{ cert.icon }}</div>
+          } @else {
+            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">🔒</div>
+          }
+        </div>
+
+        <h3 class="text-base font-bold mb-0.5" [class.text-[#0f1724]]="cert.status !== 'LOCKED'">{{ cert.title }}</h3>
+        <p class="text-sm mb-3" [class.text-gray-500]="cert.status !== 'LOCKED'" [class.text-white/80]="cert.status === 'LOCKED'">{{ cert.subtitle }}</p>
+
+        @if (cert.status === 'ACTIVE') {
+          <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden mb-3">
+            <div class="h-full bg-[#38a9f3] rounded-full w-[75%]"></div>
+          </div>
+        } @else if (cert.status === 'PASSED') {
+          <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden mb-3">
+            <div class="h-full bg-[#38a9f3] rounded-full w-full"></div>
+          </div>
+        }
+
+        <div class="flex gap-4 text-xs">
+          @if (cert.status === 'PASSED') {
+            <div>
+              <span class="text-gray-400 uppercase block">Status</span>
+              <span class="text-[#56c416] font-medium">Passed</span>
+            </div>
+            <div>
+              <span class="text-gray-400 uppercase block">Date</span>
+              <span class="text-[#0f1724] font-medium">{{ cert.date }}</span>
+            </div>
+          } @else if (cert.status === 'ACTIVE') {
+            <div>
+              <span class="text-gray-400 uppercase block">Progress</span>
+              <span class="text-[#0f1724] font-medium">{{ cert.progress }}</span>
+            </div>
+            <div>
+              <span class="text-gray-400 uppercase block">Est. Exam</span>
+              <span class="text-[#0f1724] font-medium">{{ cert.estimatedExam }}</span>
+            </div>
+          } @else {
+            <div>
+              <span class="text-white/60 uppercase block">Prerequisite</span>
+              <span class="text-white font-medium">Pass Level B2</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Practice & Revision -->
+  <h2 class="text-lg font-bold text-[#0f1724] font-['SN_Pro'] mb-5 anim-fade-up anim-delay-4">Practice & Revision</h2>
+  <div class="grid grid-cols-2 gap-4">
+    @for (item of practiceItems; track item.id) {
+      <div class="bg-[#56c416] rounded-xl p-5 text-white flex items-center justify-between cursor-pointer hover:opacity-90 transition-all hover-grow anim-fade-up anim-delay-5">
+        <div>
+          <h3 class="text-base font-bold mb-1">{{ item.title }}</h3>
+          <p class="text-sm text-white/80">{{ item.description }}</p>
+        </div>
+        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+          @if (item.id === 1) {
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L12 12.75 6.43 9.75m11.14 0l4.179 2.25L12 17.25 2.25 12l4.179-2.25" />
+            </svg>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

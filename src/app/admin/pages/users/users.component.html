@@ -1,0 +1,464 @@
+<div class="flex gap-6 p-8 h-full">
+  <!-- Main Content -->
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-[#0f1419]">User Management</h1>
+      <div class="relative">
+        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search users, emails, or roles..." class="pl-10 pr-4 py-2 w-[280px] bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    @if (successMessage) {
+      <div class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 text-[14px] px-4 py-3 rounded-xl mb-4">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>{{ successMessage }}</span>
+      </div>
+    }
+
+    <!-- Error Message -->
+    @if (errorMessage && !showModal) {
+      <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-[14px] px-4 py-3 rounded-xl mb-4">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    <!-- Stats -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      @for (stat of stats; track stat.label) {
+        <div class="bg-[#f0fdf9] rounded-xl p-4 border border-[#e6f9f0]">
+          <p class="text-[11px] text-[#9ca3af] mb-1">{{ stat.label }}</p>
+          <p class="text-2xl font-bold" [ngClass]="stat.valueColor">{{ stat.value }}</p>
+          <p class="text-[11px] mt-1" [ngClass]="stat.subColor">{{ stat.sub }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Tabs & Actions -->
+    <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex gap-1">
+          @for (tab of tabs; track tab) {
+            <button
+              (click)="activeTab = tab"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+              [class.bg-[#e6f6ff]]="activeTab === tab"
+              [class.text-[#38a9f3]]="activeTab === tab"
+              [class.text-[#536471]]="activeTab !== tab"
+              [class.hover:bg-[#f7f9fa]]="activeTab !== tab"
+            >{{ tab }}</button>
+          }
+        </div>
+        <button (click)="openAddModal()" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3]">+ Add User</button>
+      </div>
+
+      <!-- Loading -->
+      @if (isLoading) {
+        <div class="flex items-center justify-center py-16">
+          <svg class="animate-spin w-8 h-8 text-[#38a9f3]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      }
+
+      <!-- Table -->
+      @if (!isLoading) {
+        <table class="w-full">
+          <thead>
+            <tr class="bg-[#f0fdf9]">
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-l-lg">User</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Role</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Phone</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Date of Birth</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-r-lg">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of filteredUsers; track user.id) {
+              <tr class="border-t border-[#f7f9fa] cursor-pointer hover:bg-[#fafcfd]"
+                  [class.bg-[#f0f9ff]]="selectedUser?.id === user.id"
+                  (click)="selectUser(user)">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-[#e6f6ff] flex items-center justify-center text-sm font-bold text-[#38a9f3]">
+                      {{ user.name.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-[#0f1419]">{{ user.name }}</p>
+                      <p class="text-[11px] text-[#9ca3af]">{{ user.email }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full" [ngClass]="getRoleBadgeClass(user.role)">{{ getRoleLabel(user.role) }}</span>
+                    @if (user.banned) {
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">BANNED</span>
+                    }
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-sm text-[#536471]">{{ user.numTel }}</td>
+                <td class="px-4 py-3 text-sm text-[#536471]">{{ user.dateNaiss }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-1">
+                    <button (click)="openEditModal(user); $event.stopPropagation()" class="p-1.5 text-[#9ca3af] hover:text-[#38a9f3] hover:bg-[#f0f9ff] rounded-lg transition-colors" title="Edit">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                    </button>
+                    <button (click)="confirmBan(user); $event.stopPropagation()"
+                      class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold rounded-lg transition-colors"
+                      [class.bg-orange-50]="!user.banned" [class.text-orange-600]="!user.banned" [class.hover:bg-orange-100]="!user.banned"
+                      [class.bg-green-50]="user.banned" [class.text-green-600]="user.banned" [class.hover:bg-green-100]="user.banned">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                      {{ user.banned ? 'Unban' : 'Ban' }}
+                    </button>
+                    <button (click)="confirmDelete(user); $event.stopPropagation()" class="p-1.5 text-[#9ca3af] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (filteredUsers.length === 0 && !isLoading) {
+              <tr>
+                <td colspan="5" class="text-center py-12 text-[#9ca3af] text-sm">No users found.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+
+  <!-- Right Panel - User Details -->
+  @if (selectedUser) {
+    <div class="w-[300px] shrink-0 bg-white rounded-2xl border border-[#eef1f4] p-6 self-start">
+      <div class="flex justify-end mb-2">
+        <button (click)="closePanel()" class="text-[#9ca3af] hover:text-[#536471]">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-full bg-[#e6f6ff] flex items-center justify-center text-2xl font-bold text-[#38a9f3] mx-auto">
+          {{ selectedUser.name.charAt(0) }}
+        </div>
+        <h3 class="text-lg font-bold text-[#0f1419] mt-3">{{ selectedUser.name }}</h3>
+        <p class="text-xs text-[#9ca3af]">{{ selectedUser.username }}</p>
+        <span class="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full mt-2" [ngClass]="getRoleBadgeClass(selectedUser.role)">{{ getRoleLabel(selectedUser.role) }}</span>
+      </div>
+
+      <div class="mb-4">
+        <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">User Details</h4>
+        <div class="space-y-2.5">
+          <div class="flex justify-between"><span class="text-xs text-[#536471]">ID</span><span class="text-xs text-[#0f1419] font-medium">#{{ selectedUser.id }}</span></div>
+          <div class="flex justify-between"><span class="text-xs text-[#536471]">Email</span><span class="text-xs text-[#0f1419]">{{ selectedUser.email }}</span></div>
+          <div class="flex justify-between"><span class="text-xs text-[#536471]">Phone</span><span class="text-xs text-[#0f1419]">{{ selectedUser.numTel }}</span></div>
+          <div class="flex justify-between"><span class="text-xs text-[#536471]">Date of Birth</span><span class="text-xs text-[#0f1419]">{{ selectedUser.dateNaiss }}</span></div>
+          <div class="flex justify-between"><span class="text-xs text-[#536471]">Inscription</span><span class="text-xs" [class.text-green-500]="selectedUser.inscriptionOk" [class.text-red-500]="!selectedUser.inscriptionOk">{{ selectedUser.inscriptionOk ? 'Approved' : 'Pending' }}</span></div>
+          <div class="flex justify-between"><span class="text-xs text-[#536471]">Forum Access</span><span class="text-xs" [class.text-green-500]="selectedUser.posterForum" [class.text-red-500]="!selectedUser.posterForum">{{ selectedUser.posterForum ? 'Yes' : 'No' }}</span></div>
+        </div>
+      </div>
+
+      <!-- Tutor-specific details -->
+      @if (selectedUser.role === 'TUTEUR') {
+        <div class="mb-4">
+          <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Tutor Info</h4>
+          <div class="space-y-2.5">
+            @if (selectedUser.CIN) {
+              <div class="flex justify-between"><span class="text-xs text-[#536471]">CIN</span><span class="text-xs text-[#0f1419]">{{ selectedUser.CIN }}</span></div>
+            }
+            @if (selectedUser.specialization) {
+              <div class="flex justify-between"><span class="text-xs text-[#536471]">Specialization</span><span class="text-xs text-[#0f1419]">{{ selectedUser.specialization }}</span></div>
+            }
+            @if (selectedUser.yearsOfExperience !== undefined) {
+              <div class="flex justify-between"><span class="text-xs text-[#536471]">Experience</span><span class="text-xs text-[#0f1419]">{{ selectedUser.yearsOfExperience }} years</span></div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Student-specific details -->
+      @if (selectedUser.role === 'ETUDIANT') {
+        <div class="mb-4">
+          <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Student Info</h4>
+          <div class="space-y-2.5">
+            @if (selectedUser.level) {
+              <div class="flex justify-between"><span class="text-xs text-[#536471]">Level</span><span class="text-xs text-[#0f1419]">{{ selectedUser.level }}</span></div>
+            }
+            @if (selectedUser.xp !== undefined) {
+              <div class="flex justify-between"><span class="text-xs text-[#536471]">XP</span><span class="text-xs text-[#0f1419]">{{ selectedUser.xp }}</span></div>
+            }
+            @if (selectedUser.streak !== undefined) {
+              <div class="flex justify-between"><span class="text-xs text-[#536471]">Streak</span><span class="text-xs text-[#0f1419]">{{ selectedUser.streak }} days</span></div>
+            }
+            @if (selectedUser.coins !== undefined) {
+              <div class="flex justify-between"><span class="text-xs text-[#536471]">Coins</span><span class="text-xs text-[#0f1419]">{{ selectedUser.coins }}</span></div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Banned Status -->
+      @if (selectedUser.banned) {
+        <div class="px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl mb-4 space-y-1.5">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+            <span class="text-[12px] font-semibold text-red-600">This user is banned</span>
+          </div>
+          @if (selectedUser.banReason) {
+            <p class="text-[11px] text-red-500"><strong>Reason:</strong> {{ selectedUser.banReason }}</p>
+          }
+          <p class="text-[11px] text-red-500"><strong>Duration:</strong> {{ getDurationLabel(selectedUser.banDuration) }}</p>
+          @if (selectedUser.banExpiresAt) {
+            <p class="text-[11px] text-red-500"><strong>Expires:</strong> {{ selectedUser.banExpiresAt | date:'medium' }}</p>
+          }
+        </div>
+      }
+
+      <div class="flex gap-2 mt-4">
+        <button (click)="openEditModal(selectedUser)" class="flex-1 py-2.5 text-sm font-semibold text-[#38a9f3] border border-[#38a9f3] rounded-xl hover:bg-[#f0f9ff] transition-colors">Edit</button>
+        <button (click)="confirmBan(selectedUser)" class="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors" [class.text-white]="!selectedUser.banned" [class.bg-orange-500]="!selectedUser.banned" [class.hover:bg-orange-600]="!selectedUser.banned" [class.text-green-600]="selectedUser.banned" [class.border]="selectedUser.banned" [class.border-green-400]="selectedUser.banned" [class.hover:bg-green-50]="selectedUser.banned">{{ selectedUser.banned ? 'Unban' : 'Ban' }}</button>
+        <button (click)="confirmDelete(selectedUser)" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors">Delete</button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ==================== ADD / EDIT MODAL ==================== -->
+@if (showModal) {
+  <div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" (click)="closeModal()">
+    <div class="bg-white rounded-2xl w-full max-w-[520px] max-h-[90vh] overflow-y-auto shadow-xl" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 pb-0">
+        <h2 class="text-xl font-bold text-[#0f1419]">{{ modalMode === 'add' ? 'Add New User' : 'Edit User' }}</h2>
+        <button (click)="closeModal()" class="text-[#9ca3af] hover:text-[#536471]">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- Modal Error -->
+      @if (errorMessage && showModal) {
+        <div class="mx-6 mt-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-[13px] px-4 py-2.5 rounded-xl">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      <div class="p-6 space-y-4">
+        <!-- Name -->
+        <div>
+          <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Full Name</label>
+          <input type="text" [(ngModel)]="form.name" (blur)="formTouched['name'] = true" placeholder="John Doe"
+            class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
+            [class.border-red-400]="fieldError('name')"
+            [class.border-[#d1d9e0]]="!fieldError('name')" />
+          @if (fieldError('name')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('name') }}</p> }
+        </div>
+
+        <!-- Username -->
+        <div>
+          <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Username</label>
+          <input type="text" [(ngModel)]="form.username" (blur)="formTouched['username'] = true" placeholder="johndoe_99"
+            class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
+            [class.border-red-400]="fieldError('username')"
+            [class.border-[#d1d9e0]]="!fieldError('username')" />
+          @if (fieldError('username')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('username') }}</p> }
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Email</label>
+          <input type="email" [(ngModel)]="form.email" (blur)="formTouched['email'] = true" placeholder="user@minolingo.com"
+            class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
+            [class.border-red-400]="fieldError('email')"
+            [class.border-[#d1d9e0]]="!fieldError('email')" />
+          @if (fieldError('email')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('email') }}</p> }
+        </div>
+
+        <!-- Password (only for add mode) -->
+        @if (modalMode === 'add') {
+          <div>
+            <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Password</label>
+            <input type="password" [(ngModel)]="form.pwd" (blur)="formTouched['pwd'] = true" placeholder="Min. 6 characters"
+              class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
+              [class.border-red-400]="fieldError('pwd')"
+              [class.border-[#d1d9e0]]="!fieldError('pwd')" />
+            @if (fieldError('pwd')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('pwd') }}</p> }
+          </div>
+        }
+
+        <!-- Phone & DOB row -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Phone</label>
+            <input type="tel" [(ngModel)]="form.numTel" (blur)="formTouched['numTel'] = true" placeholder="+216 XX XXX XXX"
+              class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
+              [class.border-red-400]="fieldError('numTel')"
+              [class.border-[#d1d9e0]]="!fieldError('numTel')" />
+            @if (fieldError('numTel')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('numTel') }}</p> }
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Date of Birth</label>
+            <input type="date" [(ngModel)]="form.dateNaiss" (blur)="formTouched['dateNaiss'] = true"
+              class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
+              [class.border-red-400]="fieldError('dateNaiss')"
+              [class.border-[#d1d9e0]]="!fieldError('dateNaiss')" />
+            @if (fieldError('dateNaiss')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('dateNaiss') }}</p> }
+          </div>
+        </div>
+
+        <!-- Role -->
+        <div>
+          <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Role</label>
+          <select [(ngModel)]="form.role"
+            class="w-full px-3.5 py-2.5 bg-white border border-[#d1d9e0] rounded-xl text-[14px] text-[#0f1419] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20">
+            <option value="ETUDIANT">Student</option>
+            <option value="TUTEUR">Tutor</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
+
+        <!-- Inscription & Forum toggles (edit mode) -->
+        @if (modalMode === 'edit') {
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="form.inscriptionOk" class="w-4 h-4 rounded border-[#d1d9e0] text-[#38a9f3] focus:ring-[#38a9f3]/20" />
+              <span class="text-[13px] text-[#536471]">Inscription Approved</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="form.posterForum" class="w-4 h-4 rounded border-[#d1d9e0] text-[#38a9f3] focus:ring-[#38a9f3]/20" />
+              <span class="text-[13px] text-[#536471]">Forum Access</span>
+            </label>
+          </div>
+        }
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex justify-end gap-3 p-6 pt-2">
+        <button (click)="closeModal()" class="px-5 py-2.5 text-sm font-medium text-[#536471] border border-[#d1d9e0] rounded-xl hover:bg-[#f7f9fa] transition-colors">Cancel</button>
+        <button (click)="saveUser()" [disabled]="isSaving"
+          class="px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all duration-200"
+          [class.bg-[#38a9f3]]="!isSaving"
+          [class.hover:bg-[#2196e3]]="!isSaving"
+          [class.bg-[#a8d8f8]]="isSaving"
+          [class.cursor-not-allowed]="isSaving">
+          @if (isSaving) {
+            <span class="inline-flex items-center gap-2">
+              <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Saving...
+            </span>
+          } @else {
+            {{ modalMode === 'add' ? 'Create User' : 'Save Changes' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ==================== DELETE CONFIRM MODAL ==================== -->
+@if (showDeleteConfirm && userToDelete) {
+  <div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" (click)="cancelDelete()">
+    <div class="bg-white rounded-2xl w-full max-w-[400px] p-6 shadow-xl" (click)="$event.stopPropagation()">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+        </div>
+        <h3 class="text-lg font-bold text-[#0f1419]">Delete User</h3>
+        <p class="text-sm text-[#536471] mt-1">Are you sure you want to delete <strong>{{ userToDelete.name }}</strong>? This action cannot be undone.</p>
+      </div>
+      <div class="flex gap-3">
+        <button (click)="cancelDelete()" class="flex-1 py-2.5 text-sm font-medium text-[#536471] border border-[#d1d9e0] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+        <button (click)="deleteUser()" [disabled]="isSaving"
+          class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors"
+          [class.bg-red-500]="!isSaving"
+          [class.hover:bg-red-600]="!isSaving"
+          [class.bg-red-300]="isSaving"
+          [class.cursor-not-allowed]="isSaving">
+          @if (isSaving) {
+            Deleting...
+          } @else {
+            Delete
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ==================== BAN CONFIRM MODAL ==================== -->
+@if (showBanConfirm && userToBan) {
+  <div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" (click)="cancelBan()">
+    <div class="bg-white rounded-2xl w-full max-w-[400px] p-6 shadow-xl" (click)="$event.stopPropagation()">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" [class.bg-orange-100]="banAction === 'ban'" [class.bg-green-100]="banAction === 'unban'">
+          @if (banAction === 'ban') {
+            <svg class="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+          } @else {
+            <svg class="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          }
+        </div>
+        <h3 class="text-lg font-bold text-[#0f1419]">{{ banAction === 'ban' ? 'Ban User' : 'Unban User' }}</h3>
+        <p class="text-sm text-[#536471] mt-1">
+          @if (banAction === 'ban') {
+            Are you sure you want to ban <strong>{{ userToBan.name }}</strong>? They will not be able to log in.
+          } @else {
+            Are you sure you want to unban <strong>{{ userToBan.name }}</strong>? They will be able to log in again.
+          }
+        </p>
+      </div>
+
+      <!-- Ban reason & duration (only when banning) -->
+      @if (banAction === 'ban') {
+        <div class="space-y-3 mb-6">
+          <div>
+            <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Reason for ban</label>
+            <select [(ngModel)]="banReason"
+              class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+              [class.border-red-400]="banReasonError"
+              [class.border-[#d1d9e0]]="!banReasonError">
+              <option value="" disabled>Select a reason...</option>
+              @for (reason of banReasons; track reason) {
+                <option [value]="reason">{{ reason }}</option>
+              }
+            </select>
+            @if (banReasonError) {
+              <p class="text-[11px] text-red-500 mt-1">{{ banReasonError }}</p>
+            }
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Ban duration</label>
+            <select [(ngModel)]="banDuration"
+              class="w-full px-3.5 py-2.5 bg-white border border-[#d1d9e0] rounded-xl text-[14px] text-[#0f1419] outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20">
+              <option value="1_day">1 Day</option>
+              <option value="3_days">3 Days</option>
+              <option value="7_days">7 Days</option>
+              <option value="30_days">30 Days</option>
+              <option value="permanent">Permanent</option>
+            </select>
+          </div>
+        </div>
+      }
+
+      <div class="flex gap-3">
+        <button (click)="cancelBan()" class="flex-1 py-2.5 text-sm font-medium text-[#536471] border border-[#d1d9e0] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+        <button (click)="executeBan()" [disabled]="isSaving"
+          class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors"
+          [class.bg-orange-500]="banAction === 'ban' && !isSaving"
+          [class.hover:bg-orange-600]="banAction === 'ban' && !isSaving"
+          [class.bg-green-500]="banAction === 'unban' && !isSaving"
+          [class.hover:bg-green-600]="banAction === 'unban' && !isSaving"
+          [class.bg-gray-300]="isSaving"
+          [class.cursor-not-allowed]="isSaving">
+          @if (isSaving) {
+            Processing...
+          } @else {
+            {{ banAction === 'ban' ? 'Ban User' : 'Unban User' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

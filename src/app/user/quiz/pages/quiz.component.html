@@ -1,0 +1,353 @@
+<div class="flex gap-6 p-8">
+  <!-- Main Content -->
+  <div class="flex-1 anim-fade-up">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-[#0f1724] font-['SN_Pro']">English Quiz Hub</h1>
+        <p class="text-sm text-gray-500 mt-1">Practice English with quick quizzes for vocabulary, reading, grammar and more.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        @if (isTutor) {
+          <button (click)="openCreateQuiz()" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Create Quiz
+          </button>
+        }
+        <button class="flex items-center gap-2 bg-[#f59e0b]/10 text-[#f59e0b] px-4 py-2 rounded-full text-sm font-semibold">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525" />
+          </svg>
+          {{ user.coins | number }} coins
+        </button>
+      </div>
+    </div>
+
+    <!-- Quiz Form Modal -->
+    @if (showQuizForm) {
+      <div class="bg-white border border-[#38a9f3] rounded-xl p-6 mb-6 shadow-lg">
+        <h3 class="text-lg font-bold text-[#0f1724] font-['SN_Pro'] mb-4">{{ editingQuiz ? 'Edit Quiz' : 'Create New Quiz' }}</h3>
+        <form [formGroup]="quizForm" (ngSubmit)="saveQuiz()" class="flex flex-col gap-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <input formControlName="title" type="text" placeholder="Quiz title" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">XP Reward</label>
+              <input formControlName="xpReward" type="number" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea formControlName="description" rows="2" placeholder="Quiz description" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3] resize-none"></textarea>
+          </div>
+          <div class="grid grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Level</label>
+              <select formControlName="level" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]">
+                @for (lvl of quizLevels; track lvl) { <option [value]="lvl">{{ lvl }}</option> }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select formControlName="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]">
+                @for (s of quizStatuses; track s) { <option [value]="s">{{ s }}</option> }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <input formControlName="dateStart" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <input formControlName="dateEnd" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Course ID (optional)</label>
+            <input formControlName="courseId" type="number" placeholder="Link to a course" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="submit" [disabled]="quizForm.invalid" class="px-5 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ editingQuiz ? 'Update' : 'Create' }}
+            </button>
+            <button type="button" (click)="cancelQuizForm()" class="px-5 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Question Form Modal -->
+    @if (showQuestionForm) {
+      <div class="bg-white border border-[#8b5cf6] rounded-xl p-6 mb-6 shadow-lg">
+        <h3 class="text-lg font-bold text-[#0f1724] font-['SN_Pro'] mb-4">{{ editingQuestion ? 'Edit Question' : 'Add Question' }}</h3>
+        <form [formGroup]="questionForm" (ngSubmit)="saveQuestion()" class="flex flex-col gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Question</label>
+            <textarea formControlName="question" rows="2" placeholder="Question text" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#8b5cf6] resize-none"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <select formControlName="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#8b5cf6]">
+                @for (t of questionTypes; track t) { <option [value]="t">{{ t }}</option> }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Correct Answer</label>
+              <input formControlName="correctAnswer" type="text" placeholder="Correct answer" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#8b5cf6]" />
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-sm font-medium text-gray-700">Options</label>
+              <button type="button" (click)="addOption()" class="text-xs text-[#8b5cf6] font-semibold hover:underline">+ Add Option</button>
+            </div>
+            <div formArrayName="options" class="flex flex-col gap-2">
+              @for (opt of optionsArray.controls; track $index; let i = $index) {
+                <div class="flex items-center gap-2">
+                  <input [formControlName]="i" type="text" [placeholder]="'Option ' + (i + 1)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#8b5cf6]" />
+                  @if (optionsArray.length > 2) {
+                    <button type="button" (click)="removeOption(i)" class="p-1.5 text-red-400 hover:text-red-600 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Explanation</label>
+            <textarea formControlName="explanation" rows="2" placeholder="Why this is the correct answer" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#8b5cf6] resize-none"></textarea>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="submit" [disabled]="questionForm.invalid" class="px-5 py-2 text-sm font-semibold text-white bg-[#8b5cf6] rounded-lg hover:bg-[#7c3aed] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ editingQuestion ? 'Update' : 'Add' }}
+            </button>
+            <button type="button" (click)="cancelQuestionForm()" class="px-5 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Hero Card -->
+    <div class="bg-gradient-to-r from-[#38a9f3] to-[#56c8ff] rounded-2xl p-6 mb-6 text-white relative overflow-hidden anim-pop anim-pulse-glow">
+      <div class="flex items-start gap-2 mb-3">
+        <span class="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full">Today's English challenge</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <h2 class="text-xl font-bold mb-1">10-word Vocabulary Sprint</h2>
+          <p class="text-sm text-white/80 mb-4">Match new words to their meanings and earn extra XP for a perfect streak.</p>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full">5 min</span>
+            <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full">10 questions</span>
+            <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full">+40 XP</span>
+          </div>
+          <button class="bg-white text-[#38a9f3] px-5 py-2 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-all hover:scale-105 active:scale-95">
+            Start vocabulary quiz
+          </button>
+        </div>
+        <div class="w-20 h-20 shrink-0 anim-float">
+          <img src="https://api.dicebear.com/7.x/shapes/svg?seed=quizHero" alt="Quiz illustration" class="w-full h-full object-contain" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz Cards Section -->
+    <div class="bg-white border border-gray-200 rounded-xl p-5 mb-6 anim-fade-up anim-delay-2">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-base font-bold text-[#0f1724] font-['SN_Pro']">Vocabulary quizzes</h3>
+          <p class="text-sm text-gray-400">Short, focused practice sets.</p>
+        </div>
+        <span class="text-xs text-gray-400">A1 | B1 levels</span>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        @for (card of quizCards; track card.id) {
+          <div class="flex items-center gap-4 py-3 border-t border-gray-100 first:border-t-0 hover-grow">
+            <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0 anim-wiggle">
+              {{ card.icon }}
+            </div>
+            <div class="flex-1">
+              <h4 class="text-sm font-semibold text-[#0f1724]">{{ card.title }}</h4>
+              <p class="text-xs text-gray-400">{{ card.totalQuestions }} questions · {{ card.level }}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              @if (card.status === 'CONTINUE') {
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400">{{ card.progress }}% finished</span>
+                  <button class="border border-[#38a9f3] text-[#38a9f3] px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#e6f6ff] transition-all hover:scale-105 active:scale-95">Continue</button>
+                </div>
+                <div class="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-full bg-[#56c416] rounded-full" [style.width.%]="card.progress"></div>
+                </div>
+              } @else if (card.status === 'START') {
+                <span class="text-xs text-gray-400">New</span>
+                <button class="bg-[#38a9f3] text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#2196e3] transition-all hover:scale-105 active:scale-95">Start</button>
+              } @else {
+                <span class="text-xs text-gray-400">Locked</span>
+                <button class="border border-gray-300 text-gray-400 px-4 py-1.5 rounded-lg text-xs font-semibold cursor-not-allowed">Unlock with {{ card.xpRequired }} XP</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Full Quizzes with Questions (Tutor CRUD) -->
+    @if (quizzes.length > 0) {
+      <div class="bg-white border border-gray-200 rounded-xl p-5 mb-6">
+        <h3 class="text-base font-bold text-[#0f1724] font-['SN_Pro'] mb-4">All Quizzes</h3>
+        @for (quiz of quizzes; track quiz.id) {
+          <div class="border border-gray-100 rounded-lg mb-3">
+            <div class="p-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-colors" (click)="toggleQuizDetail(quiz.id!)">
+              <div class="flex-1">
+                <h4 class="text-sm font-bold text-[#0f1724]">{{ quiz.title }}</h4>
+                <p class="text-xs text-gray-400">{{ quiz.level }} · {{ quiz.status }} · {{ quiz.questions?.length || 0 }} questions · {{ quiz.xpReward }} XP</p>
+              </div>
+              @if (isTutor) {
+                <button (click)="openEditQuiz(quiz); $event.stopPropagation()" class="p-1.5 text-gray-400 hover:text-[#38a9f3] transition-colors" title="Edit quiz">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                </button>
+                <button (click)="deleteQuiz(quiz); $event.stopPropagation()" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="Delete quiz">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                </button>
+              }
+            </div>
+
+            @if (expandedQuizId === quiz.id) {
+              <div class="border-t border-gray-100 px-4 pb-4">
+                <p class="text-sm text-gray-600 pt-3 mb-3">{{ quiz.description }}</p>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-[#0f1724]">Questions ({{ quiz.questions?.length || 0 }})</span>
+                  @if (isTutor) {
+                    <button (click)="openAddQuestion(quiz.id!)" class="text-xs font-semibold text-[#8b5cf6] hover:underline">+ Add Question</button>
+                  }
+                </div>
+                @if (quiz.questions && quiz.questions.length > 0) {
+                  @for (q of quiz.questions; track q.id; let qi = $index) {
+                    <div class="border-t border-gray-50 py-2.5 flex items-start gap-3">
+                      <span class="text-xs font-bold text-gray-400 mt-0.5">{{ qi + 1 }}.</span>
+                      <div class="flex-1">
+                        <p class="text-sm text-[#0f1724]">{{ q.question }}</p>
+                        <div class="flex flex-wrap gap-1.5 mt-1">
+                          @for (opt of q.options; track $index) {
+                            <span class="text-xs px-2 py-0.5 rounded-full" [class.bg-green-100]="opt === q.correctAnswer" [class.text-green-700]="opt === q.correctAnswer" [class.bg-gray-100]="opt !== q.correctAnswer" [class.text-gray-500]="opt !== q.correctAnswer">{{ opt }}</span>
+                          }
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">{{ q.type }} · {{ q.explanation }}</p>
+                      </div>
+                      @if (isTutor) {
+                        <button (click)="openEditQuestion(q, quiz.id!)" class="p-1 text-gray-400 hover:text-[#8b5cf6] transition-colors" title="Edit question">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                        </button>
+                        <button (click)="deleteQuestion(q)" class="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Delete question">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      }
+                    </div>
+                  }
+                } @else {
+                  <p class="text-xs text-gray-400 py-2">No questions yet.</p>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Right Sidebar -->
+  <div class="w-80 shrink-0 flex flex-col gap-4 anim-slide-right">
+    <!-- English Progress -->
+    <div class="bg-white border border-gray-200 rounded-xl p-5 anim-fade-up anim-delay-1">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-base font-bold text-[#0f1724] font-['SN_Pro']">English progress</h3>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        </svg>
+      </div>
+      <p class="text-xs text-gray-400 mb-3">This week</p>
+
+      <div class="grid grid-cols-3 gap-3 mb-3">
+        <div>
+          <p class="text-xs text-gray-400">Quizzes finished</p>
+          <p class="text-lg font-bold text-[#0f1724]">12</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Avg. score</p>
+          <p class="text-lg font-bold text-[#0f1724]">86%</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Streak</p>
+          <p class="text-lg font-bold text-[#0f1724]">5 days</p>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <p class="text-xs text-[#56c416] font-medium mb-1">Daily goal</p>
+        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div class="h-full bg-[#56c416] rounded-full w-[75%]"></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex flex-wrap gap-2">
+        @for (tab of tabs; track tab) {
+          <button
+            class="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+            [class.border-[#38a9f3]]="activeTab === tab"
+            [class.text-[#38a9f3]]="activeTab === tab"
+            [class.bg-white]="activeTab === tab"
+            [class.border-gray-200]="activeTab !== tab"
+            [class.text-gray-500]="activeTab !== tab"
+            (click)="activeTab = tab"
+          >
+            @switch (tab) {
+              @case ('Vocabulary') { <span>📝</span> }
+              @case ('Reading') { <span>📖</span> }
+              @case ('Grammar') { <span>⏱️</span> }
+              @case ('Listening') { <span>🎧</span> }
+            }
+            {{ tab }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Other English Quizzes -->
+    <div class="bg-white border border-gray-200 rounded-xl p-5 anim-fade-up anim-delay-3">
+      <h3 class="text-base font-bold text-[#0f1724] font-['SN_Pro'] mb-1">Other English quizzes</h3>
+      <p class="text-xs text-gray-400 mb-4">Jump into another skill.</p>
+
+      <div class="flex flex-col gap-3">
+        @for (cat of categories; track cat.id) {
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-sm font-semibold text-[#0f1724]">{{ cat.title }}</h4>
+              <p class="text-xs text-gray-400">{{ cat.description }}</p>
+            </div>
+            <button class="border border-[#38a9f3] text-[#38a9f3] px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#e6f6ff] transition-all hover:scale-105 active:scale-95 whitespace-nowrap">
+              {{ cat.totalSets }} sets
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-gray-100">
+        <p class="text-xs text-gray-400 mb-2">Focus today</p>
+        <div class="flex flex-wrap gap-1.5">
+          @for (tag of focusTags; track tag) {
+            <span class="bg-[#f1f5f9] text-gray-400 text-[11px] px-2 py-1 rounded-full">{{ tag }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

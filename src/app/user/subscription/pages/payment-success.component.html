@@ -1,0 +1,78 @@
+<div class="payment-success-container">
+  <div class="card">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <h2>Confirming your payment...</h2>
+      <p>Please wait while we activate your subscription.</p>
+    </div>
+
+    <!-- Success State -->
+    <div *ngIf="!isLoading && isConfirmed" class="success-state">
+      <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <h1>Payment Successful!</h1>
+      <p class="message">Your subscription has been activated successfully.</p>
+      
+      <div *ngIf="subscription" class="subscription-details">
+        <h3>Subscription Details</h3>
+        <div class="detail-item">
+          <span class="label">Plan:</span>
+          <span class="value">{{ subscription.plan?.name || 'Premium' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Status:</span>
+          <span class="value active">Active</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Start Date:</span>
+          <span class="value">{{ subscription.startDate | date:'mediumDate' }}</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <p><strong>A confirmation email has been sent to your email address.</strong></p>
+        <p>Please check your inbox for the receipt and subscription details.</p>
+      </div>
+
+      <div class="action-buttons">
+        <button (click)="goToSubscriptions()" class="btn btn-primary">
+          View Subscriptions
+        </button>
+        <button (click)="goToDashboard()" class="btn btn-secondary">
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!isLoading && !isConfirmed && errorMessage" class="error-state">
+      <div class="error-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h1>Payment Confirmation Failed</h1>
+      <p class="error-message">{{ errorMessage }}</p>
+      
+      <div class="info-box">
+        <p>If you believe this is an error, please contact our support team.</p>
+      </div>
+
+      <div class="action-buttons">
+        <button (click)="goToSubscriptions()" class="btn btn-primary">
+          Try Again
+        </button>
+        <button (click)="goToDashboard()" class="btn btn-secondary">
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

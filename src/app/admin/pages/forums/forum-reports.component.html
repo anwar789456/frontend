@@ -1,0 +1,396 @@
+<div class="flex gap-6 p-8 h-full">
+    <!-- Main Content -->
+    <div class="flex-1 min-w-0">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-[#0f1419]">Forum Reports</h1>
+                <p class="text-sm text-[#9ca3af] mt-0.5">Manage and review community forum reports</p>
+            </div>
+            <div class="relative">
+                <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+                <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
+                    placeholder="Search reports, users, reasons..."
+                    class="pl-10 pr-4 py-2.5 w-[300px] bg-[#f7f9fa] border border-[#eef1f4] rounded-xl text-sm outline-none focus:border-[#38a9f3] transition-colors" />
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-5 gap-3 mb-6">
+            <!-- Total -->
+            <div class="bg-gradient-to-br from-[#f0f7ff] to-[#e6f2ff] rounded-xl p-4 border border-[#d6e8ff]">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-7 h-7 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+                        </svg>
+                    </div>
+                    <p class="text-[10px] text-[#536471] font-semibold uppercase tracking-wider">Total</p>
+                </div>
+                <p class="text-2xl font-bold text-[#0f1419]">{{ stats.total }}</p>
+            </div>
+            <!-- Pending -->
+            <div class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200/50">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-7 h-7 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-[10px] text-[#536471] font-semibold uppercase tracking-wider">Pending</p>
+                </div>
+                <p class="text-2xl font-bold text-orange-600">{{ stats.pending }}</p>
+            </div>
+            <!-- Investigating -->
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200/50">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-7 h-7 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    </div>
+                    <p class="text-[10px] text-[#536471] font-semibold uppercase tracking-wider">Investigating</p>
+                </div>
+                <p class="text-2xl font-bold text-indigo-600">{{ stats.investigating }}</p>
+            </div>
+            <!-- Resolved -->
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200/50">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-7 h-7 bg-green-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-[10px] text-[#536471] font-semibold uppercase tracking-wider">Resolved</p>
+                </div>
+                <p class="text-2xl font-bold text-green-600">{{ stats.resolved }}</p>
+            </div>
+            <!-- Dismissed -->
+            <div class="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200/50">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-7 h-7 bg-gray-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                    </div>
+                    <p class="text-[10px] text-[#536471] font-semibold uppercase tracking-wider">Dismissed</p>
+                </div>
+                <p class="text-2xl font-bold text-gray-500">{{ stats.dismissed }}</p>
+            </div>
+        </div>
+
+        <!-- Reports Table -->
+        <div class="bg-white rounded-2xl border border-[#eef1f4] overflow-hidden">
+            <!-- Tabs -->
+            <div class="flex items-center gap-0 border-b border-[#eef1f4] px-4">
+                @for (tab of tabs; track tab) {
+                <button (click)="setActiveTab(tab)"
+                    class="px-4 py-3 text-[13px] font-medium transition-all border-b-2 -mb-[1px] flex items-center gap-2"
+                    [class.border-[#38a9f3]]="activeTab === tab" [class.text-[#0f1419]]="activeTab === tab"
+                    [class.border-transparent]="activeTab !== tab" [class.text-[#9ca3af]]="activeTab !== tab"
+                    [class.hover:text-[#536471]]="activeTab !== tab">
+                    {{ tab === 'ALL' ? 'All Reports' : (tab | titlecase) }}
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                        [class.bg-[#38a9f3]/10]="activeTab === tab" [class.text-[#38a9f3]]="activeTab === tab"
+                        [class.bg-gray-100]="activeTab !== tab" [class.text-gray-400]="activeTab !== tab">{{
+                        getTabCount(tab) }}</span>
+                </button>
+                }
+            </div>
+
+            <!-- Loading -->
+            @if (isLoading) {
+            <div class="flex items-center justify-center py-16">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-8 h-8 border-3 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-sm text-[#9ca3af]">Loading reports...</p>
+                </div>
+            </div>
+            }
+
+            <!-- Table -->
+            @if (!isLoading) {
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-[#fafcfd]">
+                        <th
+                            class="text-left text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider px-5 py-3">
+                            Reported User</th>
+                        <th
+                            class="text-left text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider px-5 py-3">
+                            Reason</th>
+                        <th
+                            class="text-left text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider px-5 py-3">
+                            Reporter</th>
+                        <th
+                            class="text-left text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider px-5 py-3">
+                            Time</th>
+                        <th
+                            class="text-left text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider px-5 py-3">
+                            Status</th>
+                        <th
+                            class="text-left text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider px-5 py-3">
+                            Priority</th>
+                        <th
+                            class="text-left text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider px-5 py-3">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (report of filteredReports; track report.id) {
+                    <tr class="border-t border-[#f3f5f7] cursor-pointer transition-colors"
+                        [class.bg-[#f0f7ff]]="selectedReport?.id === report.id"
+                        [class.hover:bg-[#fafcfd]]="selectedReport?.id !== report.id" (click)="selectReport(report)">
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-2.5">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-red-400 to-orange-400 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                                    {{ getInitials(report.reportedUserName) }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-[#0f1419]">{{ report.reportedUserName }}</p>
+                                    <p class="text-[10px] text-[#9ca3af]">Post #{{ report.postId }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5">
+                            <span class="text-sm font-medium {{ getReasonColor(report.reason) }}">{{ report.reason
+                                }}</span>
+                        </td>
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-[#eef1f4] flex items-center justify-center text-[9px] font-bold text-[#536471] shrink-0">
+                                    {{ getInitials(report.reporterName) }}
+                                </div>
+                                <span class="text-sm text-[#536471]">{{ report.reporterName }}</span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5 text-sm text-[#536471]">{{ getTimeAgo(report.createdAt) }}</td>
+                        <td class="px-5 py-3.5">
+                            <span
+                                class="text-[10px] font-semibold px-2.5 py-1 rounded-full {{ getStatusColor(report.status) }}">
+                                {{ report.status }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-3.5">
+                            <span
+                                class="text-[10px] font-bold px-2 py-0.5 rounded {{ getPriorityFromReason(report.reason).color }}">
+                                {{ getPriorityFromReason(report.reason).label }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-3.5 text-[#9ca3af]">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (filteredReports.length === 0) {
+            <div class="flex flex-col items-center justify-center py-16">
+                <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <p class="text-sm font-medium text-[#536471]">No reports found</p>
+                <p class="text-xs text-[#9ca3af] mt-1">
+                    @if (activeTab !== 'ALL') {
+                    No {{ activeTab | lowercase }} reports at the moment.
+                    } @else {
+                    All clear! No forum reports to review.
+                    }
+                </p>
+            </div>
+            }
+            }
+        </div>
+    </div>
+
+    <!-- Right Detail Panel -->
+    @if (selectedReport) {
+    <div
+        class="w-[320px] shrink-0 bg-white rounded-2xl border border-[#eef1f4] overflow-hidden flex flex-col h-fit max-h-[calc(100vh-100px)] sticky top-8">
+        <!-- Detail Header -->
+        <div class="bg-gradient-to-r from-[#38a9f3] to-[#2196e3] px-5 py-4 flex items-center justify-between shrink-0">
+            <div>
+                <h3 class="text-[14px] font-bold text-white">Report #{{ selectedReport.id }}</h3>
+                <p class="text-[11px] text-white/70">{{ getTimeAgo(selectedReport.createdAt) }}</p>
+            </div>
+            <button (click)="closeDetail()" class="text-white/80 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 p-5 space-y-5">
+            <!-- People -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center">
+                    <p class="text-[9px] text-[#9ca3af] uppercase tracking-wider font-semibold mb-2">Reported User</p>
+                    <div
+                        class="w-10 h-10 mx-auto rounded-full bg-gradient-to-br from-red-400 to-orange-400 flex items-center justify-center text-white text-xs font-bold">
+                        {{ getInitials(selectedReport.reportedUserName) }}
+                    </div>
+                    <p class="text-xs font-semibold text-[#0f1419] mt-1.5">{{ selectedReport.reportedUserName }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-[9px] text-[#9ca3af] uppercase tracking-wider font-semibold mb-2">Reported By</p>
+                    <div
+                        class="w-10 h-10 mx-auto rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold">
+                        {{ getInitials(selectedReport.reporterName) }}
+                    </div>
+                    <p class="text-xs font-semibold text-[#0f1419] mt-1.5">{{ selectedReport.reporterName }}</p>
+                </div>
+            </div>
+
+            <!-- Report Info -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[9px] font-semibold text-[#9ca3af] uppercase tracking-wider">Reason</p>
+                        <p class="text-xs font-semibold {{ getReasonColor(selectedReport.reason) }} mt-0.5">{{
+                            selectedReport.reason }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] font-semibold text-[#9ca3af] uppercase tracking-wider">Priority</p>
+                        <span
+                            class="text-[10px] font-bold px-2 py-0.5 rounded {{ getPriorityFromReason(selectedReport.reason).color }}">
+                            {{ getPriorityFromReason(selectedReport.reason).label }}
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-[9px] font-semibold text-[#9ca3af] uppercase tracking-wider">Status</p>
+                    <span
+                        class="text-[10px] font-semibold px-2.5 py-1 rounded-full {{ getStatusColor(selectedReport.status) }} mt-0.5 inline-block">
+                        {{ selectedReport.status }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Reported Content -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider">Reported Content</h4>
+                </div>
+                <div class="bg-red-50/50 border border-red-100 rounded-xl px-3 py-2.5">
+                    <p class="text-xs text-[#0f1419] leading-relaxed">{{ selectedReport.postContent || 'Content not
+                        available' }}</p>
+                </div>
+            </div>
+
+            <!-- Reporter Description -->
+            @if (selectedReport.description) {
+            <div>
+                <h4 class="text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider mb-2">Reporter's Note</h4>
+                <p class="text-xs text-[#536471] italic bg-[#f7f9fa] rounded-xl px-3 py-2.5 border border-[#eef1f4]">"{{
+                    selectedReport.description }}"</p>
+            </div>
+            }
+
+            <!-- Admin Note -->
+            <div>
+                <h4 class="text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider mb-2">Admin Note</h4>
+                <textarea [(ngModel)]="adminNote" placeholder="Add a note about your decision..."
+                    class="w-full text-xs border border-[#eef1f4] rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#38a9f3]/20 focus:border-[#38a9f3] resize-none transition-all"
+                    rows="2"></textarea>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="border-t border-[#eef1f4] p-4 shrink-0 space-y-2">
+            @if (selectedReport.status === 'PENDING') {
+            <div class="grid grid-cols-2 gap-2">
+                <button (click)="markInvestigating(selectedReport)" [disabled]="actionLoading"
+                    class="py-2.5 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors disabled:opacity-50">
+                    <span class="flex items-center justify-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                        Investigate
+                    </span>
+                </button>
+                <button (click)="dismissReport(selectedReport)" [disabled]="actionLoading"
+                    class="py-2.5 text-[11px] font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors disabled:opacity-50">Dismiss</button>
+            </div>
+            }
+            @if (selectedReport.status === 'PENDING' || selectedReport.status === 'INVESTIGATING') {
+            <div class="grid grid-cols-2 gap-2">
+                <button (click)="deleteReportedPost(selectedReport)" [disabled]="actionLoading"
+                    class="py-2.5 text-[11px] font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50">
+                    <span class="flex items-center justify-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                        Delete Post
+                    </span>
+                </button>
+                <button (click)="resolveReport(selectedReport)" [disabled]="actionLoading"
+                    class="py-2.5 text-[11px] font-semibold text-white bg-green-500 rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50">
+                    <span class="flex items-center justify-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Resolve
+                    </span>
+                </button>
+            </div>
+            }
+            <button (click)="confirmDeleteReport(selectedReport.id!)"
+                class="w-full py-2 text-[10px] font-medium text-gray-400 hover:text-red-500 transition-colors">Delete
+                this report</button>
+        </div>
+    </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteConfirm) {
+<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" (click)="cancelDeleteReport()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden" (click)="$event.stopPropagation()">
+        <div class="p-6 text-center">
+            <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-[#0f1419] mb-1">Delete Report</h3>
+            <p class="text-sm text-[#536471]">Are you sure you want to permanently delete this report? This action
+                cannot be undone.</p>
+        </div>
+        <div class="px-6 pb-6 flex gap-3">
+            <button (click)="cancelDeleteReport()"
+                class="flex-1 py-2.5 text-sm font-semibold text-[#536471] bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
+            <button (click)="executeDeleteReport()" [disabled]="actionLoading"
+                class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50">Delete</button>
+        </div>
+    </div>
+</div>
+}

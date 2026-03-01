@@ -1,0 +1,523 @@
+<div class="flex gap-6 p-8 h-full">
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-[#0f1419]">Subscription Management</h1>
+      <div class="flex items-center gap-3">
+        <!-- View Toggle -->
+        <div class="flex bg-[#f7f9fa] rounded-lg p-1 border border-[#eef1f4]">
+          <button (click)="viewMode = 'plans'" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-colors"
+            [class.bg-white]="viewMode === 'plans'" [class.text-[#0f1419]]="viewMode === 'plans'"
+            [class.shadow-sm]="viewMode === 'plans'" [class.text-[#9ca3af]]="viewMode !== 'plans'">Plans</button>
+          <button (click)="viewMode = 'subscriptions'"
+            class="px-3 py-1.5 text-xs font-semibold rounded-md transition-colors"
+            [class.bg-white]="viewMode === 'subscriptions'" [class.text-[#0f1419]]="viewMode === 'subscriptions'"
+            [class.shadow-sm]="viewMode === 'subscriptions'"
+            [class.text-[#9ca3af]]="viewMode !== 'subscriptions'">Subscribers</button>
+        </div>
+        <div class="relative">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input type="text" placeholder="Search..."
+            class="pl-10 pr-4 py-2 w-[220px] bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    @if (!isLoading && !error) {
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      @for (stat of stats; track stat.label) {
+      <div class="bg-[#f0fdf9] rounded-xl p-4 border border-[#e6f9f0]">
+        <p class="text-[11px] text-[#9ca3af] mb-1">{{ stat.label }}</p>
+        <p class="text-2xl font-bold {{ stat.valueColor }}">{{ stat.value }}</p>
+        <p class="text-[11px] {{ stat.subColor }} mt-1">{{ stat.sub }}</p>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Main Table Area -->
+    <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+
+      <!-- Loading -->
+      @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-16 gap-3">
+        <div class="w-8 h-8 border-3 border-[#eff3f4] border-t-[#38a9f3] rounded-full animate-spin"></div>
+        <span class="text-sm text-[#9ca3af]">Loading...</span>
+      </div>
+      }
+
+      <!-- Error -->
+      @if (!isLoading && error) {
+      <div class="flex flex-col items-center justify-center py-16 gap-3">
+        <p class="text-sm text-[#9ca3af]">{{ error }}</p>
+        <button (click)="loadAll()" class="text-sm font-semibold text-[#38a9f3] hover:underline">Try Again</button>
+      </div>
+      }
+
+      <!-- =================== PLANS VIEW =================== -->
+      @if (!isLoading && !error && viewMode === 'plans') {
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex gap-1 border-b border-[#eef1f4]">
+          @for (tab of planTabs; track tab) {
+          <button (click)="activePlanTab = tab"
+            class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-[1px]"
+            [class.border-[#38a9f3]]="activePlanTab === tab" [class.text-[#0f1419]]="activePlanTab === tab"
+            [class.border-transparent]="activePlanTab !== tab" [class.text-[#9ca3af]]="activePlanTab !== tab">{{ tab
+            }}</button>
+          }
+        </div>
+        <button (click)="openCreatePlanModal()"
+          class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3]">+
+          Create Plan</button>
+      </div>
+
+      <table class="w-full">
+        <thead>
+          <tr class="bg-[#f0fdf9]">
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-l-lg">Plan</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Price</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Duration</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Subscribers</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Description</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-r-lg"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (plan of filteredPlans; track plan.id) {
+          <tr class="border-t border-[#f7f9fa] cursor-pointer hover:bg-[#fafcfd]"
+            [class.bg-[#f7f9ff]]="selectedPlan?.id === plan.id" (click)="selectPlan(plan)">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2.5">
+                <span class="text-lg">{{ getPlanIcon(plan.name) }}</span>
+                <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getPlanColor(plan.name) }}">{{
+                  plan.name }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-sm font-medium text-[#0f1419]">{{ plan.price === 0 ? 'Free' : plan.price + '
+              TND/mo' }}</td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ plan.durationDays }} days</td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ getSubCountForPlan(plan.id) }} users</td>
+            <td class="px-4 py-3 text-sm text-[#536471] max-w-[200px] truncate">{{ plan.description || '—' }}</td>
+            <td class="px-4 py-3 text-[#9ca3af]">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </td>
+          </tr>
+          }
+          @if (filteredPlans.length === 0) {
+          <tr>
+            <td colspan="6" class="px-4 py-12 text-center text-sm text-[#9ca3af]">No plans found.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+
+      <!-- =================== SUBSCRIPTIONS VIEW =================== -->
+      @if (!isLoading && !error && viewMode === 'subscriptions') {
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex gap-1 border-b border-[#eef1f4]">
+          @for (tab of subTabs; track tab) {
+          <button (click)="activeSubTab = tab"
+            class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-[1px]"
+            [class.border-[#38a9f3]]="activeSubTab === tab" [class.text-[#0f1419]]="activeSubTab === tab"
+            [class.border-transparent]="activeSubTab !== tab" [class.text-[#9ca3af]]="activeSubTab !== tab">{{ tab
+            }}</button>
+          }
+        </div>
+        <button (click)="openCreateSubModal()"
+          class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3]">+
+          Create Subscription</button>
+      </div>
+
+      <table class="w-full">
+        <thead>
+          <tr class="bg-[#f0fdf9]">
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-l-lg">User ID
+            </th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Plan</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Status</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Subscribed</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Expires</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-r-lg"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sub of filteredSubscriptions; track sub.id) {
+          <tr class="border-t border-[#f7f9fa] cursor-pointer hover:bg-[#fafcfd]"
+            [class.bg-[#f7f9ff]]="selectedSub?.id === sub.id" (click)="selectSub(sub)">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2.5">
+                <span class="text-lg">&#x1F464;</span>
+                <span class="text-sm font-medium text-[#0f1419]">User #{{ sub.userId }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getPlanColor(sub.plan?.name) }}">{{
+                sub.plan?.name || '—' }}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getSubStatusColor(sub.status) }}">{{
+                sub.status }}</span>
+            </td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ formatDate(sub.subscribedAt) }}</td>
+            <td class="px-4 py-3 text-sm" [class.text-red-500]="getDaysRemaining(sub.expiresAt) === 'Expired'"
+              [class.text-[#536471]]="getDaysRemaining(sub.expiresAt) !== 'Expired'">
+              {{ formatDate(sub.expiresAt) }} <span class="text-[10px] text-[#9ca3af]">({{
+                getDaysRemaining(sub.expiresAt) }})</span>
+            </td>
+            <td class="px-4 py-3 text-[#9ca3af]">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </td>
+          </tr>
+          }
+          @if (filteredSubscriptions.length === 0) {
+          <tr>
+            <td colspan="6" class="px-4 py-12 text-center text-sm text-[#9ca3af]">No subscriptions found.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+    </div>
+  </div>
+
+  <!-- =================== RIGHT PANEL =================== -->
+
+  <!-- Plan Detail Panel -->
+  @if (viewMode === 'plans' && selectedPlan) {
+  <div class="w-[280px] shrink-0 bg-white rounded-2xl border border-[#eef1f4] p-6">
+    <div class="text-center mb-5">
+      <span class="text-4xl">{{ getPlanIcon(selectedPlan.name) }}</span>
+      <h3 class="text-lg font-bold text-[#0f1419] mt-2">{{ selectedPlan.name }}</h3>
+      <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getPlanColor(selectedPlan.name) }}">{{
+        selectedPlan.name }}</span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Price</p>
+        <p class="text-sm font-bold text-[#38a9f3]">{{ selectedPlan.price === 0 ? 'Free' : selectedPlan.price + ' TND'
+          }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Duration</p>
+        <p class="text-sm font-medium text-[#0f1419]">{{ selectedPlan.durationDays }} days</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Subscribers</p>
+        <p class="text-sm font-medium text-green-500">{{ getSubCountForPlan(selectedPlan.id) }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">ID</p>
+        <p class="text-sm font-medium text-[#0f1419]">#{{ selectedPlan.id }}</p>
+      </div>
+    </div>
+
+    @if (selectedPlan.description) {
+    <div class="mb-5">
+      <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Description</h4>
+      <p class="text-xs text-[#536471] leading-relaxed">{{ selectedPlan.description }}</p>
+    </div>
+    }
+
+    <div class="flex gap-2 mt-4">
+      <button (click)="openEditPlanModal(selectedPlan)"
+        class="flex-1 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3]">Edit
+        Plan</button>
+      <button (click)="confirmDeletePlan()"
+        class="py-2.5 px-3 text-sm font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  }
+
+  <!-- Subscription Detail Panel -->
+  @if (viewMode === 'subscriptions' && selectedSub) {
+  <div class="w-[280px] shrink-0 bg-white rounded-2xl border border-[#eef1f4] p-6">
+    <div class="text-center mb-5">
+      <span class="text-4xl">&#x1F464;</span>
+      <h3 class="text-lg font-bold text-[#0f1419] mt-2">User #{{ selectedSub.userId }}</h3>
+      <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getSubStatusColor(selectedSub.status) }}">{{
+        selectedSub.status }}</span>
+    </div>
+
+    <div class="mb-5">
+      <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Current Plan</h4>
+      <div class="bg-[#f7f9fa] rounded-xl p-4 text-center">
+        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getPlanColor(selectedSub.plan?.name) }}">{{
+          selectedSub.plan?.name || '—' }}</span>
+        <p class="text-2xl font-bold text-[#38a9f3] mt-2">{{ selectedSub.plan?.price === 0 ? 'Free' :
+          (selectedSub.plan?.price || 0) + ' TND' }}
+          <span class="text-xs font-normal text-[#9ca3af]">/ {{ selectedSub.plan?.durationDays || 30 }} days</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Subscribed</p>
+        <p class="text-sm font-medium text-[#0f1419]">{{ formatDate(selectedSub.subscribedAt) }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Expires</p>
+        <p class="text-sm font-medium" [class.text-red-500]="getDaysRemaining(selectedSub.expiresAt) === 'Expired'"
+          [class.text-[#0f1419]]="getDaysRemaining(selectedSub.expiresAt) !== 'Expired'">
+          {{ formatDate(selectedSub.expiresAt) }}
+        </p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Remaining</p>
+        <p class="text-sm font-medium text-[#0f1419]">{{ getDaysRemaining(selectedSub.expiresAt) }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">ID</p>
+        <p class="text-sm font-medium text-[#0f1419]">#{{ selectedSub.id }}</p>
+      </div>
+    </div>
+
+    <div class="flex gap-2 mt-4">
+      <button (click)="openEditSubModal(selectedSub)"
+        class="flex-1 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3]">Edit</button>
+      <button (click)="confirmDeleteSub()"
+        class="py-2.5 px-3 text-sm font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  }
+</div>
+
+<!-- =================== PLAN MODAL =================== -->
+@if (showPlanModal) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="closePlanModal()">
+  <div class="bg-white rounded-2xl shadow-xl w-[480px] max-h-[85vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-[#eef1f4]">
+      <h2 class="text-lg font-bold text-[#0f1419]">{{ isEditingPlan ? 'Edit Plan' : 'Create New Plan' }}</h2>
+      <button (click)="closePlanModal()" class="text-[#9ca3af] hover:text-[#0f1419]">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="p-6 space-y-5">
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Plan Type *</label>
+        <select [(ngModel)]="planFormData.name"
+          class="w-full px-3 py-2 border rounded-lg text-sm outline-none bg-white"
+          [class.border-red-400]="planFormSubmitted && planFormErrors['name']"
+          [class.border-[#eef1f4]]="!(planFormSubmitted && planFormErrors['name'])">
+          @for (type of planTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+          }
+        </select>
+        @if (planFormSubmitted && planFormErrors['name']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ planFormErrors['name'] }}</p>
+        }
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Price (TND) *</label>
+          <input type="number" [(ngModel)]="planFormData.price"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+            [class.border-red-400]="planFormSubmitted && planFormErrors['price']"
+            [class.border-[#eef1f4]]="!(planFormSubmitted && planFormErrors['price'])" />
+          @if (planFormSubmitted && planFormErrors['price']) {
+          <p class="text-[11px] text-red-500 mt-1">{{ planFormErrors['price'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Duration (days) *</label>
+          <input type="number" [(ngModel)]="planFormData.durationDays"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+            [class.border-red-400]="planFormSubmitted && planFormErrors['durationDays']"
+            [class.border-[#eef1f4]]="!(planFormSubmitted && planFormErrors['durationDays'])" />
+          @if (planFormSubmitted && planFormErrors['durationDays']) {
+          <p class="text-[11px] text-red-500 mt-1">{{ planFormErrors['durationDays'] }}</p>
+          }
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Description *</label>
+        <textarea [(ngModel)]="planFormData.description" rows="3"
+          class="w-full px-3 py-2 border rounded-lg text-sm outline-none resize-none"
+          [class.border-red-400]="planFormSubmitted && planFormErrors['description']"
+          [class.border-[#eef1f4]]="!(planFormSubmitted && planFormErrors['description'])"
+          placeholder="Describe this plan..."></textarea>
+        @if (planFormSubmitted && planFormErrors['description']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ planFormErrors['description'] }}</p>
+        }
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#eef1f4]">
+      <button (click)="closePlanModal()"
+        class="px-5 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+      <button (click)="savePlan()" [disabled]="isSavingPlan"
+        class="px-5 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3] disabled:opacity-50">
+        {{ isSavingPlan ? 'Saving...' : (isEditingPlan ? 'Update Plan' : 'Create Plan') }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- =================== SUBSCRIPTION MODAL =================== -->
+@if (showSubModal) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="closeSubModal()">
+  <div class="bg-white rounded-2xl shadow-xl w-[480px] max-h-[85vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-[#eef1f4]">
+      <h2 class="text-lg font-bold text-[#0f1419]">{{ isEditingSub ? 'Edit Subscription' : 'Create Subscription' }}</h2>
+      <button (click)="closeSubModal()" class="text-[#9ca3af] hover:text-[#0f1419]">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="p-6 space-y-5">
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">User ID *</label>
+        <input type="number" [(ngModel)]="subFormData.userId"
+          class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+          [class.border-red-400]="subFormSubmitted && subFormErrors['userId']"
+          [class.border-[#eef1f4]]="!(subFormSubmitted && subFormErrors['userId'])"
+          placeholder="Enter user ID" />
+        @if (subFormSubmitted && subFormErrors['userId']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ subFormErrors['userId'] }}</p>
+        }
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Plan *</label>
+        <select [(ngModel)]="subFormData.plan"
+          class="w-full px-3 py-2 border rounded-lg text-sm outline-none bg-white"
+          [class.border-red-400]="subFormSubmitted && subFormErrors['plan']"
+          [class.border-[#eef1f4]]="!(subFormSubmitted && subFormErrors['plan'])">
+          @for (plan of plans; track plan.id) {
+          <option [ngValue]="plan">{{ plan.name }} &#x2014; {{ plan.price === 0 ? 'Free' : plan.price + ' TND' }}</option>
+          }
+        </select>
+        @if (subFormSubmitted && subFormErrors['plan']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ subFormErrors['plan'] }}</p>
+        }
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Status *</label>
+        <select [(ngModel)]="subFormData.status"
+          class="w-full px-3 py-2 border rounded-lg text-sm outline-none bg-white"
+          [class.border-red-400]="subFormSubmitted && subFormErrors['status']"
+          [class.border-[#eef1f4]]="!(subFormSubmitted && subFormErrors['status'])">
+          @for (s of subStatuses; track s) {
+          <option [value]="s">{{ s }}</option>
+          }
+        </select>
+        @if (subFormSubmitted && subFormErrors['status']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ subFormErrors['status'] }}</p>
+        }
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Subscribed At *</label>
+          <input type="datetime-local" [(ngModel)]="subFormData.subscribedAt"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+            [class.border-red-400]="subFormSubmitted && subFormErrors['subscribedAt']"
+            [class.border-[#eef1f4]]="!(subFormSubmitted && subFormErrors['subscribedAt'])" />
+          @if (subFormSubmitted && subFormErrors['subscribedAt']) {
+          <p class="text-[11px] text-red-500 mt-1">{{ subFormErrors['subscribedAt'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Expires At *</label>
+          <input type="datetime-local" [(ngModel)]="subFormData.expiresAt"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+            [class.border-red-400]="subFormSubmitted && subFormErrors['expiresAt']"
+            [class.border-[#eef1f4]]="!(subFormSubmitted && subFormErrors['expiresAt'])" />
+          @if (subFormSubmitted && subFormErrors['expiresAt']) {
+          <p class="text-[11px] text-red-500 mt-1">{{ subFormErrors['expiresAt'] }}</p>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#eef1f4]">
+      <button (click)="closeSubModal()"
+        class="px-5 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+      <button (click)="saveSub()" [disabled]="isSavingSub"
+        class="px-5 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3] disabled:opacity-50">
+        {{ isSavingSub ? 'Saving...' : (isEditingSub ? 'Update' : 'Create') }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Delete Plan Confirmation -->
+@if (showDeletePlanConfirm) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="cancelDeletePlan()">
+  <div class="bg-white rounded-2xl shadow-xl w-[400px] p-6" (click)="$event.stopPropagation()">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-[15px] font-bold text-[#0f1419]">Delete Plan</h3>
+        <p class="text-xs text-[#9ca3af]">This action cannot be undone.</p>
+      </div>
+    </div>
+    <p class="text-sm text-[#536471] mb-6">Are you sure you want to delete the <strong>{{ selectedPlan?.name }}</strong>
+      plan?</p>
+    <div class="flex gap-3">
+      <button (click)="cancelDeletePlan()"
+        class="flex-1 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+      <button (click)="deletePlan()" [disabled]="isDeletingPlan"
+        class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-50">
+        {{ isDeletingPlan ? 'Deleting...' : 'Delete' }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Delete Subscription Confirmation -->
+@if (showDeleteSubConfirm) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="cancelDeleteSub()">
+  <div class="bg-white rounded-2xl shadow-xl w-[400px] p-6" (click)="$event.stopPropagation()">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-[15px] font-bold text-[#0f1419]">Delete Subscription</h3>
+        <p class="text-xs text-[#9ca3af]">This action cannot be undone.</p>
+      </div>
+    </div>
+    <p class="text-sm text-[#536471] mb-6">Are you sure you want to delete subscription for <strong>User #{{
+        selectedSub?.userId }}</strong>?</p>
+    <div class="flex gap-3">
+      <button (click)="cancelDeleteSub()"
+        class="flex-1 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+      <button (click)="deleteSub()" [disabled]="isDeletingSub"
+        class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-50">
+        {{ isDeletingSub ? 'Deleting...' : 'Delete' }}
+      </button>
+    </div>
+  </div>
+</div>
+}

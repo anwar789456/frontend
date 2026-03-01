@@ -1,0 +1,264 @@
+/* ── Base & Typography ── */
+.forum-container {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, Oxygen, Ubuntu, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Card System ── */
+.forum-card {
+  background: #ffffff;
+  border: 1px solid #e8ecf1;
+  border-radius: 16px;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.forum-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-color: #dde3ea;
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  background: linear-gradient(135deg, #38a9f3 0%, #2196e3 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(56, 169, 243, 0.25);
+}
+.btn-primary:hover {
+  box-shadow: 0 4px 16px rgba(56, 169, 243, 0.35);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+.btn-secondary:hover { background: #e2e8f0; }
+
+/* ── Action Buttons ── */
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: #94a3b8;
+}
+.action-btn:hover { color: #38a9f3; background: rgba(56, 169, 243, 0.08); }
+.action-btn.active { color: #38a9f3; background: rgba(56, 169, 243, 0.1); }
+
+/* ── Avatar Ring ── */
+.avatar-ring {
+  padding: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #38a9f3, #2196e3, #6366f1);
+}
+
+/* ── Post Card Hover ── */
+.post-card {
+  position: relative;
+  overflow: hidden;
+}
+.post-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #38a9f3, #6366f1);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-radius: 0 3px 3px 0;
+}
+.post-card:hover::before { opacity: 1; }
+
+/* ── Notification Badge Pulse ── */
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+.notif-badge {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* ── Notification Panel ── */
+.notif-panel {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.notif-item {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background-color: #f8fafc; }
+.notif-item.unread { background-color: #eff6ff; }
+
+/* ── Trending Topic Card ── */
+.topic-item {
+  padding: 10px 12px;
+  margin: 0 -8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.topic-item:hover { background-color: #f8fafc; }
+.topic-item.active { background-color: #eff6ff; border: 1px solid #bfdbfe; }
+
+/* ── Report Modal ── */
+.report-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.5);
+}
+.report-modal {
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: modalSlideUp 0.3s ease-out;
+}
+@keyframes modalSlideUp {
+  from { transform: translateY(20px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ── Profile Popup ── */
+.profile-popup {
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: modalSlideUp 0.3s ease-out;
+}
+
+/* ── Forum Profile Modal ── */
+.forum-profile-modal {
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: modalSlideUp 0.35s ease-out;
+}
+
+/* ── Search Input ── */
+.search-input {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+}
+.search-input:focus {
+  border-color: #38a9f3;
+  box-shadow: 0 0 0 3px rgba(56, 169, 243, 0.15);
+  background: #ffffff;
+}
+
+/* ── Sidebar Section ── */
+.sidebar-section {
+  background: #ffffff;
+  border: 1px solid #e8ecf1;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Dark Mode ── */
+.forum-dark { background-color: #0f172a; color: #e2e8f0; }
+.forum-dark .forum-card,
+.forum-dark .dm-card { background-color: #1e293b !important; border-color: #2d3a4d !important; }
+.forum-dark .forum-card:hover { border-color: #3b4a5f !important; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important; }
+.forum-dark .dm-input { background-color: #1e293b !important; border-color: #2d3a4d !important; color: #e2e8f0 !important; }
+.forum-dark .dm-input::placeholder { color: #64748b !important; }
+.forum-dark .dm-text { color: #e2e8f0 !important; }
+.forum-dark .dm-text-sec { color: #94a3b8 !important; }
+.forum-dark .dm-text-muted { color: #64748b !important; }
+.forum-dark .dm-border { border-color: #2d3a4d !important; }
+.forum-dark .dm-hover:hover { background-color: #293548 !important; }
+.forum-dark .dm-bg { background-color: #0f172a !important; }
+.forum-dark .dm-card-alt { background-color: #0f172a !important; border-color: #2d3a4d !important; }
+.forum-dark .dm-menu { background-color: #1e293b !important; border-color: #2d3a4d !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; }
+.forum-dark .post-card::before { background: linear-gradient(180deg, #38a9f3, #818cf8); }
+.forum-dark .sidebar-section { background: #1e293b !important; border-color: #2d3a4d !important; }
+.forum-dark .search-input { background: #1e293b !important; border-color: #2d3a4d !important; color: #e2e8f0 !important; }
+.forum-dark .search-input:focus { border-color: #38a9f3 !important; box-shadow: 0 0 0 3px rgba(56, 169, 243, 0.2) !important; }
+.forum-dark .notif-item { border-color: #2d3a4d !important; }
+.forum-dark .notif-item:hover { background-color: #293548 !important; }
+.forum-dark .notif-item.unread { background-color: rgba(56, 169, 243, 0.1) !important; }
+.forum-dark .topic-item:hover { background-color: #293548 !important; }
+.forum-dark .topic-item.active { background-color: rgba(56, 169, 243, 0.15) !important; border-color: #38a9f3 !important; }
+.forum-dark .action-btn { color: #64748b; }
+.forum-dark .action-btn:hover { color: #38a9f3; background: rgba(56, 169, 243, 0.12); }
+
+/* ── Reaction Animations ── */
+@keyframes reactionPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.reaction-pop { animation: reactionPop 0.3s ease-out; }
+
+@keyframes reactionFloat {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-40px) scale(1.5); opacity: 0; }
+}
+.reaction-float { animation: reactionFloat 0.6s ease-out forwards; }
+
+/* ── Notification Toast ── */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+.toast-enter { animation: slideInRight 0.35s ease-out; }
+.toast-exit { animation: slideOutRight 0.3s ease-in forwards; }
+
+/* ── GIF Picker ── */
+.gif-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.gif-grid img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.gif-grid img:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(56,169,243,0.25); }
+
+/* ── Scrollbar Styling ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.forum-dark ::-webkit-scrollbar-track { background: #1e293b; }
+.forum-dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+
+/* ── GIF Search Input Focus ── */
+.gif-search:focus { outline: none; box-shadow: 0 0 0 2px rgba(56,169,243,0.3); }
+
+/* ── Skeleton Loader ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ── Focus Visible ── */
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #38a9f3;
+  outline-offset: 2px;
+}
+
+/* ── Smooth Transitions for Interactive Elements ── */
+button, a { transition: all 0.2s ease; }
+textarea, input, select { transition: border-color 0.2s ease, box-shadow 0.2s ease; }

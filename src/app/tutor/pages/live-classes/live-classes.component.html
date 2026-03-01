@@ -1,0 +1,121 @@
+<div class="p-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-[#0f1419]">Live Classes</h1>
+      <p class="text-sm text-[#536471]">Schedule sessions, manage upcoming classes, and monitor attendance.</p>
+    </div>
+    <button class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3]">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+      Schedule Session
+    </button>
+  </div>
+
+  <!-- Up Next -->
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-sm font-semibold text-[#536471]">Up Next</h2>
+    <span class="text-sm font-semibold text-[#38a9f3]">Starts in 45 minutes</span>
+  </div>
+
+  <div class="flex gap-5 mb-8">
+    <!-- Main Card -->
+    <div class="flex-1 bg-white rounded-xl border border-[#eef1f4] p-6">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-[11px] font-bold text-green-600 bg-green-100 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+          {{ upNext.status }}
+        </span>
+        <span class="text-[11px] text-[#9ca3af]">COURSE: {{ upNext.course }}</span>
+      </div>
+      <h2 class="text-xl font-bold text-[#0f1419] mb-2">{{ upNext.title }}</h2>
+      <p class="text-sm text-[#536471] mb-4 leading-relaxed">{{ upNext.description }}</p>
+      <div class="flex items-center gap-6 text-sm text-[#536471] mb-5">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+          <span><strong>Date</strong> {{ upNext.date }}</span>
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span><strong>Time</strong> {{ upNext.time }}</span>
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg>
+          <span><strong>Platform</strong> {{ upNext.platform }}</span>
+        </span>
+      </div>
+      <div class="flex gap-3">
+        <button class="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-[#4ade80] rounded-xl hover:bg-[#22c55e]">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
+          Start Class Now
+        </button>
+        <button class="px-5 py-2.5 text-sm font-medium text-[#536471] bg-white border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Edit Details</button>
+      </div>
+    </div>
+
+    <!-- Registered Students -->
+    <div class="w-[260px] shrink-0 bg-white rounded-xl border border-[#eef1f4] p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-[13px] font-bold text-[#0f1419]">Registered Students</h3>
+        <span class="text-[11px] text-[#9ca3af]">24 / 30</span>
+      </div>
+      <div class="space-y-3">
+        @for (student of registeredStudents; track student.name) {
+          <div class="flex items-center gap-2.5">
+            <div class="relative">
+              <div class="w-8 h-8 rounded-full bg-[#e6f6ff] flex items-center justify-center text-xs">👤</div>
+              @if (student.online) {
+                <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></div>
+              }
+            </div>
+            <div>
+              <p class="text-xs font-medium text-[#0f1419]">{{ student.name }}</p>
+              <p class="text-[10px]" [class.text-green-500]="student.status === 'Confirmed'" [class.text-orange-400]="student.status === 'Pending'">{{ student.status }}</p>
+            </div>
+          </div>
+        }
+      </div>
+      <button class="w-full mt-4 py-2 text-xs font-medium text-[#536471] border border-[#eef1f4] rounded-lg hover:bg-[#f7f9fa]">View All 24 Students</button>
+    </div>
+  </div>
+
+  <!-- Upcoming Schedule -->
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-[15px] font-bold text-[#0f1419]">Upcoming Schedule</h2>
+    <div class="flex gap-2">
+      <select class="px-3 py-1.5 text-sm text-[#536471] bg-white border border-[#eef1f4] rounded-lg outline-none">
+        <option>Filter by course...</option>
+      </select>
+      <button class="px-3 py-1.5 text-sm text-[#536471] bg-white border border-[#eef1f4] rounded-lg hover:bg-[#f7f9fa]">This Week</button>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    @for (item of upcomingSchedule; track item.title) {
+      <div class="bg-white rounded-xl border border-[#eef1f4] p-5 flex items-center gap-5">
+        <div class="text-center shrink-0 w-14">
+          <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">{{ item.day }}</p>
+          <p class="text-2xl font-bold text-[#0f1419]">{{ item.date }}</p>
+          <p class="text-[10px] text-[#9ca3af]">{{ item.month }}</p>
+        </div>
+        <div class="flex-1">
+          <p class="text-[11px] font-bold {{ item.categoryColor }} uppercase mb-0.5">{{ item.category }}</p>
+          <p class="text-sm font-semibold text-[#0f1419]">{{ item.title }}</p>
+          <p class="text-[11px] text-[#9ca3af] mt-0.5">
+            <span class="inline-flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> {{ item.time }}</span>
+            <span class="ml-3 inline-flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg> {{ item.students }} Students enrolled</span>
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex -space-x-2">
+            <div class="w-7 h-7 rounded-full bg-[#e6f6ff] border-2 border-white flex items-center justify-center text-[10px]">👩</div>
+            <div class="w-7 h-7 rounded-full bg-[#fef3c7] border-2 border-white flex items-center justify-center text-[10px]">👨</div>
+            <div class="w-7 h-7 rounded-full bg-[#fce7f3] border-2 border-white flex items-center justify-center text-[10px]">🧑</div>
+          </div>
+          <span class="text-[10px] text-[#9ca3af]">+{{ item.students > 3 ? item.students - 3 : 0 }}</span>
+          <button class="text-[#9ca3af] hover:text-[#536471]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" /></svg>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

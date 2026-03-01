@@ -1,0 +1,130 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="closeModal()">
+  <div class="modal-container" (click)="stopPropagation($event)">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <span *ngIf="plan">Complete Payment</span>
+      </h2>
+      <button class="close-button" (click)="closeModal()" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <!-- Plan Summary -->
+      <div class="plan-summary">
+        <div class="plan-info">
+          <span class="plan-label">{{ getPlanDisplayName() }} Plan</span>
+          <span class="plan-price">{{ getFormattedPrice() }}</span>
+        </div>
+        <p class="plan-description">
+          You're subscribing to the {{ getPlanDisplayName() }} plan
+        </p>
+      </div>
+
+      <!-- Payment Form -->
+      <form class="payment-form" (ngSubmit)="simulatePayment()">
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            class="form-input"
+            [(ngModel)]="email"
+            placeholder="your@email.com"
+            required
+            disabled="isLoading"
+          />
+          <small class="form-hint">Your payment receipt will be sent to this email address</small>
+        </div>
+
+        <!-- Card Number -->
+        <div class="form-group">
+          <label for="cardNumber">Card Number</label>
+          <input
+            type="text"
+            id="cardNumber"
+            class="form-input"
+            [(ngModel)]="cardNumber"
+            placeholder="1234 5678 1234 5678"
+            maxlength="19"
+            disabled="isLoading"
+          />
+        </div>
+
+        <!-- Card Name -->
+        <div class="form-group">
+          <label for="cardName">Cardholder Name</label>
+          <input
+            type="text"
+            id="cardName"
+            class="form-input"
+            [(ngModel)]="cardName"
+            placeholder="John Doe"
+            disabled="isLoading"
+          />
+        </div>
+
+        <!-- Expiry and CVC -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cardExpiry">Expiry Date</label>
+            <input
+              type="text"
+              id="cardExpiry"
+              class="form-input"
+              [(ngModel)]="cardExpiry"
+              placeholder="MM/YY"
+              maxlength="5"
+              disabled="isLoading"
+            />
+          </div>
+          <div class="form-group">
+            <label for="cardCvc">CVC</label>
+            <input
+              type="text"
+              id="cardCvc"
+              class="form-input"
+              [(ngModel)]="cardCvc"
+              placeholder="123"
+              maxlength="3"
+              disabled="isLoading"
+            />
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="btn-loading">
+            <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32">
+                <animate attributeName="stroke-dashoffset" from="32" to="0" dur="1s" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+            Processing...
+          </span>
+          <span *ngIf="!isLoading">Pay {{ getFormattedPrice() }}</span>
+        </button>
+      </form>
+
+      <!-- Security Notice -->
+      <div class="security-notice">
+        <svg class="security-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>This is a payment simulation. No real charges will be made.</span>
+      </div>
+    </div>
+  </div>
+</div>

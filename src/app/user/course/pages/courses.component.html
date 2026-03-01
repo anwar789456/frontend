@@ -1,0 +1,466 @@
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SCREEN 1: ADVENTURE MAP (course list)                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+@if (!selectedCourse) {
+<div class="relative h-screen flex flex-col overflow-hidden bg-[#fbfeff]">
+  <!-- Soft blurred background image -->
+  <div class="absolute inset-0 z-0 overflow-hidden">
+    <img [src]="bgImage" alt="" class="w-full h-full object-cover opacity-[0.4] blur-sm" />
+  </div>
+
+  <!-- FIXED TOP HEADER AREA -->
+  <div class="relative z-10 shrink-0 px-10 pt-4 pb-2">
+    <!-- HEADER -->
+    <div class="flex items-center justify-between mb-2">
+      <h1 class="text-[18px] font-extrabold text-[#111827] tracking-[0.5px] uppercase">Current Learning Path</h1>
+      <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Top Bar: Language, Streak, Coins -->
+    <div class="flex items-center gap-6 mb-3 text-[15px] font-semibold">
+      <div class="flex items-center gap-2 text-[#0f1724]"><span class="text-base">🏴</span><span>EN</span></div>
+      <div class="flex items-center gap-2 text-[#0f1724]"><span class="text-orange-400 text-base">🔥</span><span>{{ user.streak }}</span></div>
+      <div class="flex items-center gap-2 text-[#0f1724]"><span class="text-[#0ea5e9] text-base">💎</span><span>{{ user.xp }}</span></div>
+    </div>
+
+    <!-- Friendly Banner -->
+    <div class="bg-[#f0f9ff] border border-[#bfdbfe] rounded-2xl p-4 pr-3 flex items-center justify-between mb-3">
+      <div>
+        <h2 class="text-[15px] font-bold text-[#111827] mb-0.5">Learn together with your friends</h2>
+        <p class="text-[13px] text-[#6b7280]">Join your team in this cozy space, collect stars together, and unlock new adventures.</p>
+      </div>
+      <img [src]="bannerImage" alt="Friends" class="w-[160px] h-[85px] rounded-xl object-cover shrink-0 ml-4 border-2 border-white shadow-sm" />
+    </div>
+  </div>
+
+  @if (showContenuForm) {
+    <div class="relative z-20 mx-10 mb-2">
+      <div class="bg-white border-2 border-[#22c55e] rounded-xl p-5 shadow-lg">
+        <h3 class="text-base font-bold text-[#111827] mb-3">{{ editingContenu ? 'Edit Contenu' : 'Add Contenu' }}</h3>
+        <form [formGroup]="contenuForm" (ngSubmit)="saveContenu()" class="flex flex-col gap-3">
+          <input formControlName="titleC" type="text" placeholder="Contenu title" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#22c55e]" />
+          <div class="flex gap-3">
+            <input formControlName="duration" type="number" min="1" placeholder="Duration (min)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#22c55e]" />
+            <select formControlName="contentType" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#22c55e]">
+              <option value="VIDEO">VIDEO</option><option value="PDF">PDF</option><option value="TEXT">TEXT</option><option value="GAME">GAME</option><option value="PRESENTATION">PRESENTATION</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="submit" [disabled]="contenuForm.invalid" class="px-5 py-2 text-sm font-semibold text-white bg-[#22c55e] rounded-lg hover:bg-[#16a34a] disabled:opacity-50">{{ editingContenu ? 'Update' : 'Add' }}</button>
+            <button type="button" (click)="cancelContenuForm()" class="px-5 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MAIN BODY: flex-1, handles remaining height -->
+  <div class="relative z-10 flex-1 flex px-10 pb-4 min-h-0 overflow-hidden">
+
+    <!-- LEFT: Adventure Map -->
+    <div class="flex-1 flex flex-col min-h-0 mr-8">
+
+      <!-- Title + Tutor Add -->
+      <div class="flex items-center justify-between mb-3 shrink-0">
+        <h2 class="text-[16px] font-bold text-[#111827]">Your Adventure Map</h2>
+      </div>
+
+      <!-- Loading / Error / Empty -->
+      @if (isLoading) {
+        <div class="flex flex-col items-center justify-center flex-1">
+          <div class="w-10 h-10 border-4 border-[#3b82f6] border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p class="text-gray-500 text-sm">Loading courses...</p>
+        </div>
+      }
+      @if (errorMessage) {
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-center shrink-0">
+          <p class="text-red-600 text-sm font-medium">{{ errorMessage }}</p>
+        </div>
+      }
+      @if (!isLoading && !errorMessage && courses.length === 0) {
+        <div class="bg-white/80 backdrop-blur border border-gray-200 rounded-xl p-10 text-center flex-1 flex flex-col items-center justify-center">
+          <div class="text-4xl mb-3">📚</div>
+          <h3 class="text-base font-bold text-[#111827] mb-1">No courses available</h3>
+          <p class="text-sm text-gray-500">Courses will appear here once they are created.</p>
+        </div>
+      }
+
+      <!-- GAMIFIED PATH with curvy road + pagination -->
+      @if (!isLoading && courses.length > 0) {
+        <div class="flex-1 flex flex-col min-h-0">
+
+          <!-- SCROLLABLE course cards area -->
+          <div class="flex-1 overflow-hidden min-h-0 relative pr-1 pt-0" style="scrollbar-width: thin; scrollbar-color: #bfdbfe transparent;">
+
+            <!-- SVG Curvy Road Background — centered behind the cards -->
+            <svg class="absolute left-1/2 -translate-x-1/2 top-0 w-[80px] h-full z-0 pointer-events-none" viewBox="0 0 80 900" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M40 0 C40 60, 80 110, 70 200 S10 290, 20 380 S75 470, 55 560 S10 650, 30 740 S75 830, 40 900"
+                    stroke="#e5e7eb" stroke-width="22" stroke-linecap="round" fill="none" />
+              <path d="M40 0 C40 60, 80 110, 70 200 S10 290, 20 380 S75 470, 55 560 S10 650, 30 740 S75 830, 40 900"
+                    stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="10 8" stroke-linecap="round" fill="none" />
+              <path d="M40 0 C40 60, 80 110, 70 200 S10 290, 20 380 S75 470, 55 560 S10 650, 30 740 S75 830, 40 900"
+                    stroke="#d1d5db" stroke-width="24" stroke-linecap="round" fill="none" opacity="0.25" />
+            </svg>
+
+            <!-- Course Cards along the path -->
+            <div class="relative z-10 flex flex-col gap-4 py-1">
+              @for (course of paginatedCourses; track course.id; let i = $index) {
+                <div class="flex justify-center">
+                  <div [style.margin-left]="i % 2 === 0 ? '-48px' : '48px'">
+                    <div class="relative mt-5">
+
+                      @if (i === 0 && currentPage === 0) {
+                        <div class="absolute -top-7 left-1/2 -translate-x-1/2 z-10">
+                          <span class="text-3xl drop-shadow-sm">👑</span>
+                        </div>
+                      }
+
+                      @if ((globalIndexOffset + i) >= 2) {
+                        <div class="absolute -top-2 right-3 z-20">
+                          <span class="bg-amber-400 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow flex items-center gap-0.5">⭐ PRO</span>
+                        </div>
+                      }
+
+                      <div class="bg-white border-2 rounded-3xl shadow-sm cursor-pointer hover:shadow-lg hover:-translate-y-1 hover:scale-[1.01] transition-all duration-200 w-[380px] overflow-hidden flex flex-row"
+                          [style.border-color]="getCourseColor(globalIndexOffset + i).bg"
+                          (click)="openCourseDetail(course)">
+
+                        <!-- Left: tall image -->
+                        <div class="w-28 shrink-0 self-stretch overflow-hidden bg-orange-50">
+                          @if (course.image?.fileUrl) {
+                            <img [src]="course.image!.fileUrl" [alt]="course.title" class="w-full h-full object-cover" />
+                          } @else {
+                            <div class="w-full h-full flex items-center justify-center text-4xl">🎓</div>
+                          }
+                        </div>
+
+                        <!-- Right: all content -->
+                        <div class="flex flex-col justify-center gap-2 p-4 flex-1 min-w-0">
+
+                          <h3 class="text-sm font-black text-gray-900 leading-tight">{{ course.title }}</h3>
+                          <p class="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">{{ course.description }}</p>
+
+                          <div class="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-wide">
+                            <span>{{ getContentCount(course) }} Lessons</span>
+                            <span>🎬</span>
+                            <span>🖥️</span>
+                            <span>📄</span>
+                          </div>
+
+                          @if (course.contenus && course.contenus.length > 0) {
+                            <div class="flex flex-col gap-1.5">
+                              @for (contenu of course.contenus.slice(0, 3); track contenu.idContent; let ci = $index) {
+                                <div class="flex items-center gap-2 text-[11px]">
+                                  <span class="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black shrink-0"
+                                        [class.bg-green-400]="ci === 0" [class.text-white]="ci === 0"
+                                        [class.bg-blue-400]="ci === 1" [class.text-white]="ci === 1"
+                                        [class.bg-gray-200]="ci > 1" [class.text-gray-400]="ci > 1">
+                                    @if (ci === 0) { ✓ } @else { ▶ }
+                                  </span>
+                                  <span class="text-gray-700 font-bold truncate flex-1">{{ contenu.titleC }}</span>
+                                  <span class="text-gray-400 shrink-0">{{ contenu.duration }}m</span>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- PAGINATION — always visible, outside scroll area -->
+          @if (totalPages > 1) {
+            <div class="shrink-0 flex items-center justify-center gap-3 pt-3 pb-1 border-t border-gray-200 mt-2">
+
+              <!-- Previous -->
+              <button (click)="prevPage()" 
+                      [disabled]="currentPage === 0"
+                      class="w-9 h-9 rounded-full border-1 border-[#3b82f6] bg-white 
+                            flex items-center justify-center text-[#3b82f6] 
+                            hover:bg-[#eff6ff] 
+                            disabled:opacity-30 disabled:cursor-not-allowed 
+                            transition-all shadow-sm">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+
+              <!-- Pages -->
+              @for (p of pageArray; track $index) {
+                <button (click)="goToPage($index)"
+                        class="w-9 h-9 rounded-full text-[13px] font-bold transition-all"
+                        [class.bg-[#3b82f6]]="currentPage === $index"
+                        [class.text-white]="currentPage === $index"
+                        [class.shadow-md]="currentPage === $index"
+                        [class.bg-white]="currentPage !== $index"
+                        [class.text-gray-500]="currentPage !== $index"
+                        [class.border]="currentPage !== $index"
+                        [class.border-gray-300]="currentPage !== $index"
+                        [class.hover:bg-purple-50]="currentPage !== $index">
+                  {{ $index + 1 }}
+                </button>
+              }
+
+              <!-- Next -->
+              <button (click)="nextPage()" 
+                      [disabled]="currentPage === totalPages - 1"
+                      class="w-9 h-9 rounded-full border-1 border-[#3b82f6] bg-white 
+                            flex items-center justify-center text-[#3b82f6] 
+                            hover:bg-[#eff6ff] 
+                            disabled:opacity-30 disabled:cursor-not-allowed 
+                            transition-all shadow-sm">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="w-[280px] shrink-0 flex flex-col gap-3 overflow-y-auto" style="scrollbar-width: thin; scrollbar-color: #e5e7eb transparent;">
+      <!-- Daily Goal -->
+      <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-[15px] font-bold text-[#111827]">Daily Goal</h3>
+          <span class="text-[#3b82f6] text-[12px] font-extrabold tracking-[0.5px] uppercase cursor-pointer">Edit</span>
+        </div>
+        <div class="flex justify-center mb-2">
+          <div class="relative w-20 h-20">
+            <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" stroke="#e5e7eb" stroke-width="8" fill="none" />
+              <circle cx="50" cy="50" r="40" stroke="#f59e0b" stroke-width="8" fill="none"
+                stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-[24px] font-bold text-[#f59e0b] leading-none">24</span>
+              <span class="text-[10px] text-[#f59e0b] font-semibold">XP</span>
+            </div>
+          </div>
+        </div>
+        <p class="text-center text-[13px] text-[#6b7280]">You're <span class="text-[#f59e0b] font-semibold">26 XP</span> away from your daily goal!</p>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-[15px] font-bold text-[#111827]">Leaderboard</h3>
+          <span class="text-[#3b82f6] text-[12px] font-extrabold tracking-[0.5px] uppercase cursor-pointer">View All</span>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          @for (entry of leaderboard; track entry.rank) {
+            <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg"
+                 [class.bg-\[#fef3c7\]]="entry.isCurrentUser">
+              <span class="text-[14px] font-bold w-4"
+                    [class.text-\[#16a34a\]]="entry.isCurrentUser"
+                    [class.text-\[#3b82f6\]]="!entry.isCurrentUser && entry.rank <= 2"
+                    [class.text-\[#111827\]]="!entry.isCurrentUser && entry.rank > 2">{{ entry.rank }}</span>
+              <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shrink-0">
+                <img [src]="entry.avatar" [alt]="entry.name" class="w-full h-full object-cover" />
+              </div>
+              <span class="flex-1 text-[13px] font-semibold text-[#374151]">{{ entry.name }}</span>
+              <span class="text-[12px] font-semibold text-[#6b7280]">{{ entry.xp }} XP</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Course Stats -->
+      <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-5">
+        <h3 class="text-[15px] font-bold text-[#111827] mb-1.5">Course Stats</h3>
+        <p class="text-[13px] text-[#6b7280] mb-2">You have <span class="text-[#3b82f6] font-bold">{{ courses.length }}</span> courses available.</p>
+        <div class="h-2.5 bg-[#e5e7eb] rounded-full overflow-hidden">
+          <div class="h-full bg-[#22c55e] rounded-full transition-all" [style.width.%]="courses.length > 0 ? 25 : 0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SCREEN 2: COURSE DETAIL / PREVIEW                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+@if (selectedCourse) {
+<div class="relative h-screen flex flex-col overflow-hidden bg-[#fbfeff]">
+  <!-- Soft blurred background -->
+  <div class="absolute inset-0 z-0 overflow-hidden">
+    <img [src]="bgImage" alt="" class="w-full h-full object-cover opacity-[0.4] blur-sm" />
+  </div>
+
+  <!-- FIXED HEADER -->
+  <div class="relative z-10 shrink-0 px-10 pt-8 pb-4">
+    <div class="flex items-center justify-between mb-6">
+      <button (click)="backToMap()" class="flex items-center gap-2 bg-white border-2 border-[#bfdbfe] rounded-full px-5 py-3 shadow-[0_4px_0_0_#bfdbfe] hover:shadow-[0_2px_0_0_#bfdbfe] hover:translate-y-[2px] transition-all">
+        <svg class="w-4 h-4 text-[#3b82f6]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+        <span class="text-[14px] font-extrabold text-[#3b82f6] uppercase tracking-[0.5px]">Back to Adventure Map</span>
+      </button>
+      <div class="flex items-center gap-6 text-[15px] font-semibold text-[#0f1724]">
+        <div class="flex items-center gap-2"><span>🏴</span> EN</div>
+        <div class="flex items-center gap-2"><span class="text-orange-400">🔥</span> {{ user.streak }}</div>
+        <div class="flex items-center gap-2"><span class="text-[#0ea5e9]">💎</span> {{ user.xp }}</div>
+      </div>
+    </div>
+
+    <!-- Course Hero Banner -->
+    <div class="bg-gradient-to-r from-[#dbeafe] to-[#eff6ff] border-2 border-[#bfdbfe] rounded-2xl p-6 flex items-center gap-6">
+      <div class="flex-1">
+        <h1 class="text-[24px] font-extrabold text-[#111827] mb-2">{{ selectedCourse.title }}</h1>
+        <p class="text-[14px] text-[#374151] mb-3 leading-relaxed line-clamp-2">{{ selectedCourse.description }}. {{ selectedCourse.content }}</p>
+        <div class="inline-flex items-center gap-2 bg-white border border-[#e5e7eb] rounded-full px-4 py-2">
+          <span class="text-base">📖</span>
+          <span class="text-[14px] font-bold text-[#111827]">{{ getContentCount(selectedCourse) }} Lessons</span>
+        </div>
+      </div>
+      <div class="w-[200px] h-[140px] rounded-xl overflow-hidden shadow-lg shrink-0 bg-gradient-to-br from-[#93c5fd] to-[#3b82f6] flex items-center justify-center">
+        <span class="text-6xl">📚</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCROLLABLE BODY -->
+  <div class="relative z-10 flex-1 flex px-10 pb-4 gap-8 min-h-0 overflow-hidden">
+
+    <!-- LEFT: Lessons List with pagination -->
+    <div class="flex-1 flex flex-col min-h-0">
+      <div class="flex items-center justify-between mb-4 shrink-0">
+        <h2 class="text-[18px] font-bold text-[#111827] uppercase tracking-wide">Course Content</h2>
+        <!-- @if (isTutor) {
+          <button (click)="openAddContenu(selectedCourse.id!)" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#22c55e] rounded-lg hover:bg-[#16a34a] transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+            Add Lesson
+          </button>
+        } -->
+      </div>
+
+      <!-- Scrollable lessons area -->
+      <div class="flex-1 overflow-y-auto min-h-0 pr-1" style="scrollbar-width: thin; scrollbar-color: #bfdbfe transparent;">
+        @if (selectedCourse.contenus && selectedCourse.contenus.length > 0) {
+          @for (contenu of paginatedContenus; track contenu.idContent; let ci = $index) {
+            <div class="flex items-center gap-4 p-5 mb-3 rounded-xl border-2 transition-all"
+                 [class.border-\[#22c55e\]]="getGlobalContenuIndex(ci) === 0"
+                 [class.bg-\[#f0fdf4\]]="getGlobalContenuIndex(ci) === 0"
+                 [class.border-\[#bfdbfe\]]="getGlobalContenuIndex(ci) === 1"
+                 [class.bg-\[#eff6ff\]]="getGlobalContenuIndex(ci) === 1"
+                 [class.border-\[#e5e7eb\]]="getGlobalContenuIndex(ci) > 1"
+                 [class.bg-white]="getGlobalContenuIndex(ci) > 1">
+
+              <div class="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
+                   [class.bg-\[#22c55e\]]="getGlobalContenuIndex(ci) === 0"
+                   [class.bg-\[#3b82f6\]]="getGlobalContenuIndex(ci) >= 1">
+                @if (getGlobalContenuIndex(ci) === 0) {
+                  <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                } @else {
+                  <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                }
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <h3 class="text-[16px] font-bold text-[#111827]">{{ getGlobalContenuIndex(ci) + 1 }}. {{ contenu.titleC }}</h3>
+                <div class="flex items-center gap-1.5 mt-1 text-[13px] text-[#6b7280]">
+                  <span>{{ getContentTypeIcon(contenu.contentType) }}</span>
+                  <span>{{ contenu.duration }}m</span>
+                  <span class="mx-1">·</span>
+                  <span>{{ contenu.contentType }}</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                @if (getGlobalContenuIndex(ci) === 0) {
+                  <button class="bg-white border-2 border-[#22c55e] text-[#22c55e] px-5 py-2.5 rounded-full text-[13px] font-bold hover:bg-[#f0fdf4] transition-colors">Review</button>
+                } @else {
+                  <button class="bg-[#3b82f6] text-white px-5 py-2.5 rounded-full text-[13px] font-bold hover:bg-[#2563eb] transition-colors shadow-sm">Start</button>
+                }
+                <!-- @if (isTutor) {
+                  <button (click)="openEditContenu(contenu, selectedCourse!.id!)" class="p-1.5 text-gray-400 hover:text-[#3b82f6] transition-colors rounded" title="Edit">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                  </button>
+                  <button (click)="deleteContenu(contenu)" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded" title="Delete">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                } -->
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="bg-white border border-gray-200 rounded-xl p-8 text-center">
+            <p class="text-gray-400 text-sm">No lessons yet.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Content Pagination -->
+      @if (totalContenuPages > 1) {
+        <div class="shrink-0 flex items-center justify-center gap-3 pt-3 border-t border-gray-100 mt-2">
+          <button (click)="prevContenuPage()" [disabled]="currentContenuPage === 0"
+                  class="w-9 h-9 rounded-full border-2 border-[#bfdbfe] bg-white flex items-center justify-center text-[#3b82f6] hover:bg-[#eff6ff] disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+          </button>
+
+          @for (p of contenuPageArray; track $index) {
+            <button (click)="goToContenuPage($index)"
+                    class="w-9 h-9 rounded-full text-[13px] font-bold transition-all border"
+                    [class.bg-\[#3b82f6\]]="currentContenuPage === $index"
+                    [class.text-white]="currentContenuPage === $index"
+                    [class.shadow-md]="currentContenuPage === $index"
+                    [class.bg-white]="currentContenuPage !== $index"
+                    [class.text-\[#6b7280\]]="currentContenuPage !== $index"
+                    [class.border-\[#e5e7eb\]]="currentContenuPage !== $index"
+                    [class.border-transparent]="currentContenuPage === $index">
+              {{ $index + 1 }}
+            </button>
+          }
+
+          <button (click)="nextContenuPage()" [disabled]="currentContenuPage === totalContenuPages - 1"
+                  class="w-9 h-9 rounded-full border-2 border-[#bfdbfe] bg-white flex items-center justify-center text-[#3b82f6] hover:bg-[#eff6ff] disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="w-[320px] shrink-0 flex flex-col gap-5 overflow-y-auto" style="scrollbar-width: thin; scrollbar-color: #e5e7eb transparent;">
+      <!-- Progress Panel -->
+      <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-6">
+        <h3 class="text-[15px] font-semibold text-[#111827] mb-4">Your Progress</h3>
+        <div class="text-center mb-4">
+          <span class="text-[36px] font-bold text-[#3b82f6]">{{ getProgressPercent(selectedCourse) }}%</span>
+        </div>
+        <p class="text-center text-[14px] text-[#6b7280] mb-4">{{ getCompletedCount(selectedCourse) }} of {{ getContentCount(selectedCourse) }} lessons completed</p>
+        <div class="h-4 bg-[#e5e7eb] rounded-full overflow-hidden">
+          <div class="h-full bg-[#3b82f6] rounded-full transition-all" [style.width.%]="getProgressPercent(selectedCourse)"></div>
+        </div>
+      </div>
+
+      <!-- Teacher Tip Panel -->
+      <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-6">
+        <div class="flex items-start gap-4">
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] flex items-center justify-center text-2xl shrink-0 border-2 border-white shadow">
+            👩‍🏫
+          </div>
+          <div class="flex-1">
+            <p class="text-[15px] font-semibold text-[#111827] mb-2">Ms. Clara says:</p>
+            <div class="bg-[#f9fafb] border border-[#e5e7eb] rounded-xl p-3.5">
+              <p class="text-[13px] text-[#374151] leading-relaxed italic">"Make sure to practice your numbers out loud! It helps you remember them better at the market."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}

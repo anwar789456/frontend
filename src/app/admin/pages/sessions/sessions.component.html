@@ -1,0 +1,200 @@
+<div class="flex gap-6 p-8 h-full">
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-[#0f1419]">Sessions Management</h1>
+      <div class="flex items-center gap-3">
+        <button (click)="openCreateSession()" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3]">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          Create Session
+        </button>
+      </div>
+    </div>
+
+    <!-- Session Form -->
+    @if (showSessionForm) {
+      <div class="bg-white rounded-2xl border border-[#38a9f3] p-6 mb-6 shadow-lg">
+        <h3 class="text-lg font-bold text-[#0f1419] mb-4">{{ editingSession ? 'Edit Session' : 'Create New Session' }}</h3>
+        <form [formGroup]="sessionForm" (ngSubmit)="saveSession()" class="flex flex-col gap-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <input formControlName="title" type="text" placeholder="Session title" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Level</label>
+              <input formControlName="level" type="text" placeholder="e.g. Intermediate" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <input formControlName="date" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+              <input formControlName="time" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+              <input formControlName="duration" type="text" placeholder="e.g. 2h, 90min" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select formControlName="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]">
+                @for (s of sessionStatuses; track s) { <option [value]="s">{{ s }}</option> }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Readiness Score</label>
+              <input formControlName="readinessScore" type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+              <input formControlName="image" type="text" placeholder="https://..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tip</label>
+            <textarea formControlName="tip" rows="2" placeholder="Preparation tip for students" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#38a9f3] resize-none"></textarea>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="submit" [disabled]="sessionForm.invalid" class="px-5 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ editingSession ? 'Update' : 'Create' }}
+            </button>
+            <button type="button" (click)="cancelSessionForm()" class="px-5 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      @for (stat of stats; track stat.label) {
+        <div class="bg-[#f0fdf9] rounded-xl p-4 border border-[#e6f9f0]">
+          <p class="text-[11px] text-[#9ca3af] mb-1">{{ stat.label }}</p>
+          <p class="text-2xl font-bold" [ngClass]="stat.valueColor">{{ stat.value }}</p>
+          <p class="text-[11px] text-green-500 mt-1">{{ stat.sub }}</p>
+        </div>
+      }
+    </div>
+
+    <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex gap-1 border-b border-[#eef1f4]">
+          @for (tab of tabs; track tab) {
+            <button
+              (click)="setTab(tab)"
+              class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-[1px]"
+              [class.border-[#38a9f3]]="activeTab === tab"
+              [class.text-[#0f1419]]="activeTab === tab"
+              [class.border-transparent]="activeTab !== tab"
+              [class.text-[#9ca3af]]="activeTab !== tab"
+            >{{ tab }}</button>
+          }
+        </div>
+      </div>
+
+      @if (isLoading) {
+        <div class="flex justify-center py-8">
+          <div class="w-8 h-8 border-4 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+
+      @if (!isLoading && filteredSessions.length === 0) {
+        <div class="text-center py-8">
+          <p class="text-sm text-[#9ca3af]">No sessions found.</p>
+        </div>
+      }
+
+      @if (!isLoading && filteredSessions.length > 0) {
+        <table class="w-full">
+          <thead>
+            <tr class="bg-[#f0fdf9]">
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-l-lg">Session</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Level</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Date</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Duration</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Status</th>
+              <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-r-lg">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (session of filteredSessions; track session.id) {
+              <tr class="border-t border-[#f7f9fa] cursor-pointer hover:bg-[#fafcfd]" (click)="selectSession(session)">
+                <td class="px-4 py-3">
+                  <p class="text-sm font-medium text-[#0f1419]">{{ session.title }}</p>
+                </td>
+                <td class="px-4 py-3 text-sm text-[#536471]">{{ session.level }}</td>
+                <td class="px-4 py-3 text-sm text-[#536471]">{{ session.date }}</td>
+                <td class="px-4 py-3 text-sm text-[#536471]">{{ session.duration }}</td>
+                <td class="px-4 py-3">
+                  <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full" [ngClass]="getStatusColor(session.status)">{{ session.status }}</span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-1">
+                    <button (click)="openEditSession(session); $event.stopPropagation()" class="p-1.5 text-[#9ca3af] hover:text-[#38a9f3] transition-colors" title="Edit">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                    </button>
+                    <button (click)="deleteSession(session); $event.stopPropagation()" class="p-1.5 text-[#9ca3af] hover:text-red-500 transition-colors" title="Delete">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  @if (selectedSession) {
+    <div class="w-[280px] shrink-0 bg-white rounded-2xl border border-[#eef1f4] p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-[15px] font-bold text-[#0f1419]">{{ selectedSession.title }}</h3>
+          <p class="text-[11px] text-[#9ca3af]">{{ selectedSession.date }}</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-5">
+        <div>
+          <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Status</p>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full" [ngClass]="getStatusColor(selectedSession.status)">{{ selectedSession.status }}</span>
+        </div>
+        <div>
+          <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Level</p>
+          <p class="text-sm font-medium text-[#0f1419]">{{ selectedSession.level || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Duration</p>
+          <p class="text-sm font-medium text-[#0f1419]">{{ selectedSession.duration || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Readiness</p>
+          <p class="text-sm font-medium text-[#0f1419]">{{ selectedSession.readinessScore }}%</p>
+        </div>
+      </div>
+
+      @if (selectedSession.tip) {
+        <div class="mb-5">
+          <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Tip</h4>
+          <p class="text-xs text-[#536471] bg-[#f7f9fa] rounded-lg p-3">{{ selectedSession.tip }}</p>
+        </div>
+      }
+
+      @if (selectedSession.image) {
+        <div class="mb-5">
+          <img [src]="selectedSession.image" alt="Session image" class="w-full h-32 object-cover rounded-lg" />
+        </div>
+      }
+
+      <div class="flex gap-2 mt-4">
+        <button (click)="openEditSession(selectedSession)" class="flex-1 py-2.5 text-sm font-semibold text-[#0f1419] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Edit</button>
+        <button (click)="deleteSession(selectedSession)" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600">Delete</button>
+      </div>
+    </div>
+  }
+</div>

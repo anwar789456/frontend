@@ -1,0 +1,481 @@
+<div class="flex gap-6 p-8 h-full">
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-[#0f1419]">Events Management</h1>
+      <div class="relative">
+        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+        <input type="text" placeholder="Search events, locations, hosts..."
+          class="pl-10 pr-4 py-2 w-[280px] bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+      </div>
+    </div>
+
+    <!-- Stats -->
+    @if (!isLoading && !error) {
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      @for (stat of stats; track stat.label) {
+      <div class="bg-[#f0fdf9] rounded-xl p-4 border border-[#e6f9f0]">
+        <p class="text-[11px] text-[#9ca3af] mb-1">{{ stat.label }}</p>
+        <p class="text-2xl font-bold {{ stat.valueColor }}">{{ stat.value }}</p>
+        <p class="text-[11px] text-green-500 mt-1">{{ stat.sub }}</p>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Events Table -->
+    <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex gap-1 border-b border-[#eef1f4]">
+          @for (tab of tabs; track tab) {
+          <button (click)="activeTab = tab"
+            class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-[1px]"
+            [class.border-[#38a9f3]]="activeTab === tab" [class.text-[#0f1419]]="activeTab === tab"
+            [class.border-transparent]="activeTab !== tab" [class.text-[#9ca3af]]="activeTab !== tab">{{ tab }}</button>
+          }
+        </div>
+        <button (click)="openCreateModal()"
+          class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3]">+
+          Create Event</button>
+      </div>
+
+      <!-- Loading -->
+      @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-16 gap-3">
+        <div class="w-8 h-8 border-3 border-[#eff3f4] border-t-[#38a9f3] rounded-full animate-spin"></div>
+        <span class="text-sm text-[#9ca3af]">Loading events...</span>
+      </div>
+      }
+
+      <!-- Error -->
+      @if (!isLoading && error) {
+      <div class="flex flex-col items-center justify-center py-16 gap-3">
+        <p class="text-sm text-[#9ca3af]">{{ error }}</p>
+        <button (click)="loadEvents()" class="text-sm font-semibold text-[#38a9f3] hover:underline">Try Again</button>
+      </div>
+      }
+
+      <!-- Table -->
+      @if (!isLoading && !error) {
+      <table class="w-full">
+        <thead>
+          <tr class="bg-[#f0fdf9]">
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-l-lg">Event Name
+            </th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Date & Time</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Location</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Attendees</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Status</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-r-lg"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of filteredEvents; track event.id) {
+          <tr class="border-t border-[#f7f9fa] cursor-pointer hover:bg-[#fafcfd]"
+            [class.bg-[#f7f9ff]]="selectedEvent?.id === event.id" (click)="selectEvent(event)">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2.5">
+                <span class="text-lg">{{ getEventIcon(event) }}</span>
+                <div>
+                  <p class="text-sm font-medium text-[#0f1419]">{{ event.title }}</p>
+                  <p class="text-[11px] text-[#9ca3af]">Host: {{ event.hostName || '—' }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ formatDate(event.startDate) }}</td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ event.location || 'Outdoor' }}</td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ event.currentAttendees || 0 }}{{ event.maxAttendees ? ' / '
+              + event.maxAttendees : '' }}</td>
+            <td class="px-4 py-3">
+              <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getStatusColor(event) }}">{{
+                getStatusLabel(event) }}</span>
+            </td>
+            <td class="px-4 py-3 text-[#9ca3af]">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </td>
+          </tr>
+          }
+          @if (filteredEvents.length === 0) {
+          <tr>
+            <td colspan="6" class="px-4 py-12 text-center text-sm text-[#9ca3af]">No events found in this category.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  @if (selectedEvent) {
+  <div class="w-[280px] shrink-0 bg-white rounded-2xl border border-[#eef1f4] p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-[15px] font-bold text-[#0f1419]">{{ selectedEvent.title }}</h3>
+        <p class="text-[11px] text-[#9ca3af]">{{ formatDate(selectedEvent.startDate) }}</p>
+      </div>
+      <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getStatusColor(selectedEvent) }}">{{
+        getStatusLabel(selectedEvent) }}</span>
+    </div>
+
+    @if (selectedEvent.description) {
+    <p class="text-xs text-[#536471] mb-4 leading-relaxed">{{ selectedEvent.description }}</p>
+    }
+
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Type</p>
+        <p class="text-sm font-medium text-[#0f1419] capitalize">Outdoor</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Level</p>
+        <p class="text-sm font-medium text-[#0f1419] capitalize">{{ (selectedEvent.targetLevel ||
+          '—').toLowerCase().replace('_', ' ') }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Capacity</p>
+        <p class="text-sm font-medium text-[#0f1419]">{{ selectedEvent.maxAttendees || '∞' }} Spots</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Registered</p>
+        <p class="text-sm font-medium text-green-500">{{ selectedEvent.currentAttendees || 0 }} ({{
+          getCapacityPercent(selectedEvent) }}%)</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Host</p>
+        <p class="text-sm font-medium text-[#0f1419]">{{ selectedEvent.hostName || '—' }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Price</p>
+        <p class="text-sm font-medium text-[#0f1419]">Free</p>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="mb-5">
+      <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Settings</h4>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between bg-[#0f1419] text-white rounded-lg px-3 py-2 text-xs">
+          <span>🎫 Free Entry</span>
+        </div>
+        <div class="flex items-center justify-between bg-[#0f1419] text-white rounded-lg px-3 py-2 text-xs">
+          <span>{{ selectedEvent.isPublic ? '👥 Public Event' : '🔒 Private Event' }}</span>
+          @if (selectedEvent.isPublic) {
+          <svg class="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+          }
+        </div>
+        <div class="flex items-center justify-between bg-[#0f1419] text-white rounded-lg px-3 py-2 text-xs">
+          <span>{{ selectedEvent.isFeatured ? '⭐ Featured' : '📌 Not Featured' }}</span>
+          @if (selectedEvent.isFeatured) {
+          <svg class="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    @if (selectedEvent.tags && selectedEvent.tags.length > 0) {
+    <div class="mb-5">
+      <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Tags</h4>
+      <div class="flex flex-wrap gap-1.5">
+        @for (tag of selectedEvent.tags; track tag) {
+        <span
+          class="text-[10px] font-medium bg-[#f0fdf9] text-[#38a9f3] px-2 py-0.5 rounded-full border border-[#e6f9f0]">{{
+          tag }}</span>
+        }
+      </div>
+    </div>
+    }
+
+    <div class="flex gap-2 mt-4">
+      <button (click)="openEditModal(selectedEvent)"
+        class="flex-1 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3]">Edit
+        Event</button>
+      <button (click)="confirmDelete()"
+        class="py-2.5 px-3 text-sm font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  }
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showModal) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="closeModal()">
+  <div class="bg-white rounded-2xl shadow-xl w-[680px] max-h-[85vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-[#eef1f4]">
+      <h2 class="text-lg font-bold text-[#0f1419]">{{ isEditing ? 'Edit Event' : 'Create New Event' }}</h2>
+      <button (click)="closeModal()" class="text-[#9ca3af] hover:text-[#0f1419]">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-5">
+      <!-- Validation summary -->
+      @if (formSubmitted && errorCount > 0) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
+        <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+        <p class="text-xs text-red-600">Please fix the {{ errorCount }} error(s) below before
+          saving.</p>
+      </div>
+      }
+
+      <!-- Title -->
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Title *</label>
+        <input type="text" [(ngModel)]="formData.title"
+          class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+          [class.border-red-400]="formSubmitted && formErrors['title']"
+          [class.border-[#eef1f4]]="!(formSubmitted && formErrors['title'])" placeholder="Event title" />
+        @if (formSubmitted && formErrors['title']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ formErrors['title'] }}</p>
+        }
+      </div>
+
+      <!-- Description -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-xs font-semibold text-[#536471]">Description *</label>
+          <button type="button" (click)="generateDescription()"
+            [disabled]="!formData.title?.trim() || isGeneratingDescription"
+            class="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all" [class]="formData.title?.trim() && !isGeneratingDescription
+              ? 'text-[#38a9f3] bg-[#e8f5fe] hover:bg-[#d0ecfd] cursor-pointer'
+              : 'text-[#c4cdd5] bg-[#f7f9fa] cursor-not-allowed'">
+            @if (isGeneratingDescription) {
+            <div class="w-3 h-3 border-2 border-[#c4cdd5] border-t-[#38a9f3] rounded-full animate-spin"></div>
+            <span>Generating...</span>
+            } @else {
+            <span>✨</span>
+            <span>Generate from Title</span>
+            }
+          </button>
+        </div>
+        <textarea [(ngModel)]="formData.description" rows="3"
+          class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#38a9f3] resize-none"
+          [class.border-red-400]="formSubmitted && formErrors['description']"
+          [class.border-[#eef1f4]]="!(formSubmitted && formErrors['description'])"
+          placeholder="Describe the event... or generate from title"></textarea>
+        @if (formSubmitted && formErrors['description']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ formErrors['description'] }}</p>
+        }
+      </div>
+
+
+
+      <!-- Row: Start Date + End Date -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Start Date *</label>
+          <input type="datetime-local" [(ngModel)]="formData.startDate"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+            [class.border-red-400]="formSubmitted && formErrors['startDate']"
+            [class.border-[#eef1f4]]="!(formSubmitted && formErrors['startDate'])" />
+          @if (formSubmitted && formErrors['startDate']) {
+          <p class="text-[11px] text-red-500 mt-1">{{ formErrors['startDate'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">End Date *</label>
+          <input type="datetime-local" [(ngModel)]="formData.endDate"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+            [class.border-red-400]="formSubmitted && formErrors['endDate']"
+            [class.border-[#eef1f4]]="!(formSubmitted && formErrors['endDate'])" />
+          @if (formSubmitted && formErrors['endDate']) {
+          <p class="text-[11px] text-red-500 mt-1">{{ formErrors['endDate'] }}</p>
+          }
+        </div>
+      </div>
+
+
+      <!-- Location Map Picker -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-xs font-semibold text-[#536471]">Location * <span class="font-normal text-[#9ca3af]">—
+              click on map to set</span></label>
+        </div>
+
+        <!-- Search box -->
+        <div class="relative mb-2">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input type="text" [(ngModel)]="mapSearchQuery" (keydown.enter)="searchLocation()"
+            class="w-full pl-10 pr-20 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+            placeholder="Search for a place..." />
+          <button type="button" (click)="searchLocation()"
+            class="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 text-[11px] font-semibold text-white bg-[#38a9f3] rounded-md hover:bg-[#2196e3]">Search</button>
+        </div>
+
+        <!-- Map container -->
+        <div id="locationMap" class="w-full h-[250px] rounded-xl border border-[#eef1f4] overflow-hidden"></div>
+
+        <!-- Selected location display -->
+        @if (formData.location) {
+        <div class="flex items-center gap-2 mt-2 bg-[#f0fdf9] rounded-lg px-3 py-2 border border-[#e6f9f0]">
+          <span class="text-sm">📍</span>
+          <p class="text-xs text-[#0f1419] flex-1">{{ formData.location }}</p>
+          <button type="button" (click)="clearLocation()"
+            class="text-[10px] text-red-400 hover:text-red-600 font-semibold">Clear</button>
+        </div>
+        }
+        @if (formSubmitted && formErrors['location']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ formErrors['location'] }}</p>
+        }
+      </div>
+
+      <!-- Row: Host + Contact -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Host Name</label>
+          <input type="text" [(ngModel)]="formData.hostName"
+            class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Contact Email</label>
+          <input type="email" [(ngModel)]="formData.contactEmail"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+            [class.border-red-400]="formSubmitted && formErrors['contactEmail']"
+            [class.border-[#eef1f4]]="!(formSubmitted && formErrors['contactEmail'])" />
+          @if (formSubmitted && formErrors['contactEmail']) {
+          <p class="text-[11px] text-red-500 mt-1">{{ formErrors['contactEmail'] }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Row: Target Level + Skill Focus -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Target Level</label>
+          <select [(ngModel)]="formData.targetLevel"
+            class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3] bg-white">
+            @for (level of targetLevels; track level) {
+            <option [value]="level">{{ level }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Skill Focus</label>
+          <input type="text" [(ngModel)]="formData.skillFocus"
+            class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+            placeholder="Speaking, Reading..." />
+        </div>
+      </div>
+
+      <!-- Max Attendees -->
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Max Attendees</label>
+        <input type="number" [(ngModel)]="formData.maxAttendees"
+          class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+          [class.border-red-400]="formSubmitted && formErrors['maxAttendees']"
+          [class.border-[#eef1f4]]="!(formSubmitted && formErrors['maxAttendees'])" />
+        @if (formSubmitted && formErrors['maxAttendees']) {
+        <p class="text-[11px] text-red-500 mt-1">{{ formErrors['maxAttendees'] }}</p>
+        }
+      </div>
+
+      <!-- Image + Category + Tags -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Image URL</label>
+          <input type="url" [(ngModel)]="formData.image"
+            class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+            placeholder="https://..." />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Category</label>
+          <input type="text" [(ngModel)]="formData.category"
+            class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+            placeholder="Speaking, Certification..." />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Tags (comma-separated)</label>
+        <input type="text" [(ngModel)]="tagsString"
+          class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]"
+          placeholder="english, speaking, outdoor" />
+      </div>
+
+      <!-- Toggles -->
+      <div class="flex items-center gap-6">
+        <label class="flex items-center gap-2 text-sm text-[#0f1419] cursor-pointer">
+          <input type="checkbox" [(ngModel)]="formData.isPublic"
+            class="w-4 h-4 rounded border-[#eef1f4] text-[#38a9f3] focus:ring-[#38a9f3]" />
+          Public
+        </label>
+        <label class="flex items-center gap-2 text-sm text-[#0f1419] cursor-pointer">
+          <input type="checkbox" [(ngModel)]="formData.isFeatured"
+            class="w-4 h-4 rounded border-[#eef1f4] text-[#38a9f3] focus:ring-[#38a9f3]" />
+          Featured
+        </label>
+        <label class="flex items-center gap-2 text-sm text-[#0f1419] cursor-pointer">
+          <input type="checkbox" [(ngModel)]="formData.isRegistrationOpen"
+            class="w-4 h-4 rounded border-[#eef1f4] text-[#38a9f3] focus:ring-[#38a9f3]" />
+          Registration Open
+        </label>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#eef1f4]">
+      <button (click)="closeModal()"
+        class="px-5 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+      <button (click)="saveEvent()" [disabled]="isSaving"
+        class="px-5 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3] disabled:opacity-50">
+        {{ isSaving ? 'Saving...' : (isEditing ? 'Update Event' : 'Create Event') }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Delete Confirmation -->
+@if (showDeleteConfirm) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="cancelDelete()">
+  <div class="bg-white rounded-2xl shadow-xl w-[400px] p-6" (click)="$event.stopPropagation()">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-[15px] font-bold text-[#0f1419]">Delete Event</h3>
+        <p class="text-xs text-[#9ca3af]">This action cannot be undone.</p>
+      </div>
+    </div>
+    <p class="text-sm text-[#536471] mb-6">Are you sure you want to delete <strong>{{ selectedEvent?.title }}</strong>?
+    </p>
+    <div class="flex gap-3">
+      <button (click)="cancelDelete()"
+        class="flex-1 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+      <button (click)="deleteEvent()" [disabled]="isDeleting"
+        class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-50">
+        {{ isDeleting ? 'Deleting...' : 'Delete' }}
+      </button>
+    </div>
+  </div>
+</div>
+}
