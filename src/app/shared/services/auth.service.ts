@@ -36,8 +36,8 @@ export class AuthService {
     private router: Router
   ) {}
 
-  login(email: string, pwd: string): Observable<AuthUser> {
-    return this.http.post<AuthUser>(`${this.apiUrl}/login`, { email, pwd }).pipe(
+  login(email: string, pwd: string, challengeId: string, selectedIndex: number): Observable<AuthUser> {
+    return this.http.post<AuthUser>(`${this.apiUrl}/login`, { email, pwd, challengeId, selectedIndex }).pipe(
       switchMap((user: AuthUser) => {
         // Fetch full profile to check banned status
         return this.http.get<AuthUser>(`${this.apiUrl}/get-user-by-id/${user.id}`).pipe(
