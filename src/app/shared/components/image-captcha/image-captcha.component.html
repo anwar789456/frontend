@@ -1,0 +1,109 @@
+<div class="w-full">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 rounded-lg bg-[#38a9f3]/10 flex items-center justify-center">
+        <svg class="w-3.5 h-3.5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+        </svg>
+      </div>
+      <span class="text-[13px] font-semibold text-[#536471]">Security Check</span>
+    </div>
+    <button type="button" (click)="refresh()" [disabled]="isLoading"
+      class="flex items-center gap-1 text-[12px] text-[#38a9f3] hover:text-[#2196e3] font-medium transition-colors disabled:opacity-50">
+      <svg class="w-3.5 h-3.5" [class.animate-spin]="isLoading" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+      </svg>
+      New images
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  @if (isLoading) {
+    <div class="bg-[#f7f9fa] border border-[#eef1f4] rounded-2xl p-8 flex flex-col items-center justify-center gap-3">
+      <div class="w-8 h-8 rounded-full border-3 border-[#38a9f3]/20 border-t-[#38a9f3] animate-spin"></div>
+      <p class="text-[13px] text-[#9ca3af]">Loading challenge...</p>
+    </div>
+  }
+
+  <!-- Error state -->
+  @if (loadError && !isLoading) {
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-6 flex flex-col items-center gap-3">
+      <svg class="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+      </svg>
+      <p class="text-[13px] text-red-600 font-medium">Failed to load CAPTCHA</p>
+      <button type="button" (click)="refresh()"
+        class="text-[12px] text-[#38a9f3] hover:underline font-medium">Try again</button>
+    </div>
+  }
+
+  <!-- Challenge -->
+  @if (challenge && !isLoading && !loadError) {
+    <div class="bg-[#f7f9fa] border border-[#eef1f4] rounded-2xl p-4">
+      <!-- Target word -->
+      <div class="text-center mb-3">
+        <p class="text-[12px] text-[#9ca3af] mb-1">Click the image that shows a</p>
+        <span class="inline-block bg-[#38a9f3] text-white text-[16px] font-bold px-5 py-1.5 rounded-full shadow-sm shadow-[#38a9f3]/30">
+          {{ challenge.targetWord }}
+        </span>
+      </div>
+
+      <!-- Image grid (2x2) -->
+      <div class="grid grid-cols-2 gap-2.5">
+        @for (image of challenge.images; track image.index) {
+          <button type="button" (click)="selectImage(image.index)"
+            class="relative group aspect-square rounded-xl overflow-hidden border-3 transition-all duration-200 focus:outline-none"
+            [class.border-[#38a9f3]]="selectedIndex === image.index"
+            [class.border-transparent]="selectedIndex !== image.index"
+            [class.ring-2]="selectedIndex === image.index"
+            [class.ring-[#38a9f3]/30]="selectedIndex === image.index"
+            [class.scale-[0.97]]="selectedIndex === image.index"
+            [class.hover:border-[#d1d9e0]]="selectedIndex !== image.index">
+
+            <!-- Image -->
+            <img [src]="image.url"
+              [alt]="'Option ' + (image.index + 1)"
+              (load)="onImageLoad(image.index)"
+              (error)="onImageError(image.index)"
+              class="w-full h-full object-cover"
+              [class.opacity-0]="!imageLoaded[image.index]"
+              [class.opacity-100]="imageLoaded[image.index]"
+              crossorigin="anonymous" />
+
+            <!-- Loading placeholder -->
+            @if (!imageLoaded[image.index]) {
+              <div class="absolute inset-0 bg-[#eef1f4] animate-pulse flex items-center justify-center">
+                <svg class="w-6 h-6 text-[#c4c9cf]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                </svg>
+              </div>
+            }
+
+            <!-- Selected checkmark -->
+            @if (selectedIndex === image.index) {
+              <div class="absolute top-1.5 right-1.5 w-6 h-6 bg-[#38a9f3] rounded-full flex items-center justify-center shadow-md">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </div>
+            }
+
+            <!-- Hover overlay -->
+            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"></div>
+          </button>
+        }
+      </div>
+
+      <!-- Status -->
+      @if (selectedIndex !== null) {
+        <div class="flex items-center justify-center gap-1.5 mt-3">
+          <svg class="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-[12px] text-green-600 font-medium">Image selected</span>
+        </div>
+      }
+    </div>
+  }
+</div>
