@@ -1,16 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, BanErrorInfo } from '../../../../shared/services/auth.service';
+import { ImageCaptchaComponent, CaptchaResult } from '../../../../shared/components/image-captcha/image-captcha.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ImageCaptchaComponent],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
+  @ViewChild('captchaRef') captchaRef!: ImageCaptchaComponent;
+
   email = '';
   password = '';
   errorMessage = '';
@@ -19,6 +22,7 @@ export class LoginComponent {
   isLoading = false;
   showPassword = false;
   rememberMe = false;
+  captchaResult: CaptchaResult | null = null;
 
   emailTouched = false;
   passwordTouched = false;
@@ -44,7 +48,15 @@ export class LoginComponent {
 
   get isFormValid(): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(this.email) && this.password.length > 0;
+    return emailRegex.test(this.email) && this.password.length > 0 && this.captchaResult !== null;
+  }
+
+  onCaptchaSolved(result: CaptchaResult): void {
+    this.captchaResult = result;
+  }
+
+  onCaptchaCleared(): void {
+    this.captchaResult = null;
   }
 
   togglePassword(): void {
@@ -62,7 +74,12 @@ export class LoginComponent {
     this.successMessage = '';
     this.banInfo = null;
 
-    this.authService.login(this.email, this.password).subscribe({
+    this.authService.login(
+      this.email,
+      this.password,
+      this.captchaResult!.challengeId,
+      this.captchaResult!.selectedIndex
+    ).subscribe({
       next: (user) => {
         this.isLoading = false;
         this.successMessage = 'Login successful! Redirecting...';
@@ -73,6 +90,10 @@ export class LoginComponent {
       },
       error: (err: any) => {
         this.isLoading = false;
+        // Refresh captcha on any error (challenge is consumed)
+        this.captchaResult = null;
+        if (this.captchaRef) this.captchaRef.refresh();
+
         if (err?.type === 'ban') {
           this.banInfo = err as BanErrorInfo;
           this.errorMessage = '';

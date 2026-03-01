@@ -12,6 +12,9 @@ export interface User {
   inscriptionOk: boolean;
   posterForum: boolean;
   avatar: string;
+  emailVerified?: boolean;
+  verificationCode?: string;
+  verificationCodeExpiry?: string;
   banned?: boolean;
   banReason?: string;
   banDuration?: string;   // e.g. '1_day', '3_days', '7_days', '30_days', 'permanent'

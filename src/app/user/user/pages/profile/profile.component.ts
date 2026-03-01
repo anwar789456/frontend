@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
 import { AuthService } from '../../../../shared/services/auth.service';
@@ -8,7 +9,7 @@ import { AuthService } from '../../../../shared/services/auth.service';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit {
@@ -23,6 +24,21 @@ export class ProfileComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
+  // --- Change Password ---
+  showPasswordSection = false;
+  currentPassword = '';
+  newPassword = '';
+  confirmNewPassword = '';
+  showCurrentPassword = false;
+  showNewPassword = false;
+  showConfirmNewPassword = false;
+  isChangingPassword = false;
+  passwordSuccessMessage = '';
+  passwordErrorMessage = '';
+  currentPasswordTouched = false;
+  newPasswordTouched = false;
+  confirmNewPasswordTouched = false;
+
   get isStudent(): boolean {
     return this.user?.role === 'ETUDIANT';
   }
@@ -34,6 +50,53 @@ export class ProfileComponent implements OnInit {
 
   get displayAvatar(): string {
     return this.user?.avatar || this.defaultAvatar;
+  }
+
+  // --- Password Validators ---
+
+  get currentPasswordError(): string {
+    if (!this.currentPasswordTouched) return '';
+    if (!this.currentPassword) return 'Current password is required.';
+    return '';
+  }
+
+  get newPasswordError(): string {
+    if (!this.newPasswordTouched) return '';
+    if (!this.newPassword) return 'New password is required.';
+    if (this.newPassword.length < 6) return 'Password must be at least 6 characters.';
+    if (this.newPassword === this.currentPassword) return 'New password must differ from current.';
+    return '';
+  }
+
+  get confirmNewPasswordError(): string {
+    if (!this.confirmNewPasswordTouched) return '';
+    if (!this.confirmNewPassword) return 'Please confirm your new password.';
+    if (this.confirmNewPassword !== this.newPassword) return 'Passwords do not match.';
+    return '';
+  }
+
+  get newPasswordStrength(): { label: string; color: string; percent: number } {
+    const pwd = this.newPassword;
+    if (!pwd) return { label: '', color: '', percent: 0 };
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (pwd.length >= 10) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[a-z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    if (score <= 2) return { label: 'Weak', color: 'bg-red-500', percent: 33 };
+    if (score <= 4) return { label: 'Medium', color: 'bg-orange-400', percent: 66 };
+    return { label: 'Strong', color: 'bg-green-500', percent: 100 };
+  }
+
+  get isPasswordFormValid(): boolean {
+    return (
+      !!this.currentPassword &&
+      this.newPassword.length >= 6 &&
+      this.newPassword !== this.currentPassword &&
+      this.confirmNewPassword === this.newPassword
+    );
   }
 
   constructor(private userService: UserService, private authService: AuthService) {}
@@ -73,7 +136,31 @@ export class ProfileComponent implements OnInit {
       this.selectedFile = null;
       this.successMessage = '';
       this.errorMessage = '';
+      // Reset password section when opening edit
+      this.showPasswordSection = false;
+      this.resetPasswordForm();
     }
+  }
+
+  togglePasswordSection(): void {
+    this.showPasswordSection = !this.showPasswordSection;
+    if (!this.showPasswordSection) {
+      this.resetPasswordForm();
+    }
+  }
+
+  resetPasswordForm(): void {
+    this.currentPassword = '';
+    this.newPassword = '';
+    this.confirmNewPassword = '';
+    this.showCurrentPassword = false;
+    this.showNewPassword = false;
+    this.showConfirmNewPassword = false;
+    this.currentPasswordTouched = false;
+    this.newPasswordTouched = false;
+    this.confirmNewPasswordTouched = false;
+    this.passwordSuccessMessage = '';
+    this.passwordErrorMessage = '';
   }
 
   onAvatarSelected(event: Event): void {
@@ -148,5 +235,33 @@ export class ProfileComponent implements OnInit {
     this.avatarPreview = null;
     this.selectedFile = null;
     this.errorMessage = '';
+    this.resetPasswordForm();
+    this.showPasswordSection = false;
+  }
+
+  changePassword(): void {
+    this.currentPasswordTouched = true;
+    this.newPasswordTouched = true;
+    this.confirmNewPasswordTouched = true;
+
+    if (!this.isPasswordFormValid) return;
+
+    this.isChangingPassword = true;
+    this.passwordErrorMessage = '';
+    this.passwordSuccessMessage = '';
+
+    this.userService.changePassword(this.user!.id, this.currentPassword, this.newPassword).subscribe({
+      next: () => {
+        this.isChangingPassword = false;
+        this.passwordSuccessMessage = 'Password changed successfully! 🎉';
+        this.resetPasswordForm();
+        this.showPasswordSection = false;
+        setTimeout(() => this.passwordSuccessMessage = '', 4000);
+      },
+      error: (err: any) => {
+        this.isChangingPassword = false;
+        this.passwordErrorMessage = typeof err === 'string' ? err : (err?.message || 'Failed to change password.');
+      }
+    });
   }
 }

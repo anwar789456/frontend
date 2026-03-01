@@ -117,17 +117,23 @@ export class UserService {
     localStorage.removeItem('user');
   }
 
+  changePassword(userId: number, currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/change-password/${userId}`, { currentPassword, newPassword }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError = (error: HttpErrorResponse): Observable<never> => {
     console.error('[UserService] HTTP Error:', error.status, error.url, error.error);
     let message = `Unexpected error (${error.status}). Please try again.`;
     if (error.status === 0) {
       message = 'Unable to connect to the server. Please check your internet connection.';
     } else if (error.status === 401) {
-      message = error.error?.message || error.error || 'Invalid email or password.';
+      message = error.error?.message || (typeof error.error === 'string' ? error.error : 'Invalid email or password.');
     } else if (error.status === 400) {
-      message = error.error?.message || error.error || 'Invalid request. Please check your input.';
+      message = error.error?.message || (typeof error.error === 'string' ? error.error : 'Invalid request. Please check your input.');
     } else if (error.status === 404) {
-      message = error.error?.message || error.error || `Endpoint not found (${error.url}).`;
+      message = error.error?.message || (typeof error.error === 'string' ? error.error : `Endpoint not found (${error.url}).`);
     } else if (error.status === 405) {
       message = `Method not allowed for this endpoint.`;
     } else if (error.status >= 500) {

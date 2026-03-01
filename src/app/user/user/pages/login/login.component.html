@@ -163,7 +163,7 @@
         </div>
 
         <!-- Remember me / Forgot password -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-5">
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" class="w-4 h-4 rounded border-[#d1d9e0] text-[#38a9f3] focus:ring-[#38a9f3]/20" />
             <span class="text-[13px] text-[#536471]">Remember me</span>
@@ -171,17 +171,26 @@
           <a routerLink="/forgot-password" class="text-[13px] text-[#38a9f3] font-medium hover:underline">Forgot password?</a>
         </div>
 
+        <!-- Image CAPTCHA -->
+        <div class="mb-5">
+          <app-image-captcha
+            #captchaRef
+            (solved)="onCaptchaSolved($event)"
+            (cleared)="onCaptchaCleared()">
+          </app-image-captcha>
+        </div>
+
         <!-- Submit Button -->
         <button
           type="submit"
-          [disabled]="isLoading"
-          class="w-full py-3 rounded-xl text-[15px] font-semibold transition-all duration-200"
-          [class.bg-[#38a9f3]]="!isLoading"
-          [class.hover:bg-[#2196e3]]="!isLoading"
+          [disabled]="isLoading || !isFormValid"
+          class="w-full py-3 rounded-xl text-[15px] font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          [class.bg-[#38a9f3]]="!isLoading && isFormValid"
+          [class.hover:bg-[#2196e3]]="!isLoading && isFormValid"
           [class.text-white]="!isLoading"
+          [class.bg-[#c4c9cf]]="!isFormValid && !isLoading"
           [class.bg-[#a8d8f8]]="isLoading"
           [class.text-white/70]="isLoading"
-          [class.cursor-not-allowed]="isLoading"
         >
           @if (isLoading) {
             <span class="inline-flex items-center gap-2">
