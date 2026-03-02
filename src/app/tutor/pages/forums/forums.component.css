@@ -21,15 +21,15 @@
 
 /* ── Buttons ── */
 .btn-primary {
-  background: linear-gradient(135deg, #38a9f3 0%, #2196e3 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   font-weight: 600;
   border-radius: 12px;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(56, 169, 243, 0.25);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
 }
 .btn-primary:hover {
-  box-shadow: 0 4px 16px rgba(56, 169, 243, 0.35);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
   transform: translateY(-1px);
 }
 .btn-primary:active { transform: translateY(0); }
@@ -55,14 +55,14 @@
   transition: all 0.2s ease;
   color: #94a3b8;
 }
-.action-btn:hover { color: #38a9f3; background: rgba(56, 169, 243, 0.08); }
-.action-btn.active { color: #38a9f3; background: rgba(56, 169, 243, 0.1); }
+.action-btn:hover { color: #10b981; background: rgba(16, 185, 129, 0.08); }
+.action-btn.active { color: #10b981; background: rgba(16, 185, 129, 0.1); }
 
 /* ── Avatar Ring ── */
 .avatar-ring {
   padding: 2px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #38a9f3, #2196e3, #6366f1);
+  background: linear-gradient(135deg, #10b981, #059669, #14b8a6);
 }
 
 /* ── Post Card Hover ── */
@@ -77,7 +77,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, #38a9f3, #6366f1);
+  background: linear-gradient(180deg, #10b981, #14b8a6);
   opacity: 0;
   transition: opacity 0.25s ease;
   border-radius: 0 3px 3px 0;
@@ -105,7 +105,7 @@
 }
 .notif-item:last-child { border-bottom: none; }
 .notif-item:hover { background-color: #f8fafc; }
-.notif-item.unread { background-color: #eff6ff; }
+.notif-item.unread { background-color: #ecfdf5; }
 
 /* ── Trending Topic Card ── */
 .topic-item {
@@ -116,7 +116,7 @@
   transition: all 0.2s ease;
 }
 .topic-item:hover { background-color: #f8fafc; }
-.topic-item.active { background-color: #eff6ff; border: 1px solid #bfdbfe; }
+.topic-item.active { background-color: #ecfdf5; border: 1px solid #a7f3d0; }
 
 /* ── Report Modal ── */
 .report-overlay {
@@ -142,8 +142,8 @@
   background: #f8fafc;
 }
 .search-input:focus {
-  border-color: #38a9f3;
-  box-shadow: 0 0 0 3px rgba(56, 169, 243, 0.15);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
   background: #ffffff;
 }
 
@@ -171,17 +171,17 @@
 .forum-dark .dm-bg { background-color: #0f172a !important; }
 .forum-dark .dm-card-alt { background-color: #0f172a !important; border-color: #2d3a4d !important; }
 .forum-dark .dm-menu { background-color: #1e293b !important; border-color: #2d3a4d !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; }
-.forum-dark .post-card::before { background: linear-gradient(180deg, #38a9f3, #818cf8); }
+.forum-dark .post-card::before { background: linear-gradient(180deg, #10b981, #14b8a6); }
 .forum-dark .sidebar-section { background: #1e293b !important; border-color: #2d3a4d !important; }
 .forum-dark .search-input { background: #1e293b !important; border-color: #2d3a4d !important; color: #e2e8f0 !important; }
-.forum-dark .search-input:focus { border-color: #38a9f3 !important; box-shadow: 0 0 0 3px rgba(56, 169, 243, 0.2) !important; }
+.forum-dark .search-input:focus { border-color: #10b981 !important; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important; }
 .forum-dark .notif-item { border-color: #2d3a4d !important; }
 .forum-dark .notif-item:hover { background-color: #293548 !important; }
-.forum-dark .notif-item.unread { background-color: rgba(56, 169, 243, 0.1) !important; }
+.forum-dark .notif-item.unread { background-color: rgba(16, 185, 129, 0.1) !important; }
 .forum-dark .topic-item:hover { background-color: #293548 !important; }
-.forum-dark .topic-item.active { background-color: rgba(56, 169, 243, 0.15) !important; border-color: #38a9f3 !important; }
+.forum-dark .topic-item.active { background-color: rgba(16, 185, 129, 0.15) !important; border-color: #10b981 !important; }
 .forum-dark .action-btn { color: #64748b; }
-.forum-dark .action-btn:hover { color: #38a9f3; background: rgba(56, 169, 243, 0.12); }
+.forum-dark .action-btn:hover { color: #10b981; background: rgba(16, 185, 129, 0.12); }
 
 /* ── Reaction Animations ── */
 @keyframes reactionPop {
@@ -195,7 +195,7 @@
   0% { transform: translateY(0) scale(1); opacity: 1; }
   100% { transform: translateY(-40px) scale(1.5); opacity: 0; }
 }
-.reaction-float { animation: reactionFloat 0.6s ease-out forwards; }
+.floating-reaction { animation: reactionFloat 0.6s ease-out forwards; font-size: 1.5rem; }
 
 /* ── Notification Toast ── */
 @keyframes slideInRight {
@@ -212,7 +212,7 @@
 /* ── GIF Picker ── */
 .gif-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
 .gif-grid img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-.gif-grid img:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(56,169,243,0.25); }
+.gif-grid img:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
 
 /* ── Scrollbar Styling ── */
 ::-webkit-scrollbar { width: 5px; }
@@ -223,7 +223,7 @@
 .forum-dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 
 /* ── GIF Search Input Focus ── */
-.gif-search:focus { outline: none; box-shadow: 0 0 0 2px rgba(56,169,243,0.3); }
+.gif-search:focus { outline: none; box-shadow: 0 0 0 2px rgba(16,185,129,0.3); }
 
 /* ── Skeleton Loader ── */
 @keyframes shimmer {
@@ -239,7 +239,7 @@
 
 /* ── Focus Visible ── */
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid #38a9f3;
+  outline: 2px solid #10b981;
   outline-offset: 2px;
 }
 

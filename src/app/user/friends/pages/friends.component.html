@@ -112,8 +112,8 @@
                 </div>
                 <div class="flex items-center justify-between">
                   <p class="text-xs truncate" [class.text-gray-500]="!friend.unreadCount" [class.text-[#0f1724]]="friend.unreadCount" [class.font-semibold]="friend.unreadCount">{{ friend.lastMessage || (friend.online ? 'Online' : getLastSeenText(friend)) }}</p>
-                  @if ((friend.unreadCount ?? 0) > 0) {
-                    <span class="w-5 h-5 bg-[#38a9f3] text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">{{ (friend.unreadCount ?? 0) > 9 ? '9+' : friend.unreadCount }}</span>
+                  @if (friend.unreadCount > 0) {
+                    <span class="w-5 h-5 bg-[#38a9f3] text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">{{ friend.unreadCount > 9 ? '9+' : friend.unreadCount }}</span>
                   }
                 </div>
               </div>
@@ -145,7 +145,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold text-[#0f1724]">{{ req.name }}</p>
-                <p class="text-[10px] text-gray-400">{{ getTimeAgo(req.createdAt ?? '') }} ago</p>
+                <p class="text-[10px] text-gray-400">{{ getTimeAgo(req.createdAt) }} ago</p>
               </div>
               <div class="flex items-center gap-2">
                 <button (click)="acceptRequest(req)" class="px-3 py-1.5 bg-[#38a9f3] text-white text-xs font-semibold rounded-lg hover:bg-[#2196e3] transition-colors">Accept</button>

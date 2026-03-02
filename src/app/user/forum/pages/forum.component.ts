@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
-import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -9,9 +8,9 @@ import { ForumService } from '../services/forum.service';
 import { AuthService, AuthUser } from '../../../shared/services/auth.service';
 import { UserService } from '../../user/services/user.service';
 import { FriendsService } from '../../friends/services/friends.service';
-import { ForumPost, TrendingTopic } from '../models/forum.model';
+import { ForumPost, ForumPostWithShared, TrendingTopic, ForumBadge, UserForumXP, UserStreak, WordOfTheDay } from '../models/forum.model';
 import { ForumReport, REPORT_REASONS, ReportReason } from '../models/forum-report.model';
-import { Friend, Friendship, ChatMessage } from '../../friends/models/friend.model';
+import { Friend, FriendRequest, Friendship, ChatMessage } from '../../friends/models/friend.model';
 import { User } from '../../user/models/user.model';
 
 @Component({
@@ -106,8 +105,15 @@ export class ForumComponent implements OnInit, OnDestroy {
   reportSubmitting = false;
   reportReasons = REPORT_REASONS;
 
-  // Reactions
-  reactionEmojis = ['❤️', '😂', '😮', '😢', '🔥', '👏'];
+  // Reactions (Educational)
+  reactionEmojis = [
+    { emoji: '🌟', label: 'Great English!' },
+    { emoji: '🤔', label: 'Interesting!' },
+    { emoji: '�', label: 'I learned something!' },
+    { emoji: '❤️', label: 'Love it!' },
+    { emoji: '🔥', label: 'Amazing!' },
+    { emoji: '👏', label: 'Well done!' }
+  ];
   showReactionsPostId: number | null = null;
   userReactions: Map<number, string> = new Map();
   postReactionCounts: Map<number, Map<string, number>> = new Map();
@@ -144,31 +150,49 @@ export class ForumComponent implements OnInit, OnDestroy {
   // Add Friend from Forum
   friendStatuses: Map<number, string> = new Map(); // userId -> 'none' | 'pending' | 'friend'
 
-  // Friend Suggestions
-  suggestedFriends: { id: number; name: string; avatar: string; bio?: string; mutualCount?: number }[] = [];
-  allUsersData: User[] = [];
-  myFriendIds: Set<number> = new Set();
+  // Save & Favorite
+  savedPostIds: Set<number> = new Set();
+  favoritePostIds: Set<number> = new Set();
 
-  // User Profile Popup
-  showProfilePopup = false;
-  profileUser: { id: number; name: string; username: string; avatar: string; bio?: string; joinDate?: string; xp?: number; level?: string; isFriend: boolean } | null = null;
+  // Facebook-style Share
+  shareMessage = '';
+  showShareEmojiPicker = false;
+  shareShowUserSuggestions = false;
+  shareUserSuggestions: { id: number; name: string; username: string; avatar: string }[] = [];
 
-  // Forum Profile Modal (full page)
-  showForumProfile = false;
-  forumProfileUser: { id: number; name: string; username: string; avatar: string; bio?: string; joinDate?: string; xp?: number; level?: string; streak?: number; language?: string } | null = null;
-  forumProfilePosts: ForumPost[] = [];
-  forumProfileFriends: { id: number; name: string; avatar: string }[] = [];
-  forumProfileTab: 'posts' | 'friends' = 'posts';
-  forumProfileIsFriend = false;
-  forumProfileFriendStatus = 'none';
+  // Notification → Post scroll
+  highlightedPostId: number | null = null;
+  private highlightTimeout: any;
 
-  // Topic suggestions for # hashtag
-  showTopicSuggestions = false;
-  topicSuggestions: TrendingTopic[] = [];
+  // Friend Request Notifications
+  pendingFriendRequests: FriendRequest[] = [];
 
-  // Reply user tagging
-  showReplyUserSuggestions = false;
-  replyUserSuggestions: { id: number; name: string; username: string; avatar: string }[] = [];
+  // XP & Badges
+  userXP: UserForumXP = { userId: 0, xp: 0, level: 1, postsCount: 0, commentsCount: 0, likesGivenCount: 0, wotdCount: 0, badges: [] };
+  allBadges = ForumService.BADGES;
+  showBadgeUnlock: ForumBadge | null = null;
+  xpGainAnimation: { amount: number; action: string } | null = null;
+
+  // Streak
+  userStreak: UserStreak = { userId: 0, currentStreak: 0, longestStreak: 0, lastActiveDate: '' };
+  showStreakAnimation = false;
+
+  // Word of the Day
+  wordOfTheDay: WordOfTheDay = { word: '', definition: '', example: '', date: '' };
+  wotdUsedToday = false;
+  showWotdCelebration = false;
+
+  // Translation
+  translatedPosts: Map<number, string> = new Map();
+  translatingPostId: number | null = null;
+  showTranslation: Set<number> = new Set();
+
+  // View Profile Modal
+  showProfileModal = false;
+  profileUser: User | null = null;
+  profileUserPosts: ForumPostWithShared[] = [];
+  profileFriendRequest: FriendRequest | null = null;
+  profileLoading = false;
 
   constructor(
     private forumService: ForumService,
@@ -176,8 +200,7 @@ export class ForumComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private friendsService: FriendsService,
     private sanitizer: DomSanitizer,
-    private http: HttpClient,
-    private router: Router
+    private http: HttpClient
   ) { }
 
   ngOnInit(): void {
@@ -187,13 +210,16 @@ export class ForumComponent implements OnInit, OnDestroy {
     });
     this.darkMode = localStorage.getItem('forum_dark_mode') === 'true';
     this.loadReactionsFromStorage();
+    this.loadSavedAndFavorites();
+    this.loadXPData();
+    this.loadStreakData();
+    this.loadWordOfTheDay();
     this.loadPosts();
     this.loadTrendingTopics();
     this.loadAllUsers();
     this.loadTrendingGifs();
     this.loadTagNotifications();
-    this.loadSuggestedFriends();
-    this.loadFriendStatuses();
+    this.loadPendingFriendRequests();
     this.forumService.newTopic$.subscribe(() => {
       this.toggleNewTopicForm();
     });
@@ -215,14 +241,10 @@ export class ForumComponent implements OnInit, OnDestroy {
       }
       if (!target.closest('.user-suggestions-container')) {
         this.showUserSuggestions = false;
-        this.showTopicSuggestions = false;
       }
-      this.showReplyUserSuggestions = false;
     } catch {
       this.showEmojiPicker = false;
       this.showUserSuggestions = false;
-      this.showTopicSuggestions = false;
-      this.showReplyUserSuggestions = false;
     }
   }
 
@@ -261,6 +283,7 @@ export class ForumComponent implements OnInit, OnDestroy {
         this.allPosts = all;
         this.posts = all.filter(p => !p.parentPostId);
         this.countCommentsFromAll();
+        this.resolveSharedPosts();
         this.buildKnownUsers();
         this.applyFilter();
       }
@@ -419,6 +442,8 @@ export class ForumComponent implements OnInit, OnDestroy {
         this.showGifPicker = false;
         this.loadPosts();
         this.loadTrendingTopics();
+        this.awardXP(ForumService.XP_REWARDS.post, 'post');
+        this.checkWotdInContent(finalContent);
         this.addNotification('Your post has been published!', 'success');
       },
       error: (err) => {
@@ -462,7 +487,7 @@ export class ForumComponent implements OnInit, OnDestroy {
     this.selectedFile = file;
     this.fileType = isImage ? 'image' : 'video';
     if (isImage) {
-      this.compressImage(file, 600, 0.5).then(compressed => {
+      this.compressImage(file, 800, 0.6).then(compressed => {
         this.filePreviewUrl = compressed;
       });
     } else {
@@ -475,7 +500,7 @@ export class ForumComponent implements OnInit, OnDestroy {
     input.value = '';
   }
 
-  private compressImage(file: File, maxWidth: number = 600, quality: number = 0.5): Promise<string> {
+  private compressImage(file: File, maxWidth: number, quality: number): Promise<string> {
     return new Promise((resolve) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
@@ -536,7 +561,6 @@ export class ForumComponent implements OnInit, OnDestroy {
   onPostContentInput(): void {
     this.postError = '';
     this.checkForUserMention();
-    this.checkForTopicHashtag();
   }
 
   private checkForUserMention(): void {
@@ -565,71 +589,6 @@ export class ForumComponent implements OnInit, OnDestroy {
       this.newPostContent = this.newPostContent.substring(0, lastAtIndex) + user.username + ' ';
     }
     this.showUserSuggestions = false;
-  }
-
-  // ── Topic Hashtag Suggestions ──
-
-  private checkForTopicHashtag(): void {
-    const text = this.newPostContent;
-    const lastHashIndex = text.lastIndexOf('#');
-    if (lastHashIndex === -1 || lastHashIndex === text.length - 1) {
-      this.showTopicSuggestions = false;
-      return;
-    }
-    const afterHash = text.substring(lastHashIndex + 1);
-    if (afterHash.includes(' ')) {
-      this.showTopicSuggestions = false;
-      return;
-    }
-    const query = afterHash.toLowerCase();
-    this.topicSuggestions = this.trendingTopics
-      .filter(t => t.title?.toLowerCase().includes(query) || t.category?.toLowerCase().includes(query))
-      .slice(0, 6);
-    this.showTopicSuggestions = this.topicSuggestions.length > 0;
-  }
-
-  selectTopicTag(topic: TrendingTopic, event: Event): void {
-    event.stopPropagation();
-    const lastHashIndex = this.newPostContent.lastIndexOf('#');
-    if (lastHashIndex !== -1 && topic.title) {
-      this.newPostContent = this.newPostContent.substring(0, lastHashIndex) + topic.title + ' ';
-    }
-    this.showTopicSuggestions = false;
-  }
-
-  // ── Reply User Tagging ──
-
-  onReplyContentInput(): void {
-    this.replyError = '';
-    this.checkForReplyUserMention();
-  }
-
-  private checkForReplyUserMention(): void {
-    const text = this.replyContent;
-    const lastAtIndex = text.lastIndexOf('@');
-    if (lastAtIndex === -1 || lastAtIndex === text.length - 1) {
-      this.showReplyUserSuggestions = false;
-      return;
-    }
-    const afterAt = text.substring(lastAtIndex + 1);
-    if (afterAt.includes(' ')) {
-      this.showReplyUserSuggestions = false;
-      return;
-    }
-    const query = afterAt.toLowerCase();
-    this.replyUserSuggestions = this.allKnownUsers
-      .filter(u => u.name.toLowerCase().includes(query) || u.username.toLowerCase().includes(query))
-      .slice(0, 5);
-    this.showReplyUserSuggestions = this.replyUserSuggestions.length > 0;
-  }
-
-  selectReplyUserTag(user: { name: string; username: string }, event: Event): void {
-    event.stopPropagation();
-    const lastAtIndex = this.replyContent.lastIndexOf('@');
-    if (lastAtIndex !== -1) {
-      this.replyContent = this.replyContent.substring(0, lastAtIndex) + user.username + ' ';
-    }
-    this.showReplyUserSuggestions = false;
   }
 
   private buildKnownUsers(): void {
@@ -697,7 +656,6 @@ export class ForumComponent implements OnInit, OnDestroy {
           this.posts[idx] = updated;
         }
         this.applyFilter();
-        this.sendNotificationForAction(post, 'LIKE', this.user?.name + ' liked your post');
       }
     });
   }
@@ -760,18 +718,12 @@ export class ForumComponent implements OnInit, OnDestroy {
       likes: 0
     };
     this.forumService.createPost(reply).subscribe({
-      next: (createdReply) => {
+      next: () => {
         this.replyContent = '';
         this.replyingToPostId = null;
         this.replyError = '';
+        this.awardXP(ForumService.XP_REWARDS.comment, 'comment');
         this.loadPosts();
-        // Send comment notification to post owner
-        const parentPost = this.posts.find(p => p.id === parentPostId);
-        if (parentPost) {
-          this.sendNotificationForAction(parentPost, 'COMMENT', this.user?.name + ' commented on your post');
-        }
-        // Send tag notifications for @mentions in reply
-        this.sendTagNotifications(reply.content, createdReply);
         setTimeout(() => {
           if (this.expandedRepliesPostId === parentPostId) {
             const replies = this.allPosts.filter(p => p.parentPostId === parentPostId);
@@ -1036,6 +988,7 @@ export class ForumComponent implements OnInit, OnDestroy {
       this.floatingReaction = { postId: post.id, emoji };
       setTimeout(() => this.floatingReaction = null, 600);
       if (!currentReaction) {
+        this.awardXP(ForumService.XP_REWARDS.reaction, 'reaction');
         this.forumService.likePost(post.id).subscribe({
           next: (updated) => {
             const idx = this.posts.findIndex(p => p.id === post.id);
@@ -1043,7 +996,6 @@ export class ForumComponent implements OnInit, OnDestroy {
             this.applyFilter();
           }
         });
-        this.sendNotificationForAction(post, 'LIKE', this.user?.name + ' reacted ' + emoji + ' to your post');
       }
     }
     this.showReactionsPostId = null;
@@ -1256,271 +1208,6 @@ export class ForumComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Share Post ──
-
-  openShareModal(post: ForumPost): void {
-    this.sharingPost = post;
-    this.showShareModal = true;
-    this.shareSearchQuery = '';
-    this.shareLoading = true;
-    this.openMenuPostId = null;
-    // Load friends list
-    if (this.user) {
-      this.friendsService.getFriends(this.user.id).subscribe({
-        next: (friendships) => {
-          this.shareFriends = friendships.map(f => {
-            const isUser = f.userId === this.user!.id;
-            return {
-              id: isUser ? f.friendId : f.userId,
-              friendshipId: f.id!,
-              name: isUser ? f.friendName : f.userName,
-              avatar: isUser ? f.friendAvatar : f.userAvatar,
-              lastMessage: '',
-              lastMessageTime: '',
-              online: false,
-              unreadCount: 0
-            };
-          });
-          this.shareLoading = false;
-        },
-        error: () => { this.shareLoading = false; }
-      });
-    }
-  }
-
-  closeShareModal(): void {
-    this.showShareModal = false;
-    this.sharingPost = null;
-    this.shareFriends = [];
-    this.shareSearchQuery = '';
-  }
-
-  get filteredShareFriends(): Friend[] {
-    if (!this.shareSearchQuery.trim()) return this.shareFriends;
-    const q = this.shareSearchQuery.toLowerCase();
-    return this.shareFriends.filter(f => f.name.toLowerCase().includes(q));
-  }
-
-  sharePostToFriend(friend: Friend): void {
-    if (!this.user || !this.sharingPost) return;
-    const msg: ChatMessage = {
-      senderId: this.user.id,
-      senderName: this.user.name,
-      senderAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
-      receiverId: friend.id,
-      receiverName: friend.name,
-      content: this.sharingPost.content,
-      messageType: 'SHARED_POST',
-      sharedPostId: this.sharingPost.id,
-      isRead: false
-    };
-    this.friendsService.sendMessage(msg).subscribe({
-      next: () => {
-        this.addNotification(`Post shared with ${friend.name}!`, 'success');
-        this.closeShareModal();
-      },
-      error: () => {
-        this.addNotification('Failed to share post', 'warning');
-      }
-    });
-  }
-
-  // ── Notification for Like/Comment ──
-
-  private sendNotificationForAction(post: ForumPost, type: string, message: string): void {
-    if (!this.user || !post.userId || post.userId === this.user.id) return;
-    const notification = {
-      userId: post.userId,
-      postId: post.id,
-      fromUserId: this.user.id,
-      fromUsername: this.user.name,
-      fromAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
-      message: message,
-      type: type
-    };
-    this.forumService.createNotification(notification).subscribe();
-  }
-
-  // ── Friend Suggestions ──
-
-  loadSuggestedFriends(): void {
-    if (!this.user) return;
-    this.userService.getAllUsers().subscribe({
-      next: (users) => {
-        this.allUsersData = users;
-        this.friendsService.getFriends(this.user!.id).subscribe({
-          next: (friendships) => {
-            this.myFriendIds.clear();
-            for (const f of friendships) {
-              const otherId = f.userId === this.user!.id ? f.friendId : f.userId;
-              this.myFriendIds.add(otherId);
-              this.friendStatuses.set(otherId, 'friend');
-            }
-            this.suggestedFriends = users
-              .filter(u => u.id !== this.user!.id && !this.myFriendIds.has(u.id) && u.role !== 'ADMIN')
-              .slice(0, 5)
-              .map(u => ({
-                id: u.id,
-                name: u.name,
-                avatar: u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.name,
-                bio: u.bio || 'Language learner',
-                mutualCount: Math.floor(Math.random() * 5)
-              }));
-          }
-        });
-      }
-    });
-  }
-
-  private loadFriendStatuses(): void {
-    if (!this.user) return;
-    this.friendsService.getFriends(this.user.id).subscribe({
-      next: (friendships) => {
-        for (const f of friendships) {
-          const otherId = f.userId === this.user!.id ? f.friendId : f.userId;
-          this.friendStatuses.set(otherId, 'friend');
-          this.myFriendIds.add(otherId);
-        }
-      }
-    });
-    this.friendsService.getSentRequests(this.user.id).subscribe({
-      next: (requests) => {
-        for (const r of requests) {
-          this.friendStatuses.set(r.friendId, 'pending');
-        }
-      }
-    });
-  }
-
-  sendFriendRequestFromSuggestion(suggested: { id: number; name: string; avatar: string }): void {
-    if (!this.user) return;
-    const friendship: Friendship = {
-      userId: this.user.id,
-      userName: this.user.name,
-      userAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
-      friendId: suggested.id,
-      friendName: suggested.name,
-      friendAvatar: suggested.avatar,
-      status: 'PENDING'
-    };
-    this.friendsService.sendFriendRequest(friendship).subscribe({
-      next: () => {
-        this.friendStatuses.set(suggested.id, 'pending');
-        this.suggestedFriends = this.suggestedFriends.filter(f => f.id !== suggested.id);
-        this.addNotification(`Friend request sent to ${suggested.name}!`, 'success');
-      },
-      error: () => {
-        this.addNotification('Failed to send friend request', 'warning');
-      }
-    });
-  }
-
-  // ── User Profile Popup (quick card) ──
-
-  openUserProfile(userId: number | undefined, name: string, username: string, avatar: string): void {
-    if (!userId) return;
-    this.profileUser = {
-      id: userId,
-      name: name,
-      username: username,
-      avatar: avatar,
-      isFriend: this.myFriendIds.has(userId)
-    };
-    this.userService.getUserById(userId).subscribe({
-      next: (u) => {
-        if (this.profileUser && this.profileUser.id === userId) {
-          this.profileUser.bio = u.bio || 'Language learner';
-          this.profileUser.joinDate = u.joinDate;
-          this.profileUser.xp = u.xp;
-          this.profileUser.level = u.level;
-          this.profileUser.avatar = u.avatar || avatar;
-        }
-      }
-    });
-    this.showProfilePopup = true;
-  }
-
-  closeUserProfile(): void {
-    this.showProfilePopup = false;
-    this.profileUser = null;
-  }
-
-  // ── Forum Profile Modal (full view with posts & friends) ──
-
-  openForumProfile(userId: number): void {
-    this.closeUserProfile();
-    this.forumProfileTab = 'posts';
-    this.forumProfilePosts = [];
-    this.forumProfileFriends = [];
-    this.forumProfileIsFriend = this.myFriendIds.has(userId);
-    this.forumProfileFriendStatus = this.getFriendStatus(userId);
-    this.showForumProfile = true;
-
-    // Load user data
-    this.userService.getUserById(userId).subscribe({
-      next: (u) => {
-        this.forumProfileUser = {
-          id: u.id,
-          name: u.name,
-          username: '@' + u.name.replace(/\s+/g, '_').toLowerCase(),
-          avatar: u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.name,
-          bio: u.bio || 'Language learner',
-          joinDate: u.joinDate,
-          xp: u.xp,
-          level: u.level,
-          streak: u.streak,
-          language: u.language
-        };
-      }
-    });
-
-    // Load user's posts
-    this.forumProfilePosts = this.allPosts.filter(p => p.userId === userId && !p.parentPostId);
-
-    // Load user's friends
-    this.friendsService.getFriends(userId).subscribe({
-      next: (friendships) => {
-        this.forumProfileFriends = friendships.map(f => {
-          const isUser = f.userId === userId;
-          return {
-            id: isUser ? f.friendId : f.userId,
-            name: isUser ? f.friendName : f.userName,
-            avatar: isUser ? f.friendAvatar : f.userAvatar
-          };
-        });
-      }
-    });
-  }
-
-  closeForumProfile(): void {
-    this.showForumProfile = false;
-    this.forumProfileUser = null;
-    this.forumProfilePosts = [];
-    this.forumProfileFriends = [];
-  }
-
-  goToUserProfile(userId: number): void {
-    this.closeUserProfile();
-    this.openForumProfile(userId);
-  }
-
-  goToMessageUser(userId: number): void {
-    this.closeUserProfile();
-    this.closeForumProfile();
-    this.router.navigate(['/friends']);
-  }
-
-  // ── Notification Icon by Type ──
-
-  getNotifTypeIcon(type: string): string {
-    switch (type) {
-      case 'LIKE': return '❤️';
-      case 'COMMENT': return '💬';
-      case 'TAG': return '🏷️';
-      default: return '🔔';
-    }
-  }
-
   // ── Add Friend from Forum ──
 
   sendFriendRequestFromForum(post: ForumPost): void {
@@ -1564,5 +1251,404 @@ export class ForumComponent implements OnInit, OnDestroy {
     if (hours < 24) return hours + 'h';
     const days = Math.floor(hours / 24);
     return days + 'd';
+  }
+
+  // ── Save & Favorite ──
+
+  private loadSavedAndFavorites(): void {
+    if (!this.user) return;
+    this.savedPostIds = this.forumService.getSavedPostIds(this.user.id);
+    this.favoritePostIds = this.forumService.getFavoritePostIds(this.user.id);
+  }
+
+  toggleSavePost(post: ForumPost): void {
+    if (!this.user) return;
+    const isSaved = this.forumService.toggleSavePost(this.user.id, post.id);
+    this.savedPostIds = this.forumService.getSavedPostIds(this.user.id);
+    this.addNotification(isSaved ? 'Post saved!' : 'Post unsaved', isSaved ? 'success' : 'info');
+  }
+
+  toggleFavoritePost(post: ForumPost): void {
+    if (!this.user) return;
+    const isFav = this.forumService.toggleFavoritePost(this.user.id, post.id);
+    this.favoritePostIds = this.forumService.getFavoritePostIds(this.user.id);
+    this.addNotification(isFav ? 'Added to favorites!' : 'Removed from favorites', isFav ? 'success' : 'info');
+  }
+
+  isPostSaved(postId: number): boolean { return this.savedPostIds.has(postId); }
+  isPostFavorited(postId: number): boolean { return this.favoritePostIds.has(postId); }
+
+  // ── Facebook-style Share (creates a new post embedding the original) ──
+
+  openShareModal(post: ForumPost): void {
+    this.sharingPost = post;
+    this.showShareModal = true;
+    this.shareMessage = '';
+    this.shareSearchQuery = '';
+    this.showShareEmojiPicker = false;
+    this.openMenuPostId = null;
+  }
+
+  closeShareModal(): void {
+    this.showShareModal = false;
+    this.sharingPost = null;
+    this.shareMessage = '';
+    this.shareSearchQuery = '';
+    this.showShareEmojiPicker = false;
+  }
+
+  toggleShareEmojiPicker(event: Event): void {
+    event.stopPropagation();
+    this.showShareEmojiPicker = !this.showShareEmojiPicker;
+  }
+
+  insertShareEmoji(emoji: string, event: Event): void {
+    event.stopPropagation();
+    this.shareMessage += emoji;
+  }
+
+  onShareMessageInput(): void {
+    const text = this.shareMessage;
+    const lastAtIndex = text.lastIndexOf('@');
+    if (lastAtIndex === -1 || lastAtIndex === text.length - 1) { this.shareShowUserSuggestions = false; return; }
+    const afterAt = text.substring(lastAtIndex + 1);
+    if (afterAt.includes(' ')) { this.shareShowUserSuggestions = false; return; }
+    const query = afterAt.toLowerCase();
+    this.shareUserSuggestions = this.allKnownUsers
+      .filter(u => u.name.toLowerCase().includes(query) || u.username.toLowerCase().includes(query))
+      .slice(0, 5);
+    this.shareShowUserSuggestions = this.shareUserSuggestions.length > 0;
+  }
+
+  selectShareUserTag(user: { name: string; username: string }, event: Event): void {
+    event.stopPropagation();
+    const lastAtIndex = this.shareMessage.lastIndexOf('@');
+    if (lastAtIndex !== -1) this.shareMessage = this.shareMessage.substring(0, lastAtIndex) + user.username + ' ';
+    this.shareShowUserSuggestions = false;
+  }
+
+  submitShare(): void {
+    if (!this.user || !this.sharingPost) return;
+    const content = this.shareMessage.trim() || ('Shared a post by ' + this.sharingPost.author);
+    const post: any = {
+      content,
+      author: this.user.name,
+      username: '@' + this.user.name.replace(/\s+/g, '_').toLowerCase(),
+      avatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      userId: this.user.id,
+      sharedPostId: this.sharingPost.id,
+      comments: 0,
+      reposts: 0,
+      likes: 0
+    };
+    this.forumService.createPost(post).subscribe({
+      next: (res) => {
+        this.sendTagNotifications(content, res);
+        this.forumService.repostPost(this.sharingPost!.id).subscribe();
+        this.addNotification('Post shared to your feed!', 'success');
+        this.closeShareModal();
+        this.loadPosts();
+      },
+      error: () => { this.addNotification('Failed to share post', 'warning'); }
+    });
+  }
+
+  getSharedPost(post: ForumPostWithShared): ForumPost | undefined {
+    if (!post.sharedPostId) return undefined;
+    if (post.sharedPost) return post.sharedPost;
+    return this.allPosts.find(p => p.id === post.sharedPostId);
+  }
+
+  // ── Resolve shared posts for display ──
+
+  private resolveSharedPosts(): void {
+    for (const post of this.posts as ForumPostWithShared[]) {
+      if (post.sharedPostId && !post.sharedPost) {
+        post.sharedPost = this.allPosts.find(p => p.id === post.sharedPostId);
+      }
+    }
+  }
+
+  // ── Notification → Post scroll & highlight ──
+
+  onNotifClick(notif: any): void {
+    this.markNotifRead(notif);
+    this.showNotifPanel = false;
+
+    if (notif.type === 'FRIEND_REQUEST') {
+      this.openProfileFromNotif(notif);
+      return;
+    }
+
+    if (notif.postId) {
+      this.scrollToPost(notif.postId);
+    }
+  }
+
+  scrollToPost(postId: number): void {
+    this.selectedTopicId = null;
+    this.searchQuery = '';
+    this.applyFilter();
+    this.highlightedPostId = postId;
+    if (this.highlightTimeout) clearTimeout(this.highlightTimeout);
+    this.highlightTimeout = setTimeout(() => { this.highlightedPostId = null; }, 3000);
+    setTimeout(() => {
+      const el = document.getElementById('post-' + postId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  }
+
+  // ── Friend Request Notifications ──
+
+  private loadPendingFriendRequests(): void {
+    if (!this.user) return;
+    this.friendsService.getPendingRequests(this.user.id).subscribe({
+      next: (reqs) => {
+        this.pendingFriendRequests = reqs.map(r => ({
+          id: r.id!, friendshipId: r.id!, name: r.userName, avatar: r.userAvatar, userId: r.userId, createdAt: r.createdAt || ''
+        }));
+        // Inject friend request notifications into tagNotifications
+        for (const req of this.pendingFriendRequests) {
+          const exists = this.tagNotifications.find((n: any) => n.type === 'FRIEND_REQUEST' && n.fromUserId === req.userId);
+          if (!exists) {
+            this.tagNotifications.unshift({
+              id: -req.id,
+              userId: this.user!.id,
+              postId: null,
+              fromUserId: req.userId,
+              fromUsername: req.name,
+              fromAvatar: req.avatar,
+              message: req.name + ' sent you a friend request',
+              type: 'FRIEND_REQUEST',
+              isRead: false,
+              createdAt: req.createdAt,
+              friendshipId: req.friendshipId
+            });
+          }
+        }
+        this.unreadNotifCount = this.tagNotifications.filter((n: any) => !n.isRead).length;
+      }
+    });
+  }
+
+  // ── View Profile Modal ──
+
+  openProfileFromNotif(notif: any): void {
+    if (!notif.fromUserId) return;
+    this.showProfileModal = true;
+    this.profileLoading = true;
+    this.profileUser = null;
+    this.profileUserPosts = [];
+    this.profileFriendRequest = notif.friendshipId
+      ? this.pendingFriendRequests.find(r => r.friendshipId === notif.friendshipId) || null
+      : null;
+
+    this.userService.getUserById(notif.fromUserId).subscribe({
+      next: (user) => {
+        this.profileUser = user;
+        this.forumService.getPostsByUser(notif.fromUserId).subscribe({
+          next: (posts) => {
+            this.profileUserPosts = posts.filter(p => !p.parentPostId) as ForumPostWithShared[];
+            // Resolve shared posts
+            for (const post of this.profileUserPosts) {
+              if (post.sharedPostId) {
+                const orig = this.allPosts.find(p => p.id === post.sharedPostId);
+                if (orig) post.sharedPost = orig;
+              }
+            }
+            this.profileLoading = false;
+          },
+          error: () => { this.profileLoading = false; }
+        });
+      },
+      error: () => { this.profileLoading = false; }
+    });
+  }
+
+  openProfileByUserId(userId: number): void {
+    this.showProfileModal = true;
+    this.profileLoading = true;
+    this.profileUser = null;
+    this.profileUserPosts = [];
+    this.profileFriendRequest = null;
+    this.openMenuPostId = null;
+
+    this.userService.getUserById(userId).subscribe({
+      next: (user) => {
+        this.profileUser = user;
+        this.forumService.getPostsByUser(userId).subscribe({
+          next: (posts) => {
+            this.profileUserPosts = posts.filter(p => !p.parentPostId) as ForumPostWithShared[];
+            for (const post of this.profileUserPosts) {
+              if (post.sharedPostId) {
+                const orig = this.allPosts.find(p => p.id === post.sharedPostId);
+                if (orig) post.sharedPost = orig;
+              }
+            }
+            this.profileLoading = false;
+          },
+          error: () => { this.profileLoading = false; }
+        });
+      },
+      error: () => { this.profileLoading = false; }
+    });
+  }
+
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+    this.profileUser = null;
+    this.profileUserPosts = [];
+    this.profileFriendRequest = null;
+  }
+
+  acceptFriendRequestFromProfile(req: FriendRequest): void {
+    this.friendsService.acceptFriendRequest(req.friendshipId).subscribe({
+      next: () => {
+        this.addNotification(req.name + ' is now your friend!', 'success');
+        this.profileFriendRequest = null;
+        this.pendingFriendRequests = this.pendingFriendRequests.filter(r => r.id !== req.id);
+        this.tagNotifications = this.tagNotifications.filter((n: any) => !(n.type === 'FRIEND_REQUEST' && n.friendshipId === req.friendshipId));
+        this.unreadNotifCount = this.tagNotifications.filter((n: any) => !n.isRead).length;
+        this.friendStatuses.set(req.userId, 'friend');
+      },
+      error: () => { this.addNotification('Failed to accept request', 'warning'); }
+    });
+  }
+
+  rejectFriendRequestFromProfile(req: FriendRequest): void {
+    this.friendsService.rejectFriendRequest(req.friendshipId).subscribe({
+      next: () => {
+        this.addNotification('Friend request declined', 'info');
+        this.profileFriendRequest = null;
+        this.pendingFriendRequests = this.pendingFriendRequests.filter(r => r.id !== req.id);
+        this.tagNotifications = this.tagNotifications.filter((n: any) => !(n.type === 'FRIEND_REQUEST' && n.friendshipId === req.friendshipId));
+        this.unreadNotifCount = this.tagNotifications.filter((n: any) => !n.isRead).length;
+      },
+      error: () => { this.addNotification('Failed to decline request', 'warning'); }
+    });
+  }
+
+  // ── XP & Badges ──
+
+  private loadXPData(): void {
+    if (!this.user) return;
+    this.userXP = this.forumService.getUserXP(this.user.id);
+  }
+
+  awardXP(amount: number, action: 'post' | 'comment' | 'reaction' | 'wotd_bonus'): void {
+    if (!this.user) return;
+    const { xpData, newBadges } = this.forumService.addXP(this.user.id, amount, action);
+    const oldLevel = this.userXP.level;
+    this.userXP = xpData;
+    this.xpGainAnimation = { amount, action };
+    setTimeout(() => this.xpGainAnimation = null, 1500);
+    if (xpData.level > oldLevel) {
+      this.addNotification(`Level Up! You're now level ${xpData.level}! 🎉`, 'success');
+    }
+    for (const badge of newBadges) {
+      this.showBadgeUnlock = badge;
+      this.addNotification(`Badge Unlocked: ${badge.icon} ${badge.name}!`, 'success');
+      setTimeout(() => this.showBadgeUnlock = null, 3000);
+    }
+    // Record streak activity
+    const { streak, isNewDay } = this.forumService.recordActivity(this.user.id);
+    if (isNewDay && streak.currentStreak > 1) {
+      this.userStreak = streak;
+      this.showStreakAnimation = true;
+      setTimeout(() => this.showStreakAnimation = false, 2000);
+    } else {
+      this.userStreak = streak;
+    }
+  }
+
+  getXPProgress(): number {
+    return (this.userXP.xp % 100);
+  }
+
+  getXPToNextLevel(): number {
+    return 100 - (this.userXP.xp % 100);
+  }
+
+  getUserBadges(): ForumBadge[] {
+    return this.userXP.badges.map(id => this.forumService.getBadgeById(id)).filter(b => !!b) as ForumBadge[];
+  }
+
+  getLockedBadges(): ForumBadge[] {
+    return ForumService.BADGES.filter(b => !this.userXP.badges.includes(b.id));
+  }
+
+  // ── Streak ──
+
+  private loadStreakData(): void {
+    if (!this.user) return;
+    this.userStreak = this.forumService.getUserStreak(this.user.id);
+  }
+
+  getStreakFlameSize(): string {
+    if (this.userStreak.currentStreak >= 30) return 'text-4xl';
+    if (this.userStreak.currentStreak >= 7) return 'text-3xl';
+    if (this.userStreak.currentStreak >= 3) return 'text-2xl';
+    return 'text-xl';
+  }
+
+  // ── Word of the Day ──
+
+  private loadWordOfTheDay(): void {
+    this.wordOfTheDay = this.forumService.getWordOfTheDay();
+    if (this.user) this.wotdUsedToday = this.forumService.hasUsedWotdToday(this.user.id);
+  }
+
+  private checkWotdInContent(content: string): void {
+    if (!this.user || this.wotdUsedToday) return;
+    if (content.toLowerCase().includes(this.wordOfTheDay.word.toLowerCase())) {
+      this.forumService.markWotdUsed(this.user.id);
+      this.wotdUsedToday = true;
+      this.showWotdCelebration = true;
+      this.awardXP(ForumService.XP_REWARDS.wotd_bonus, 'wotd_bonus');
+      this.addNotification(`Word of the Day bonus! +${ForumService.XP_REWARDS.wotd_bonus} XP for using "${this.wordOfTheDay.word}" 🎯`, 'success');
+      setTimeout(() => this.showWotdCelebration = false, 3000);
+    }
+  }
+
+  insertWotd(): void {
+    this.newPostContent += (this.newPostContent ? ' ' : '') + this.wordOfTheDay.word;
+    this.postError = '';
+  }
+
+  // ── Translation ──
+
+  toggleTranslation(post: ForumPost): void {
+    if (this.showTranslation.has(post.id)) {
+      this.showTranslation.delete(post.id);
+      return;
+    }
+    if (this.translatedPosts.has(post.id)) {
+      this.showTranslation.add(post.id);
+      return;
+    }
+    this.translatingPostId = post.id;
+    const cleanContent = post.content.replace(/\[LOC:.+?\]/g, '').trim();
+    this.forumService.translateText(cleanContent).subscribe({
+      next: (translated) => {
+        this.translatedPosts.set(post.id, translated);
+        this.showTranslation.add(post.id);
+        this.translatingPostId = null;
+      },
+      error: () => { this.translatingPostId = null; }
+    });
+  }
+
+  getTranslation(postId: number): string | undefined {
+    return this.translatedPosts.get(postId);
+  }
+
+  isShowingTranslation(postId: number): boolean {
+    return this.showTranslation.has(postId);
+  }
+
+  isTranslating(postId: number): boolean {
+    return this.translatingPostId === postId;
   }
 }

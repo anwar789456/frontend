@@ -274,7 +274,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
   }
 
   acceptRequest(req: FriendRequest): void {
-    this.friendsService.acceptFriendRequest(req.friendshipId!).subscribe({
+    this.friendsService.acceptFriendRequest(req.friendshipId).subscribe({
       next: () => {
         this.friendRequests = this.friendRequests.filter(r => r.friendshipId !== req.friendshipId);
         this.loadFriends();
@@ -284,7 +284,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
   }
 
   rejectRequest(req: FriendRequest): void {
-    this.friendsService.rejectFriendRequest(req.friendshipId!).subscribe({
+    this.friendsService.rejectFriendRequest(req.friendshipId).subscribe({
       next: () => {
         this.friendRequests = this.friendRequests.filter(r => r.friendshipId !== req.friendshipId);
         this.addToast('Request declined', 'info');
@@ -293,7 +293,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
   }
 
   removeFriend(friend: Friend): void {
-    this.friendsService.removeFriend(friend.friendshipId!).subscribe({
+    this.friendsService.removeFriend(friend.friendshipId).subscribe({
       next: () => {
         this.friends = this.friends.filter(f => f.id !== friend.id);
         if (this.selectedFriend?.id === friend.id) {
@@ -351,15 +351,15 @@ export class FriendsComponent implements OnInit, OnDestroy {
     return {
       id: m.id!,
       senderId: m.senderId,
-      content: m.content ?? '',
-      messageType: m.messageType ?? 'TEXT',
+      content: m.content,
+      messageType: m.messageType,
       imageUrl: m.imageUrl,
       gifUrl: m.gifUrl,
       sharedPostId: m.sharedPostId,
       time: this.formatMessageTime(m.createdAt || ''),
       isMine: m.senderId === this.user!.id,
-      senderAvatar: m.senderAvatar ?? '',
-      senderName: m.senderName ?? ''
+      senderAvatar: m.senderAvatar,
+      senderName: m.senderName
     };
   }
 

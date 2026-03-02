@@ -56,27 +56,6 @@
               }
             </div>
           }
-
-          <!-- Topic Suggestions Dropdown (#hashtag) -->
-          @if (showTopicSuggestions && topicSuggestions.length > 0) {
-            <div class="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-30 w-72 overflow-hidden dm-card dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
-              <div class="px-3 py-2 border-b dm-border flex items-center gap-2" [class.border-gray-100]="!darkMode">
-                <span class="text-xs font-bold text-[#38a9f3]">#</span>
-                <span class="text-xs font-semibold dm-text-sec" [class.text-gray-500]="!darkMode">Topics</span>
-              </div>
-              @for (t of topicSuggestions; track t.id) {
-                <button (click)="selectTopicTag(t, $event)" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f0f7ff] transition-colors text-left dm-hover">
-                  <div class="w-8 h-8 rounded-lg bg-[#38a9f3]/10 flex items-center justify-center shrink-0">
-                    <span class="text-sm font-bold text-[#38a9f3]">#</span>
-                  </div>
-                  <div class="min-w-0">
-                    <p class="text-sm font-semibold dm-text truncate" [class.text-[#0f1724]]="!darkMode">{{ t.title }}</p>
-                    <p class="text-[10px] text-gray-400 dm-text-muted">{{ t.category }} · {{ t.postCount || 0 }} posts</p>
-                  </div>
-                </button>
-              }
-            </div>
-          }
         </div>
       </div>
 
@@ -248,9 +227,9 @@
 
     <!-- Posts -->
     @for (post of filteredPosts; track post.id) {
-      <div class="forum-card post-card dm-card p-5 mb-4" [class.bg-white]="!darkMode">
+      <div [id]="'post-' + post.id" class="forum-card post-card dm-card p-5 mb-4 transition-all duration-500" [class.bg-white]="!darkMode" [class.ring-2]="highlightedPostId === post.id" [class.ring-[#38a9f3]]="highlightedPostId === post.id" [class.bg-blue-50]="highlightedPostId === post.id && !darkMode">
         <div class="flex items-start gap-3 mb-3">
-          <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0 cursor-pointer ring-2 ring-transparent hover:ring-[#38a9f3]/40 transition-all" (click)="openUserProfile(post.userId, post.author, post.username, post.avatar)">
+          <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0">
             <img [src]="post.avatar" [alt]="post.author" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1 min-w-0">
@@ -268,14 +247,31 @@
               </div>
             } @else {
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-sm font-bold dm-text cursor-pointer hover:text-[#38a9f3] transition-colors" [class.text-[#0f1724]]="!darkMode" (click)="openUserProfile(post.userId, post.author, post.username, post.avatar)">{{ post.author }}</span>
-                <span class="text-sm text-gray-400 dm-text-muted">{{ post.username }}</span>
+                <span class="text-sm font-bold dm-text cursor-pointer hover:underline" [class.text-[#0f1724]]="!darkMode" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.author }}</span>
+                <span class="text-sm text-gray-400 dm-text-muted cursor-pointer hover:underline" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.username }}</span>
                 <span class="text-sm text-gray-400 dm-text-muted">· {{ getTimeAgo(post) }}</span>
                 @if (post.isEdited) {
                   <span class="text-[10px] text-gray-400 italic px-1.5 py-0.5 rounded" [class.bg-gray-100]="!darkMode" [class.bg-gray-700]="darkMode">(edited)</span>
                 }
               </div>
               <p class="text-sm mt-1.5 leading-relaxed dm-text" [class.text-[#0f1724]]="!darkMode" [innerHTML]="formatContent(post.content)"></p>
+              <!-- Translation Toggle -->
+              <div class="mt-1.5 flex items-center gap-2">
+                <button (click)="toggleTranslation(post)" class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full transition-all" [class.bg-[#38a9f3]/10]="isShowingTranslation(post.id)" [class.text-[#38a9f3]]="isShowingTranslation(post.id)" [class.text-gray-400]="!isShowingTranslation(post.id)" [class.hover:text-[#38a9f3]]="true">
+                  @if (isTranslating(post.id)) {
+                    <div class="w-3 h-3 border border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+                  } @else {
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" /></svg>
+                  }
+                  {{ isShowingTranslation(post.id) ? 'Hide translation' : 'Translate' }}
+                </button>
+              </div>
+              @if (isShowingTranslation(post.id) && getTranslation(post.id)) {
+                <div class="mt-1.5 px-3 py-2 rounded-lg border-l-2 border-[#38a9f3] text-sm leading-relaxed dm-text" [class.bg-blue-50]="!darkMode" [class.bg-blue-900/20]="darkMode">
+                  <span class="text-[10px] font-semibold text-[#38a9f3] uppercase tracking-wide block mb-0.5">English Translation</span>
+                  {{ getTranslation(post.id) }}
+                </div>
+              }
             }
           </div>
           <!-- 3-dot menu -->
@@ -313,6 +309,33 @@
         }
         @if (post.video) {
           <div class="rounded-xl overflow-hidden mb-3 bg-black max-h-80"><video [src]="post.video" class="w-full max-h-80" controls></video></div>
+        }
+
+        <!-- Embedded Shared Post -->
+        @if (post.sharedPostId) {
+          @if (getSharedPost(post); as sharedPost) {
+            <div class="mb-3 rounded-xl border overflow-hidden dm-border" [class.border-gray-200]="!darkMode" [class.bg-gray-50]="!darkMode" [class.bg-[#0f172a]]="darkMode">
+              <div class="flex items-center gap-2 px-4 py-2.5 border-b dm-border" [class.border-gray-100]="!darkMode">
+                <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0">
+                  <img [src]="sharedPost.avatar" [alt]="sharedPost.author" class="w-full h-full object-cover" />
+                </div>
+                <span class="text-xs font-bold dm-text cursor-pointer hover:underline" [class.text-[#0f1724]]="!darkMode" (click)="sharedPost.userId ? openProfileByUserId(sharedPost.userId) : null">{{ sharedPost.author }}</span>
+                <span class="text-xs text-gray-400 dm-text-muted">{{ sharedPost.username }}</span>
+                <span class="text-xs text-gray-400 dm-text-muted">· {{ getTimeAgo(sharedPost) }}</span>
+              </div>
+              <div class="px-4 py-3">
+                <p class="text-sm leading-relaxed dm-text" [class.text-[#0f1724]]="!darkMode" [innerHTML]="formatContent(sharedPost.content)"></p>
+                @if (sharedPost.image && !isVideoUrl(sharedPost.image)) {
+                  <div class="rounded-lg overflow-hidden mt-2 max-h-48">
+                    <img [src]="sharedPost.image" alt="Shared post image" class="max-h-48 w-full object-contain" />
+                  </div>
+                }
+                @if (sharedPost.image && isVideoUrl(sharedPost.image)) {
+                  <div class="rounded-lg overflow-hidden mt-2 bg-black max-h-48"><video [src]="sharedPost.image" class="w-full max-h-48" controls></video></div>
+                }
+              </div>
+            </div>
+          }
         }
 
         <!-- Reactions Display -->
@@ -355,16 +378,35 @@
             </button>
             <!-- Reaction Picker Popup -->
             @if (showReactionsPostId === post.id) {
-              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-0.5 px-2 py-1.5 rounded-full shadow-xl border z-20 dm-card" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode" (click)="$event.stopPropagation()">
-                @for (emoji of reactionEmojis; track emoji) {
-                  <button (click)="reactToPost(post, emoji, $event)" class="w-9 h-9 flex items-center justify-center text-xl rounded-full hover:bg-gray-100 hover:scale-125 transition-all dm-hover" [class.bg-[#38a9f3]/15]="getUserReaction(post.id) === emoji" [class.scale-110]="getUserReaction(post.id) === emoji">{{ emoji }}</button>
+              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-0.5 px-2 py-1.5 rounded-2xl shadow-xl border z-20 dm-card" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode" (click)="$event.stopPropagation()">
+                @for (r of reactionEmojis; track r.emoji) {
+                  <button (click)="reactToPost(post, r.emoji, $event)" class="group relative w-9 h-9 flex items-center justify-center text-xl rounded-full hover:bg-gray-100 hover:scale-125 transition-all dm-hover" [class.bg-[#38a9f3]/15]="getUserReaction(post.id) === r.emoji" [class.scale-110]="getUserReaction(post.id) === r.emoji">
+                    {{ r.emoji }}
+                    <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none">{{ r.label }}</span>
+                  </button>
                 }
               </div>
             }
           </div>
           <!-- Share -->
-          <button (click)="openShareModal(post)" class="action-btn" title="Share to friend">
+          <button (click)="openShareModal(post)" class="action-btn" [class.opacity-40]="isOwnPost(post)" [class.cursor-not-allowed]="isOwnPost(post)" [disabled]="isOwnPost(post)" [title]="isOwnPost(post) ? 'You cannot share your own post' : 'Share to feed'">
             <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+          </button>
+          <!-- Save -->
+          <button (click)="toggleSavePost(post)" class="action-btn" [class.active]="isPostSaved(post.id)" title="Save post">
+            @if (isPostSaved(post.id)) {
+              <svg class="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24"><path d="M5 2h14a1 1 0 011 1v19.143a.5.5 0 01-.766.424L12 18.03l-7.234 4.536A.5.5 0 014 22.143V3a1 1 0 011-1z" /></svg>
+            } @else {
+              <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
+            }
+          </button>
+          <!-- Favorite -->
+          <button (click)="toggleFavoritePost(post)" class="action-btn" [class.text-yellow-500]="isPostFavorited(post.id)" title="Add to favorites">
+            @if (isPostFavorited(post.id)) {
+              <svg class="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+            } @else {
+              <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+            }
           </button>
           <!-- Toggle replies -->
           <button (click)="toggleReplies(post)" class="action-btn" [class.active]="expandedRepliesPostId === post.id">
@@ -375,32 +417,15 @@
         <!-- Reply Input -->
         @if (replyingToPostId === post.id) {
           <div class="mt-3 pt-3 border-t dm-border" [class.border-gray-100]="!darkMode">
-            <div class="flex items-center gap-3 relative">
+            <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shrink-0">
                 @if (user) {
                   <img [src]="$any(user).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" [alt]="user.name" class="w-full h-full object-cover" />
                 }
               </div>
-              <input type="text" [(ngModel)]="replyContent" (input)="onReplyContentInput()" placeholder="Write a reply... Use @user to tag" class="flex-1 text-sm border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#38a9f3]/20 focus:border-[#38a9f3] dm-input" [class.border-gray-200]="!darkMode" (keydown.enter)="submitReply(post.id)" maxlength="500" />
+              <input type="text" [(ngModel)]="replyContent" (input)="replyError = ''" placeholder="Write a reply..." class="flex-1 text-sm border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#38a9f3]/20 focus:border-[#38a9f3] dm-input" [class.border-gray-200]="!darkMode" (keydown.enter)="submitReply(post.id)" maxlength="500" />
               <button (click)="submitReply(post.id)" class="bg-[#38a9f3] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-[#2196e3] transition-colors">Reply</button>
               <button (click)="cancelReply()" class="text-gray-400 hover:text-gray-600 text-xs font-medium">Cancel</button>
-
-              <!-- Reply User Suggestions -->
-              @if (showReplyUserSuggestions && replyUserSuggestions.length > 0) {
-                <div class="absolute left-10 bottom-full mb-1 rounded-xl shadow-xl z-30 w-60 overflow-hidden dm-card dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
-                  @for (u of replyUserSuggestions; track u.username) {
-                    <button (click)="selectReplyUserTag(u, $event)" class="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f0f7ff] transition-colors text-left dm-hover">
-                      <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0">
-                        <img [src]="u.avatar" [alt]="u.name" class="w-full h-full object-cover" />
-                      </div>
-                      <div class="min-w-0">
-                        <p class="text-xs font-semibold dm-text truncate" [class.text-[#0f1724]]="!darkMode">{{ u.name }}</p>
-                        <p class="text-[10px] text-gray-400 dm-text-muted truncate">{{ u.username }}</p>
-                      </div>
-                    </button>
-                  }
-                </div>
-              }
             </div>
             @if (replyError) {
               <p class="text-xs text-red-500 mt-1 pl-11">{{ replyError }}</p>
@@ -413,12 +438,12 @@
           <div class="mt-3 pt-3 border-t dm-border space-y-3" [class.border-gray-100]="!darkMode">
             @for (reply of repliesMap.get(post.id); track reply.id) {
               <div class="flex items-start gap-2 pl-4 border-l-2 border-[#38a9f3]/20">
-                <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0 cursor-pointer hover:ring-2 hover:ring-[#38a9f3]/40 transition-all" (click)="openUserProfile(reply.userId, reply.author, reply.username, reply.avatar)">
+                <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0">
                   <img [src]="reply.avatar" [alt]="reply.author" class="w-full h-full object-cover" />
                 </div>
                 <div class="flex-1">
                   <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold dm-text cursor-pointer hover:text-[#38a9f3] transition-colors" [class.text-[#0f1724]]="!darkMode" (click)="openUserProfile(reply.userId, reply.author, reply.username, reply.avatar)">{{ reply.author }}</span>
+                    <span class="text-xs font-bold dm-text" [class.text-[#0f1724]]="!darkMode">{{ reply.author }}</span>
                     <span class="text-xs text-gray-400 dm-text-muted">{{ reply.username }}</span>
                     <span class="text-xs text-gray-400 dm-text-muted">· {{ getTimeAgo(reply) }}</span>
                   </div>
@@ -488,14 +513,26 @@
         </div>
         <div class="max-h-[320px] overflow-y-auto">
           @for (notif of tagNotifications; track notif.id) {
-            <div (click)="markNotifRead(notif)" class="notif-item flex items-start gap-3 px-4 py-3 cursor-pointer" [class.unread]="!notif.isRead">
+            <div (click)="onNotifClick(notif)" class="notif-item flex items-start gap-3 px-4 py-3 cursor-pointer" [class.unread]="!notif.isRead">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shrink-0 relative">
                 <img [src]="notif.fromAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'" alt="" class="w-full h-full object-cover" />
-                <span class="absolute -bottom-0.5 -right-0.5 text-[10px]">{{ getNotifTypeIcon(notif.type) }}</span>
+                @if (notif.type === 'FRIEND_REQUEST') {
+                  <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                  </div>
+                }
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-xs dm-text leading-relaxed" [class.text-[#0f1724]]="!darkMode" [class.font-semibold]="!notif.isRead">{{ notif.message }}</p>
-                <p class="text-[10px] text-gray-400 mt-0.5">{{ getNotifTimeAgo(notif.createdAt) }}</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <p class="text-[10px] text-gray-400">{{ getNotifTimeAgo(notif.createdAt) }}</p>
+                  @if (notif.type === 'FRIEND_REQUEST') {
+                    <span class="text-[9px] font-semibold bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full">Friend Request</span>
+                  }
+                  @if (notif.type === 'TAG') {
+                    <span class="text-[9px] font-semibold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">Mention</span>
+                  }
+                </div>
               </div>
               @if (!notif.isRead) {
                 <div class="w-2 h-2 bg-[#38a9f3] rounded-full shrink-0 mt-1.5"></div>
@@ -508,7 +545,7 @@
                 <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
               </div>
               <p class="text-xs font-medium text-gray-400">No notifications yet</p>
-              <p class="text-[10px] text-gray-300 mt-0.5">Likes, comments & mentions will appear here</p>
+              <p class="text-[10px] text-gray-300 mt-0.5">Mentions will appear here</p>
             </div>
           }
         </div>
@@ -523,23 +560,107 @@
       <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search forums..." class="search-input w-full pl-9 pr-4 py-2.5 text-sm placeholder-gray-400 outline-none dm-input" />
     </div>
 
-    <!-- Language/Stats Bar -->
+    <!-- XP & Level Card -->
     @if (user) {
-      <div class="flex items-center gap-4 text-sm">
-        <div class="flex items-center gap-1.5">
-          <span class="text-red-400">🏴</span>
-          <span class="font-medium dm-text" [class.text-[#0f1724]]="!darkMode">EN</span>
+      <div class="sidebar-section dm-card p-4 relative overflow-hidden">
+        @if (xpGainAnimation) {
+          <div class="absolute top-2 right-3 text-xs font-bold text-[#38a9f3] animate-bounce">+{{ xpGainAnimation.amount }} XP</div>
+        }
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#38a9f3] to-[#6366f1] flex items-center justify-center text-white text-sm font-bold shadow-lg">{{ userXP.level }}</div>
+          <div>
+            <p class="text-xs font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Level {{ userXP.level }}</p>
+            <p class="text-[10px] text-gray-400">{{ userXP.xp }} XP total</p>
+          </div>
+          <div class="ml-auto text-right">
+            <p class="text-[10px] text-gray-400">Next level</p>
+            <p class="text-xs font-bold text-[#38a9f3]">{{ getXPToNextLevel() }} XP</p>
+          </div>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span class="text-orange-400">🔥</span>
-          <span class="font-medium dm-text" [class.text-[#0f1724]]="!darkMode">{{ $any(user).streak || 0 }}</span>
+        <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden" [class.bg-gray-700]="darkMode">
+          <div class="h-full bg-gradient-to-r from-[#38a9f3] to-[#6366f1] rounded-full transition-all duration-500" [style.width.%]="getXPProgress()"></div>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span class="text-[#38a9f3]">💎</span>
-          <span class="font-medium dm-text" [class.text-[#0f1724]]="!darkMode">{{ $any(user).xp || 0 }}</span>
+        <div class="flex items-center justify-between mt-2 text-[10px] text-gray-400">
+          <span>📝 {{ userXP.postsCount }} posts</span>
+          <span>💬 {{ userXP.commentsCount }} comments</span>
+          <span>� {{ userXP.likesGivenCount }} reactions</span>
         </div>
       </div>
     }
+
+    <!-- Streak Tracker -->
+    <div class="sidebar-section dm-card p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span [class]="getStreakFlameSize()" [class.animate-bounce]="showStreakAnimation">🔥</span>
+          <div>
+            <p class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">{{ userStreak.currentStreak }} day streak</p>
+            <p class="text-[10px] text-gray-400">Best: {{ userStreak.longestStreak }} days</p>
+          </div>
+        </div>
+        <div class="flex gap-0.5">
+          @for (i of [1,2,3,4,5,6,7]; track i) {
+            <div class="w-3 h-3 rounded-sm transition-all" [class.bg-[#38a9f3]]="i <= userStreak.currentStreak" [class.bg-gray-200]="i > userStreak.currentStreak" [class.bg-gray-700]="i > userStreak.currentStreak && darkMode"></div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Word of the Day -->
+    <div class="sidebar-section dm-card p-4 relative" [class.ring-2]="showWotdCelebration" [class.ring-yellow-400]="showWotdCelebration">
+      @if (showWotdCelebration) {
+        <div class="absolute inset-0 flex items-center justify-center bg-yellow-50/80 rounded-xl z-10">
+          <div class="text-center">
+            <p class="text-3xl mb-1">🎯</p>
+            <p class="text-sm font-bold text-yellow-600">Word Used!</p>
+            <p class="text-xs text-yellow-500">+{{ 15 }} XP bonus!</p>
+          </div>
+        </div>
+      }
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-6 h-6 rounded-lg bg-yellow-50 flex items-center justify-center">
+          <span class="text-xs">�</span>
+        </div>
+        <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Word of the Day</h3>
+        @if (wotdUsedToday) {
+          <span class="ml-auto text-[9px] font-bold bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full">Used ✓</span>
+        } @else {
+          <span class="ml-auto text-[9px] font-bold bg-yellow-100 text-yellow-600 px-1.5 py-0.5 rounded-full">+15 XP</span>
+        }
+      </div>
+      <div class="rounded-lg p-3" [class.bg-gradient-to-r]="!darkMode" [class.from-yellow-50]="!darkMode" [class.to-orange-50]="!darkMode" [class.bg-gray-800]="darkMode">
+        <p class="text-lg font-bold dm-text" [class.text-[#0f1724]]="!darkMode">{{ wordOfTheDay.word }}</p>
+        <p class="text-xs text-gray-500 mt-0.5 italic">{{ wordOfTheDay.definition }}</p>
+        <p class="text-[11px] text-gray-400 mt-1">"{{ wordOfTheDay.example }}"</p>
+      </div>
+      @if (!wotdUsedToday) {
+        <button (click)="insertWotd()" class="mt-2 w-full py-1.5 text-xs font-semibold text-[#38a9f3] bg-[#38a9f3]/10 rounded-lg hover:bg-[#38a9f3]/20 transition">Use in your post →</button>
+      }
+    </div>
+
+    <!-- Badges -->
+    <div class="sidebar-section dm-card p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center">
+          <span class="text-xs">🏆</span>
+        </div>
+        <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Badges</h3>
+        <span class="ml-auto text-[10px] text-gray-400">{{ getUserBadges().length }}/{{ allBadges.length }}</span>
+      </div>
+      <div class="flex flex-wrap gap-1.5">
+        @for (badge of getUserBadges(); track badge.id) {
+          <div class="group relative w-9 h-9 rounded-lg flex items-center justify-center text-lg cursor-default transition-transform hover:scale-110" [class.bg-gradient-to-br]="true" [class.from-yellow-50]="!darkMode" [class.to-orange-50]="!darkMode" [class.from-yellow-900/30]="darkMode" [class.to-orange-900/30]="darkMode" [title]="badge.name + ': ' + badge.description">
+            {{ badge.icon }}
+            <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[8px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">{{ badge.name }}</span>
+          </div>
+        }
+        @for (badge of getLockedBadges(); track badge.id) {
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg opacity-20 grayscale cursor-default" [class.bg-gray-100]="!darkMode" [class.bg-gray-800]="darkMode" [title]="badge.name + ' (locked): ' + badge.description">
+            {{ badge.icon }}
+          </div>
+        }
+      </div>
+    </div>
 
     <!-- New Topic Form -->
     @if (showNewTopicForm) {
@@ -562,38 +683,6 @@
             <button (click)="createTopic()" class="flex-1 bg-[#38a9f3] text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-[#2196e3]">Create</button>
             <button (click)="toggleNewTopicForm()" class="flex-1 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200">Cancel</button>
           </div>
-        </div>
-      </div>
-    }
-
-    <!-- Friend Suggestions -->
-    @if (suggestedFriends.length > 0) {
-      <div class="sidebar-section dm-card p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <div class="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
-            <svg class="w-3.5 h-3.5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>
-          </div>
-          <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">People You May Know</h3>
-        </div>
-        <div class="space-y-3">
-          @for (sf of suggestedFriends; track sf.id) {
-            <div class="flex items-center gap-3 group">
-              <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0 cursor-pointer ring-2 ring-transparent hover:ring-[#38a9f3]/40 transition-all" (click)="openUserProfile(sf.id, sf.name, '@' + sf.name.replace(' ', '_').toLowerCase(), sf.avatar)">
-                <img [src]="sf.avatar" [alt]="sf.name" class="w-full h-full object-cover" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold dm-text truncate cursor-pointer hover:text-[#38a9f3] transition-colors" [class.text-[#0f1724]]="!darkMode" (click)="openUserProfile(sf.id, sf.name, '@' + sf.name.replace(' ', '_').toLowerCase(), sf.avatar)">{{ sf.name }}</p>
-                <p class="text-[10px] text-gray-400 dm-text-muted truncate">{{ sf.bio }}</p>
-              </div>
-              @if (getFriendStatus(sf.id) === 'pending') {
-                <span class="text-[10px] text-gray-400 font-medium px-2 py-1 bg-gray-100 rounded-lg">Sent</span>
-              } @else {
-                <button (click)="sendFriendRequestFromSuggestion(sf)" class="p-1.5 rounded-lg bg-[#38a9f3]/10 text-[#38a9f3] hover:bg-[#38a9f3]/20 transition-colors shrink-0" title="Add Friend">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                </button>
-              }
-            </div>
-          }
         </div>
       </div>
     }
@@ -723,319 +812,189 @@
   </div>
 }
 
-<!-- User Profile Quick Card -->
-@if (showProfilePopup && profileUser) {
-  <div class="report-overlay fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeUserProfile()">
-    <div class="profile-popup bg-white w-full max-w-sm" (click)="$event.stopPropagation()">
-      <div class="relative">
-        <div class="h-24 bg-gradient-to-br from-[#38a9f3] via-[#6366f1] to-[#8b5cf6] rounded-t-2xl"></div>
-        <div class="absolute -bottom-10 left-1/2 -translate-x-1/2">
-          <div class="w-20 h-20 rounded-full border-4 overflow-hidden shadow-lg" [class.border-white]="!darkMode" [class.border-[#1e293b]]="darkMode">
-            <img [src]="profileUser.avatar" [alt]="profileUser.name" class="w-full h-full object-cover" />
-          </div>
-        </div>
-        <button (click)="closeUserProfile()" class="absolute top-3 right-3 w-8 h-8 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
-      </div>
-      <div class="pt-12 pb-4 px-6 text-center">
-        <h3 class="text-lg font-bold text-[#0f1724]">{{ profileUser.name }}</h3>
-        <p class="text-sm text-gray-400 mt-0.5">{{ profileUser.username }}</p>
-        @if (profileUser.bio) {
-          <p class="text-xs text-gray-500 mt-2 leading-relaxed">{{ profileUser.bio }}</p>
-        }
-      </div>
-      <div class="px-6 pb-5 flex gap-2">
-        <button (click)="goToUserProfile(profileUser.id)" class="flex-1 bg-gradient-to-r from-[#38a9f3] to-[#6366f1] text-white py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-          View Profile
-        </button>
-        @if (profileUser.id !== user?.id && profileUser.isFriend) {
-          <button (click)="goToMessageUser(profileUser.id)" class="px-4 bg-green-50 text-green-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-100 transition-colors flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
-            Message
-          </button>
-        }
-        @if (profileUser.id !== user?.id && !profileUser.isFriend && getFriendStatus(profileUser.id) === 'none') {
-          <button (click)="sendFriendRequestFromSuggestion({id: profileUser.id, name: profileUser.name, avatar: profileUser.avatar})" class="px-4 bg-green-50 text-green-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-100 transition-colors flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-            Add
-          </button>
-        }
-      </div>
-    </div>
-  </div>
-}
-
-<!-- Forum Profile Modal (Full View) -->
-@if (showForumProfile && forumProfileUser) {
-  <div class="report-overlay fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeForumProfile()">
-    <div class="forum-profile-modal bg-white w-full max-w-2xl max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
-
-      <!-- Profile Header -->
-      <div class="relative shrink-0">
-        <div class="h-36 bg-gradient-to-br from-[#38a9f3] via-[#6366f1] to-[#8b5cf6] rounded-t-2xl relative overflow-hidden">
-          <div class="absolute inset-0 opacity-20">
-            <div class="absolute top-4 left-8 w-20 h-20 rounded-full bg-white/20"></div>
-            <div class="absolute bottom-2 right-12 w-32 h-32 rounded-full bg-white/10"></div>
-            <div class="absolute top-10 right-40 w-8 h-8 rounded-full bg-white/30"></div>
-          </div>
-        </div>
-        <div class="absolute -bottom-12 left-8">
-          <div class="w-24 h-24 rounded-2xl border-4 border-white overflow-hidden shadow-xl bg-white">
-            <img [src]="forumProfileUser.avatar" [alt]="forumProfileUser.name" class="w-full h-full object-cover" />
-          </div>
-        </div>
-        <button (click)="closeForumProfile()" class="absolute top-4 right-4 w-9 h-9 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors backdrop-blur-sm">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
-      </div>
-
-      <!-- User Info Bar -->
-      <div class="pt-3 pb-4 px-8 flex items-end gap-4 shrink-0" style="padding-left: 145px;">
-        <div class="flex-1 min-w-0">
-          <h2 class="text-xl font-bold text-[#0f1724] truncate">{{ forumProfileUser.name }}</h2>
-          <p class="text-sm text-gray-400">{{ forumProfileUser.username }}</p>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          @if (forumProfileUser.id !== user?.id && forumProfileIsFriend) {
-            <button (click)="goToMessageUser(forumProfileUser.id)" class="px-4 py-2 bg-gradient-to-r from-[#38a9f3] to-[#6366f1] text-white rounded-xl text-xs font-semibold hover:shadow-lg transition-all flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
-              Message
-            </button>
-          }
-          @if (forumProfileUser.id !== user?.id && forumProfileFriendStatus === 'none') {
-            <button (click)="sendFriendRequestFromSuggestion({id: forumProfileUser.id, name: forumProfileUser.name, avatar: forumProfileUser.avatar}); forumProfileFriendStatus = 'pending'" class="px-4 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-semibold hover:bg-green-100 transition-colors flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-              Add Friend
-            </button>
-          }
-          @if (forumProfileUser.id !== user?.id && forumProfileFriendStatus === 'pending') {
-            <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-xl text-xs font-medium">Request Sent</span>
-          }
-        </div>
-      </div>
-
-      <!-- Bio & Stats -->
-      <div class="px-8 pb-4 shrink-0">
-        @if (forumProfileUser.bio) {
-          <p class="text-sm text-gray-600 leading-relaxed mb-3">{{ forumProfileUser.bio }}</p>
-        }
-        <div class="flex items-center gap-6 flex-wrap">
-          @if (forumProfileUser.xp !== undefined) {
-            <div class="flex items-center gap-1.5">
-              <span class="text-[#38a9f3]">💎</span>
-              <span class="text-sm font-bold text-[#0f1724]">{{ forumProfileUser.xp }}</span>
-              <span class="text-xs text-gray-400">XP</span>
-            </div>
-          }
-          @if (forumProfileUser.streak !== undefined) {
-            <div class="flex items-center gap-1.5">
-              <span class="text-orange-400">🔥</span>
-              <span class="text-sm font-bold text-[#0f1724]">{{ forumProfileUser.streak }}</span>
-              <span class="text-xs text-gray-400">streak</span>
-            </div>
-          }
-          @if (forumProfileUser.level) {
-            <div class="flex items-center gap-1.5">
-              <span class="text-[#6366f1]">📊</span>
-              <span class="text-sm font-bold text-[#0f1724]">{{ forumProfileUser.level }}</span>
-            </div>
-          }
-          @if (forumProfileUser.language) {
-            <div class="flex items-center gap-1.5">
-              <span>🌍</span>
-              <span class="text-sm font-bold text-[#0f1724]">{{ forumProfileUser.language }}</span>
-            </div>
-          }
-          @if (forumProfileUser.joinDate) {
-            <div class="flex items-center gap-1.5">
-              <span class="text-green-500">📅</span>
-              <span class="text-xs text-gray-400">Joined {{ forumProfileUser.joinDate | slice:0:10 }}</span>
-            </div>
-          }
-          <div class="flex items-center gap-1.5">
-            <span>📝</span>
-            <span class="text-sm font-bold text-[#0f1724]">{{ forumProfilePosts.length }}</span>
-            <span class="text-xs text-gray-400">posts</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span>👥</span>
-            <span class="text-sm font-bold text-[#0f1724]">{{ forumProfileFriends.length }}</span>
-            <span class="text-xs text-gray-400">friends</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="flex items-center gap-0 border-b border-gray-200 px-8 shrink-0">
-        <button (click)="forumProfileTab = 'posts'" class="px-5 py-3 text-sm font-semibold transition-colors relative" [class.text-[#38a9f3]]="forumProfileTab === 'posts'" [class.text-gray-400]="forumProfileTab !== 'posts'">
-          Posts
-          @if (forumProfileTab === 'posts') {
-            <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#38a9f3] rounded-full"></div>
-          }
-        </button>
-        <button (click)="forumProfileTab = 'friends'" class="px-5 py-3 text-sm font-semibold transition-colors relative" [class.text-[#38a9f3]]="forumProfileTab === 'friends'" [class.text-gray-400]="forumProfileTab !== 'friends'">
-          Friends ({{ forumProfileFriends.length }})
-          @if (forumProfileTab === 'friends') {
-            <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#38a9f3] rounded-full"></div>
-          }
-        </button>
-      </div>
-
-      <!-- Tab Content (scrollable) -->
-      <div class="flex-1 overflow-y-auto px-8 py-4">
-
-        <!-- Posts Tab -->
-        @if (forumProfileTab === 'posts') {
-          @if (forumProfilePosts.length > 0) {
-            <div class="space-y-3">
-              @for (post of forumProfilePosts; track post.id) {
-                <div class="border border-gray-100 rounded-xl p-4 hover:shadow-sm transition-shadow">
-                  <div class="flex items-start gap-3">
-                    <div class="w-9 h-9 rounded-full overflow-hidden bg-gray-200 shrink-0">
-                      <img [src]="post.avatar" [alt]="post.author" class="w-full h-full object-cover" />
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2">
-                        <span class="text-sm font-bold text-[#0f1724]">{{ post.author }}</span>
-                        <span class="text-xs text-gray-400">· {{ getTimeAgo(post) }}</span>
-                        @if (post.isEdited) {
-                          <span class="text-[9px] text-gray-400 italic bg-gray-100 px-1.5 py-0.5 rounded">(edited)</span>
-                        }
-                      </div>
-                      <p class="text-sm text-gray-700 mt-1 leading-relaxed" [innerHTML]="formatContent(post.content)"></p>
-                      @if (post.image && !isVideoUrl(post.image)) {
-                        <div class="mt-2 rounded-lg overflow-hidden max-h-48 bg-gray-50">
-                          <img [src]="post.image" alt="Post image" class="max-h-48 w-full object-contain" />
-                        </div>
-                      }
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-4 mt-3 pt-2 border-t border-gray-50 text-xs text-gray-400">
-                    <span class="flex items-center gap-1">💬 {{ post.comments }}</span>
-                    <span class="flex items-center gap-1">❤️ {{ post.likes }}</span>
-                    <span class="flex items-center gap-1">🔄 {{ post.reposts }}</span>
-                  </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="text-center py-12">
-              <div class="w-14 h-14 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
-              </div>
-              <p class="text-sm font-medium text-gray-400">No posts yet</p>
-              <p class="text-xs text-gray-300 mt-1">This user hasn't posted anything yet.</p>
-            </div>
-          }
-        }
-
-        <!-- Friends Tab -->
-        @if (forumProfileTab === 'friends') {
-          @if (forumProfileFriends.length > 0) {
-            <div class="grid grid-cols-2 gap-3">
-              @for (f of forumProfileFriends; track f.id) {
-                <div class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow cursor-pointer" (click)="closeForumProfile(); openUserProfile(f.id, f.name, '@' + f.name.replace(' ', '_').toLowerCase(), f.avatar)">
-                  <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0">
-                    <img [src]="f.avatar" [alt]="f.name" class="w-full h-full object-cover" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-[#0f1724] truncate">{{ f.name }}</p>
-                    <p class="text-[10px] text-gray-400 truncate">@{{ f.name.replace(' ', '_').toLowerCase() }}</p>
-                  </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="text-center py-12">
-              <div class="w-14 h-14 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
-              </div>
-              <p class="text-sm font-medium text-gray-400">No friends yet</p>
-            </div>
-          }
-        }
-      </div>
-    </div>
-  </div>
-}
-
-<!-- Share Modal -->
+<!-- Share Modal (Facebook-style: creates a new post embedding the shared post) -->
 @if (showShareModal && sharingPost) {
   <div class="report-overlay fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeShareModal()">
-    <div class="report-modal bg-white w-full max-w-md" (click)="$event.stopPropagation()">
+    <div class="report-modal bg-white w-full max-w-lg" (click)="$event.stopPropagation()">
       <!-- Header -->
       <div class="bg-gradient-to-r from-[#38a9f3] to-[#6366f1] px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-            </svg>
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
           </div>
           <div>
-            <h3 class="text-white font-bold text-base">Share Post</h3>
-            <p class="text-white/70 text-xs">Send this post to a friend</p>
+            <h3 class="text-white font-bold text-base">Share to Your Feed</h3>
+            <p class="text-white/70 text-xs">Add your thoughts and share this post</p>
           </div>
         </div>
         <button (click)="closeShareModal()" class="text-white/80 hover:text-white transition-colors">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
 
-      <!-- Post Preview -->
+      <!-- Your Message -->
       <div class="px-6 pt-4">
-        <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-start gap-3">
-          <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shrink-0">
-            <img [src]="sharingPost.avatar" [alt]="sharingPost.author" class="w-full h-full object-cover" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-[#0f1724]">{{ sharingPost.author }}</span>
-            </div>
-            <p class="text-xs text-gray-600 mt-0.5 line-clamp-2">{{ sharingPost.content }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Search Friends -->
-      <div class="px-6 pt-4">
-        <div class="relative">
-          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-          <input type="text" [(ngModel)]="shareSearchQuery" placeholder="Search friends..." class="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#38a9f3]/20" />
-        </div>
-      </div>
-
-      <!-- Friends List -->
-      <div class="px-6 py-4 max-h-[300px] overflow-y-auto">
-        @if (shareLoading) {
-          <div class="flex items-center justify-center py-8">
-            <div class="w-6 h-6 border-2 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        } @else {
-          @for (friend of filteredShareFriends; track friend.id) {
-            <div class="flex items-center gap-3 py-2.5 hover:bg-gray-50 rounded-xl px-2 transition-colors">
-              <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0">
-                <img [src]="friend.avatar" [alt]="friend.name" class="w-full h-full object-cover" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-[#0f1724]">{{ friend.name }}</p>
-              </div>
-              <button (click)="sharePostToFriend(friend)" class="px-4 py-1.5 bg-gradient-to-r from-[#38a9f3] to-[#6366f1] text-white text-xs font-semibold rounded-lg hover:shadow-md transition-all">
-                Send
-              </button>
+        <div class="flex items-start gap-3">
+          @if (user) {
+            <div class="w-9 h-9 rounded-full overflow-hidden bg-gray-200 shrink-0">
+              <img [src]="$any(user).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" [alt]="user.name" class="w-full h-full object-cover" />
             </div>
           }
-          @if (filteredShareFriends.length === 0 && !shareLoading) {
-            <div class="text-center py-8">
-              <p class="text-sm text-gray-400">No friends found</p>
-              <p class="text-xs text-gray-300 mt-1">Add friends to share posts with them</p>
-            </div>
+          <div class="flex-1 relative">
+            <textarea [(ngModel)]="shareMessage" (input)="onShareMessageInput()" placeholder="Say something about this post... Use @user to tag someone" class="w-full text-sm placeholder-gray-400 outline-none bg-transparent resize-none min-h-[60px] max-h-[100px] leading-relaxed text-[#0f1724]" rows="3" maxlength="500"></textarea>
+            <!-- User suggestions for share -->
+            @if (shareShowUserSuggestions && shareUserSuggestions.length > 0) {
+              <div class="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-30 w-56 overflow-hidden bg-white border border-gray-200">
+                @for (u of shareUserSuggestions; track u.username) {
+                  <button (click)="selectShareUserTag(u, $event)" class="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f0f7ff] transition-colors text-left">
+                    <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0"><img [src]="u.avatar" [alt]="u.name" class="w-full h-full object-cover" /></div>
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold text-[#0f1724] truncate">{{ u.name }}</p>
+                      <p class="text-[10px] text-gray-400 truncate">{{ u.username }}</p>
+                    </div>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+        <!-- Share Actions -->
+        <div class="flex items-center gap-1 mt-2 border-b border-gray-100 pb-3">
+          <button (click)="toggleShareEmojiPicker($event)" class="p-1.5 rounded-lg transition-all text-gray-400 hover:text-[#38a9f3] hover:bg-[#38a9f3]/10" title="Add emoji">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" /></svg>
+          </button>
+          @if (shareMessage.length > 0) {
+            <span class="text-[10px] text-gray-400 ml-auto">{{ shareMessage.length }}/500</span>
           }
+        </div>
+        <!-- Share Emoji Picker -->
+        @if (showShareEmojiPicker) {
+          <div class="mt-2 rounded-xl shadow-lg overflow-hidden bg-white border border-gray-200" (click)="$event.stopPropagation()">
+            <div class="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 overflow-x-auto">
+              @for (cat of emojiCategories; track cat.name; let i = $index) {
+                <button (click)="activeEmojiCategory = i; $event.stopPropagation()" class="px-2 py-1 text-lg rounded-lg transition-colors shrink-0" [class.bg-[#38a9f3]/10]="activeEmojiCategory === i">{{ cat.icon }}</button>
+              }
+            </div>
+            <div class="p-2 h-[140px] overflow-y-auto">
+              <div class="flex flex-wrap gap-0.5">
+                @for (emoji of emojiCategories[activeEmojiCategory].emojis; track emoji) {
+                  <button (click)="insertShareEmoji(emoji, $event)" class="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">{{ emoji }}</button>
+                }
+              </div>
+            </div>
+          </div>
         }
       </div>
+
+      <!-- Embedded Post Preview -->
+      <div class="px-6 pt-3 pb-2">
+        <div class="rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
+          <div class="flex items-center gap-2 px-4 py-2.5 border-b border-gray-100">
+            <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0">
+              <img [src]="sharingPost.avatar" [alt]="sharingPost.author" class="w-full h-full object-cover" />
+            </div>
+            <span class="text-xs font-bold text-[#0f1724]">{{ sharingPost.author }}</span>
+            <span class="text-xs text-gray-400">{{ sharingPost.username }}</span>
+          </div>
+          <div class="px-4 py-3">
+            <p class="text-sm text-gray-700 leading-relaxed line-clamp-3" [innerHTML]="formatContent(sharingPost.content)"></p>
+            @if (sharingPost.image && !isVideoUrl(sharingPost.image)) {
+              <div class="rounded-lg overflow-hidden mt-2 max-h-32"><img [src]="sharingPost.image" alt="" class="max-h-32 w-full object-contain" /></div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Share Button -->
+      <div class="px-6 pb-5 pt-2 flex gap-3">
+        <button (click)="closeShareModal()" class="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors">Cancel</button>
+        <button (click)="submitShare()" class="flex-1 bg-gradient-to-r from-[#38a9f3] to-[#6366f1] text-white py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+          Share Now
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- View Profile Modal -->
+@if (showProfileModal) {
+  <div class="report-overlay fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeProfileModal()">
+    <div class="report-modal bg-white w-full max-w-lg max-h-[85vh] flex flex-col" (click)="$event.stopPropagation()">
+      @if (profileLoading) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-2 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      } @else if (profileUser) {
+        <!-- Profile Header -->
+        <div class="bg-gradient-to-r from-[#38a9f3] to-[#56c8ff] px-6 py-5 text-white shrink-0">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 rounded-full border-3 border-white/30 overflow-hidden bg-white/20 shrink-0">
+                <img [src]="profileUser.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + profileUser.name" [alt]="profileUser.name" class="w-full h-full object-cover" />
+              </div>
+              <div>
+                <h3 class="text-lg font-bold">{{ profileUser.name }}</h3>
+                <p class="text-white/80 text-sm">{{ profileUser.username }}</p>
+                @if (profileUser.bio) { <p class="text-white/70 text-xs mt-1">{{ profileUser.bio }}</p> }
+                <div class="flex items-center gap-3 mt-2">
+                  @if (profileUser.level) { <span class="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-medium">{{ profileUser.level }}</span> }
+                  @if (profileUser.xp) { <span class="text-xs">{{ profileUser.xp }} XP</span> }
+                  @if (profileUser.streak) { <span class="text-xs">🔥 {{ profileUser.streak }}</span> }
+                </div>
+              </div>
+            </div>
+            <button (click)="closeProfileModal()" class="text-white/80 hover:text-white transition-colors p-1">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <!-- Friend Request Actions -->
+          @if (profileFriendRequest) {
+            <div class="flex items-center gap-2 mt-4 bg-white/15 rounded-xl px-4 py-3">
+              <svg class="w-5 h-5 text-white/80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>
+              <span class="text-sm flex-1">Wants to be your friend</span>
+              <button (click)="acceptFriendRequestFromProfile(profileFriendRequest)" class="px-3 py-1 bg-white text-[#38a9f3] text-xs font-bold rounded-lg hover:bg-gray-100">Accept</button>
+              <button (click)="rejectFriendRequestFromProfile(profileFriendRequest)" class="px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-lg hover:bg-white/30">Decline</button>
+            </div>
+          }
+        </div>
+
+        <!-- User's Posts (including shared posts) -->
+        <div class="flex-1 overflow-y-auto px-6 py-4">
+          <h4 class="text-sm font-bold text-[#0f1724] mb-3">Posts ({{ profileUserPosts.length }})</h4>
+          @for (post of profileUserPosts; track post.id) {
+            <div class="border border-gray-200 rounded-xl p-4 mb-3">
+              <p class="text-sm text-[#0f1724] leading-relaxed" [innerHTML]="formatContent(post.content)"></p>
+              <!-- Show embedded shared post -->
+              @if (post.sharedPost) {
+                <div class="mt-2 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
+                  <div class="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
+                    <div class="w-6 h-6 rounded-full overflow-hidden bg-gray-200 shrink-0"><img [src]="post.sharedPost.avatar" class="w-full h-full object-cover" /></div>
+                    <span class="text-[11px] font-bold text-[#0f1724]">{{ post.sharedPost.author }}</span>
+                  </div>
+                  <div class="px-3 py-2">
+                    <p class="text-xs text-gray-600 line-clamp-2">{{ post.sharedPost.content }}</p>
+                  </div>
+                </div>
+              }
+              @if (post.image) {
+                <div class="rounded-lg overflow-hidden mt-2 max-h-32"><img [src]="post.image" class="max-h-32 w-full object-contain" /></div>
+              }
+              <div class="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                <span>{{ getTimeAgo(post) }}</span>
+                <span>❤️ {{ post.likes }}</span>
+                <span>💬 {{ post.comments }}</span>
+                <span>🔄 {{ post.reposts }}</span>
+              </div>
+            </div>
+          }
+          @if (profileUserPosts.length === 0) {
+            <div class="text-center py-8">
+              <p class="text-sm text-gray-400">No posts yet</p>
+            </div>
+          }
+        </div>
+      }
     </div>
   </div>
 }

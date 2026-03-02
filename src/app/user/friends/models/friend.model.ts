@@ -15,46 +15,40 @@ export interface Friendship {
 // Frontend display model
 export interface Friend {
   id: number;
-  friendshipId?: number;
+  friendshipId: number;
   name: string;
   avatar: string;
-  lastMessage?: string;
-  lastMessageTime?: string;
-  time?: string;
+  lastMessage: string;
+  lastMessageTime: string;
   online: boolean;
   lastSeen?: string;
-  unreadCount?: number;
-  status?: string;
+  unreadCount: number;
 }
 
 export interface FriendRequest {
   id: number;
-  friendshipId?: number;
+  friendshipId: number;
   name: string;
   avatar: string;
-  userId?: number;
-  createdAt?: string;
-  info?: string;
+  userId: number;
+  createdAt: string;
 }
 
 // Backend ChatMessage entity
 export interface ChatMessage {
   id?: number;
   senderId: number;
-  senderName?: string;
-  senderAvatar?: string;
-  receiverId?: number;
-  receiverName?: string;
-  content?: string;
-  messageType?: 'TEXT' | 'IMAGE' | 'GIF' | 'EMOJI' | 'SHARED_POST';
+  senderName: string;
+  senderAvatar: string;
+  receiverId: number;
+  receiverName: string;
+  content: string;
+  messageType: 'TEXT' | 'IMAGE' | 'GIF' | 'EMOJI' | 'SHARED_POST';
   imageUrl?: string;
   gifUrl?: string;
   sharedPostId?: number;
   isRead?: boolean;
   createdAt?: string;
-  text?: string;
-  time?: string;
-  isMine?: boolean;
 }
 
 // Frontend display message

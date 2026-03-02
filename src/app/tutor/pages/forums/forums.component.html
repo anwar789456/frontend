@@ -1,130 +1,636 @@
-<div class="p-8">
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-[#0f1419]">Community</h1>
-    <div class="flex items-center gap-4">
-      <div class="relative">
-        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-        <input type="text" placeholder="Search Forums" class="pl-10 pr-4 py-2 w-[200px] bg-[#f7f9fa] border border-[#eef1f4] rounded-full text-sm outline-none focus:border-[#38a9f3]" />
+<div class="forum-container flex gap-6 px-6 py-6 min-h-screen transition-all" [class.forum-dark]="darkMode">
+  <input type="file" #fileInput class="hidden" accept="image/*,video/*" (change)="onFileSelected($event)" />
+
+  <!-- Notification Toasts -->
+  <div class="fixed top-4 right-4 z-[999] flex flex-col gap-2 w-80">
+    @for (n of notifications; track n.id) {
+      <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm" [class]="n.exiting ? 'toast-exit' : 'toast-enter'" [class.bg-green-50]="n.type === 'success' && !darkMode" [class.border-green-200]="n.type === 'success' && !darkMode" [class.bg-green-900/90]="n.type === 'success' && darkMode" [class.border-green-700]="n.type === 'success' && darkMode" [class.bg-blue-50]="n.type === 'info' && !darkMode" [class.border-blue-200]="n.type === 'info' && !darkMode" [class.bg-blue-900/90]="n.type === 'info' && darkMode" [class.border-blue-700]="n.type === 'info' && darkMode" [class.bg-orange-50]="n.type === 'warning' && !darkMode" [class.border-orange-200]="n.type === 'warning' && !darkMode" [class.bg-orange-900/90]="n.type === 'warning' && darkMode" [class.border-orange-700]="n.type === 'warning' && darkMode">
+        <span class="text-lg">{{ getNotifIcon(n.type) }}</span>
+        <p class="text-sm flex-1 dm-text" [class.text-gray-700]="!darkMode">{{ n.message }}</p>
+        <button (click)="dismissNotification(n.id)" class="text-gray-400 hover:text-gray-600 shrink-0">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
       </div>
-      <span class="text-sm text-[#536471]">EN</span>
-      <span class="text-sm text-orange-500 font-semibold">🔥 5</span>
-      <span class="text-sm text-[#38a9f3] font-semibold">❤ 4.20</span>
-    </div>
+    }
   </div>
 
-  <div class="flex gap-6">
-    <!-- Feed -->
-    <div class="flex-1 min-w-0">
-      <!-- Post Box -->
-      <div class="bg-white rounded-xl border border-[#eef1f4] p-4 mb-4">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-full bg-[#e6f6ff] flex items-center justify-center text-lg">👤</div>
-          <input type="text" placeholder="What's on your mind?" class="flex-1 py-2 px-4 bg-[#f7f9fa] border border-[#eef1f4] rounded-full text-sm outline-none focus:border-[#38a9f3]" />
+  <!-- MAIN FEED COLUMN -->
+  <div class="flex-1 min-w-0 max-w-[680px]">
+    <!-- Header Bar -->
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-200/50">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" /></svg>
         </div>
-        <div class="flex items-center justify-between">
-          <div class="flex gap-2">
-            <button class="p-2 text-[#9ca3af] hover:text-[#38a9f3] rounded-lg hover:bg-[#f0f9ff]">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M18 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75z" /></svg>
-            </button>
-            <button class="p-2 text-[#9ca3af] hover:text-[#38a9f3] rounded-lg hover:bg-[#f0f9ff]">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
-            </button>
-            <button class="p-2 text-[#9ca3af] hover:text-[#38a9f3] rounded-lg hover:bg-[#f0f9ff]">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
-            </button>
-            <button class="p-2 text-[#9ca3af] hover:text-[#38a9f3] rounded-lg hover:bg-[#f0f9ff]">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" /></svg>
-            </button>
-          </div>
-          <button class="px-5 py-2 text-sm font-semibold text-white bg-[#4ade80] rounded-full hover:bg-[#22c55e]">Post</button>
+        <div>
+          <h1 class="text-lg font-bold dm-text" [class.text-gray-900]="!darkMode">Teacher's Lounge</h1>
+          <p class="text-xs text-gray-400">Connect, share &amp; inspire fellow educators</p>
         </div>
       </div>
+      <div class="flex items-center gap-2">
+        <!-- Search -->
+        <div class="relative">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search discussions..." class="pl-9 pr-3 py-2 w-48 rounded-lg text-sm border dm-bg dm-border dm-text" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode" />
+        </div>
+        <!-- Notifications Bell -->
+        <button (click)="toggleNotifPanel()" class="relative p-2 rounded-lg hover:bg-gray-100 dm-hover transition">
+          <svg class="w-5 h-5 text-gray-500 dm-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" /></svg>
+          @if (unreadNotifCount > 0) {
+            <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">{{ unreadNotifCount > 9 ? '9+' : unreadNotifCount }}</span>
+          }
+        </button>
+        <!-- Dark Mode Toggle -->
+        <button (click)="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 dm-hover transition">
+          @if (darkMode) {
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm11.394-5.834a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18Zm4.894-2.44a.75.75 0 0 0-1.06 1.06l1.59 1.591a.75.75 0 1 0 1.06-1.06l-1.59-1.59ZM18 12a.75.75 0 0 1 .75-.75H21a.75.75 0 0 1 0 1.5h-2.25A.75.75 0 0 1 18 12ZM6.166 4.106a.75.75 0 0 1 0 1.06l-1.59 1.591a.75.75 0 1 1-1.061-1.06l1.59-1.591a.75.75 0 0 1 1.06 0ZM3 12a.75.75 0 0 1 .75-.75H6a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 12Zm3.166 7.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591Z" /></svg>
+          } @else {
+            <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" /></svg>
+          }
+        </button>
+      </div>
+    </div>
 
-      <!-- Posts -->
-      @for (post of posts; track post.author + post.time) {
-        <div class="bg-white rounded-xl border border-[#eef1f4] p-5 mb-4">
-          <div class="flex items-start gap-3 mb-3">
-            <span class="text-2xl">{{ post.avatar }}</span>
-            <div class="flex-1">
-              <div class="flex items-center gap-2">
-                <span class="text-sm font-bold text-[#0f1419]">{{ post.author }}</span>
-                <span class="text-[11px] text-[#9ca3af]">{{ post.handle }} &bull; {{ post.time }}</span>
-              </div>
-              <p class="text-sm text-[#0f1419] mt-1 leading-relaxed">{{ post.content }}
-                @if (post.hashtags) {
-                  <span class="text-[#38a9f3]"> {{ post.hashtags }}</span>
+    <!-- Notification Panel -->
+    @if (showNotifPanel) {
+      <div class="mb-4 rounded-xl border shadow-sm dm-bg dm-border overflow-hidden" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+        <div class="flex items-center justify-between px-4 py-3 border-b dm-border" [class.border-gray-100]="!darkMode">
+          <h3 class="text-sm font-semibold dm-text">Notifications</h3>
+          <button (click)="markAllNotifsRead()" class="text-xs text-emerald-600 hover:underline">Mark all read</button>
+        </div>
+        <div class="max-h-64 overflow-y-auto">
+          @if (tagNotifications.length === 0) {
+            <p class="px-4 py-6 text-center text-sm text-gray-400">No notifications yet</p>
+          }
+          @for (notif of tagNotifications; track notif.id) {
+            <div (click)="onNotifClick(notif)" class="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors" [class.bg-emerald-50]="!notif.isRead && !darkMode" [class.bg-emerald-900/20]="!notif.isRead && darkMode" [class.hover:bg-gray-50]="!darkMode" [class.hover:bg-gray-800]="darkMode">
+              <div class="relative shrink-0">
+                <img [src]="notif.fromAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'" class="w-8 h-8 rounded-full" />
+                @if (notif.type === 'FRIEND_REQUEST') {
+                  <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                  </div>
                 }
-              </p>
-              @if (post.hasImage) {
-                <div class="mt-3 h-[200px] bg-gradient-to-br from-[#e6f6ff] to-[#dbeafe] rounded-xl flex items-center justify-center">
-                  <div class="text-5xl">🎓</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm dm-text">{{ notif.message }}</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <p class="text-xs text-gray-400">{{ getNotifTimeAgo(notif.createdAt) }}</p>
+                  @if (notif.type === 'FRIEND_REQUEST') {
+                    <span class="text-[9px] font-semibold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full">Friend Request</span>
+                  }
+                  @if (notif.type === 'TAG') {
+                    <span class="text-[9px] font-semibold bg-teal-100 text-teal-600 px-1.5 py-0.5 rounded-full">Mention</span>
+                  }
+                </div>
+              </div>
+              @if (!notif.isRead) { <span class="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0"></span> }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Create Post Card -->
+    <div class="rounded-xl border shadow-sm p-4 mb-4 dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+      <div class="flex items-start gap-3">
+        <img [src]="(user | json) !== 'null' ? ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + user!.name) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=teacher'" class="w-10 h-10 rounded-full border-2 border-emerald-200" />
+        <div class="flex-1">
+          <textarea #postInput [(ngModel)]="newPostContent" (input)="onPostContentInput()" placeholder="Share something with fellow teachers..." rows="2" class="w-full resize-none rounded-lg px-3 py-2 text-sm border dm-bg dm-border dm-text focus:outline-none focus:ring-2 focus:ring-emerald-400/50" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode"></textarea>
+
+          <!-- User Suggestions -->
+          @if (showUserSuggestions) {
+            <div class="user-suggestions-container absolute z-50 mt-1 w-64 rounded-lg border shadow-lg dm-bg dm-border overflow-hidden" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+              @for (suggestion of userSuggestions; track suggestion.id) {
+                <button (click)="selectUserTag(suggestion, $event)" class="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-emerald-50 dm-hover transition">
+                  <img [src]="suggestion.avatar" class="w-7 h-7 rounded-full" />
+                  <div><p class="text-sm font-medium dm-text">{{ suggestion.name }}</p><p class="text-xs text-gray-400">{{ suggestion.username }}</p></div>
+                </button>
+              }
+            </div>
+          }
+
+          <!-- File Preview -->
+          @if (filePreviewUrl) {
+            <div class="mt-2 relative inline-block">
+              @if (fileType === 'image') {
+                <img [src]="filePreviewUrl" class="max-h-48 rounded-lg border dm-border" />
+              } @else if (fileType === 'video') {
+                <video [src]="filePreviewUrl" class="max-h-48 rounded-lg border dm-border" controls></video>
+              }
+              <button (click)="removeSelectedFile()" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">X</button>
+              @if (selectedFile) { <p class="text-xs text-gray-400 mt-1">{{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})</p> }
+            </div>
+          }
+          @if (fileError) { <p class="text-xs text-red-500 mt-1">{{ fileError }}</p> }
+
+          <!-- Image URL Input -->
+          @if (showImageInput) {
+            <input [(ngModel)]="newPostImage" placeholder="Paste image URL here..." class="mt-2 w-full px-3 py-1.5 text-sm rounded-lg border dm-bg dm-border dm-text" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode" />
+          }
+
+          <!-- Location Input -->
+          @if (showLocationInput) {
+            <div class="mt-2 flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+              <input [(ngModel)]="newPostLocation" placeholder="Add location..." class="flex-1 px-3 py-1.5 text-sm rounded-lg border dm-bg dm-border dm-text" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode" />
+            </div>
+          }
+
+          @if (postError) { <p class="mt-1 text-xs text-red-500">{{ postError }}</p> }
+
+          <!-- Post Actions Bar -->
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center gap-1">
+              <button (click)="triggerFileInput()" class="p-2 rounded-lg text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition" title="Upload media">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75Z" /></svg>
+              </button>
+              <button (click)="toggleImageInput()" class="p-2 rounded-lg text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition" title="Image URL">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.86-1.135a4.5 4.5 0 0 0-1.242-7.244l4.5-4.5a4.5 4.5 0 0 1 6.364 6.364l-1.757 1.757" /></svg>
+              </button>
+              <div class="relative emoji-picker-container">
+                <button (click)="toggleEmojiPicker($event)" class="p-2 rounded-lg text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition" title="Emoji">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" /></svg>
+                </button>
+                @if (showEmojiPicker) {
+                  <div class="absolute bottom-full left-0 mb-2 w-80 rounded-xl border shadow-xl z-50 dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode" (click)="$event.stopPropagation()">
+                    <div class="flex gap-1 p-2 border-b dm-border overflow-x-auto">
+                      @for (cat of emojiCategories; track cat.name; let i = $index) {
+                        <button (click)="activeEmojiCategory = i" class="p-1.5 rounded-lg text-sm shrink-0 transition" [class.bg-emerald-100]="activeEmojiCategory === i && !darkMode" [class.bg-emerald-900/40]="activeEmojiCategory === i && darkMode">{{ cat.icon }}</button>
+                      }
+                    </div>
+                    <div class="p-2 h-48 overflow-y-auto">
+                      <div class="grid grid-cols-8 gap-1">
+                        @for (emoji of emojiCategories[activeEmojiCategory].emojis; track emoji) {
+                          <button (click)="insertEmoji(emoji, $event)" class="p-1 text-lg rounded hover:bg-gray-100 dm-hover transition">{{ emoji }}</button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+              <button (click)="toggleGifPicker($event)" class="p-2 rounded-lg text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition" title="GIF">
+                <span class="text-xs font-bold border border-current rounded px-1">GIF</span>
+              </button>
+              <button (click)="toggleLocationInput()" class="p-2 rounded-lg text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition" title="Location">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+              </button>
+            </div>
+            <button (click)="createPost()" class="px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full hover:from-emerald-600 hover:to-teal-600 shadow-md shadow-emerald-200/50 transition-all">Publish</button>
+          </div>
+
+          <!-- GIF Picker -->
+          @if (showGifPicker) {
+            <div class="mt-2 rounded-xl border p-3 dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+              <input [(ngModel)]="gifSearchQuery" (input)="onGifSearch()" placeholder="Search GIFs..." class="w-full px-3 py-1.5 text-sm rounded-lg border mb-2 dm-bg dm-border dm-text" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode" />
+              @if (gifLoading) { <p class="text-xs text-gray-400 text-center py-4">Loading GIFs...</p> }
+              <div class="grid grid-cols-4 gap-1 max-h-48 overflow-y-auto">
+                @for (gif of gifResults; track gif.url) {
+                  <img [src]="gif.preview" (click)="selectGif(gif.url)" class="w-full h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition" />
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Topic Filter Bar -->
+    @if (selectedTopicId !== null) {
+      <div class="flex items-center gap-2 mb-3 px-1">
+        <span class="text-xs text-gray-400">Filtered by topic:</span>
+        <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{{ trendingTopics | json }}</span>
+        <button (click)="clearTopicFilter()" class="text-xs text-red-400 hover:text-red-600 ml-1">Clear</button>
+      </div>
+    }
+
+    <!-- Posts Feed -->
+    @for (post of filteredPosts; track post.id) {
+      <div [id]="'post-' + post.id" class="rounded-xl border shadow-sm mb-4 overflow-hidden transition-all duration-500 dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode" [class.ring-2]="highlightedPostId === post.id" [class.ring-emerald-500]="highlightedPostId === post.id" [class.bg-emerald-50]="highlightedPostId === post.id && !darkMode">
+        <div class="p-4">
+          <!-- Post Header -->
+          <div class="flex items-start justify-between">
+            <div class="flex items-start gap-3">
+              <img [src]="post.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + post.author" class="w-10 h-10 rounded-full" />
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-bold dm-text cursor-pointer hover:underline" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.author }}</span>
+                  <span class="text-xs text-gray-400 cursor-pointer hover:underline" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.username }}</span>
+                  <span class="text-xs text-gray-400">&middot; {{ getTimeAgo(post) }}</span>
+                  @if (post.isEdited) { <span class="text-[10px] text-gray-400 italic">(edited)</span> }
+                </div>
+              </div>
+            </div>
+            <!-- Post Menu -->
+            <div class="relative">
+              <button (click)="toggleMenu(post.id)" class="p-1 rounded-lg hover:bg-gray-100 dm-hover transition">
+                <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>
+              </button>
+              @if (openMenuPostId === post.id) {
+                <div class="absolute right-0 top-8 w-48 rounded-xl border shadow-lg z-40 py-1 dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+                  @if (isOwnPost(post)) {
+                    <button (click)="startEdit(post)" class="w-full text-left px-4 py-2 text-sm dm-text hover:bg-gray-50 dm-hover">Edit post</button>
+                    <button (click)="deletePost(post)" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50">Delete post</button>
+                  }
+                  @if (!isOwnPost(post)) {
+                    <button (click)="openReportModal(post)" class="w-full text-left px-4 py-2 text-sm dm-text hover:bg-gray-50 dm-hover">Report post</button>
+                    @if (getFriendStatus(post.userId) === 'none') {
+                      <button (click)="sendFriendRequestFromForum(post)" class="w-full text-left px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50">Add as colleague</button>
+                    } @else if (getFriendStatus(post.userId) === 'pending') {
+                      <span class="block px-4 py-2 text-sm text-gray-400">Request sent</span>
+                    }
+                  }
+                  <button (click)="openShareModal(post)" class="w-full text-left px-4 py-2 text-sm dm-text hover:bg-gray-50 dm-hover">Share with colleague</button>
                 </div>
               }
             </div>
           </div>
-          <div class="flex items-center gap-6 ml-[52px] text-[#9ca3af]">
-            <button class="flex items-center gap-1.5 text-xs hover:text-[#38a9f3]">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" /></svg>
-              {{ post.comments }}
+
+          <!-- Post Content -->
+          @if (editingPostId === post.id) {
+            <div class="mt-3 ml-[52px]">
+              <textarea [(ngModel)]="editContent" rows="3" class="w-full resize-none rounded-lg px-3 py-2 text-sm border dm-bg dm-border dm-text focus:outline-none focus:ring-2 focus:ring-emerald-400/50" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode"></textarea>
+              @if (editError) { <p class="text-xs text-red-500 mt-1">{{ editError }}</p> }
+              <div class="flex gap-2 mt-2">
+                <button (click)="submitEdit(post)" class="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-500 rounded-lg hover:bg-emerald-600">Save</button>
+                <button (click)="cancelEdit()" class="px-3 py-1.5 text-xs font-semibold text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
+              </div>
+            </div>
+          } @else {
+            <div class="mt-2 ml-[52px] text-sm leading-relaxed dm-text" [innerHTML]="formatContent(post.content)"></div>
+          }
+
+          <!-- Post Image -->
+          @if (post.image) {
+            <div class="mt-3 ml-[52px]">
+              @if (isVideoUrl(post.image)) {
+                <video [src]="post.image" class="max-h-80 rounded-xl w-full object-cover" controls></video>
+              } @else {
+                <img [src]="post.image" class="max-h-80 rounded-xl w-full object-cover" />
+              }
+            </div>
+          }
+
+          <!-- Embedded Shared Post -->
+          @if (post.sharedPostId) {
+            @if (getSharedPost(post); as sharedPost) {
+              <div class="mt-3 ml-[52px] rounded-xl border overflow-hidden dm-border" [class.border-gray-200]="!darkMode" [class.bg-gray-50]="!darkMode" [class.bg-gray-800/50]="darkMode">
+                <div class="flex items-center gap-2 px-3 py-2 border-b dm-border" [class.border-gray-100]="!darkMode">
+                  <img [src]="sharedPost.avatar" class="w-6 h-6 rounded-full" />
+                  <span class="text-xs font-bold dm-text cursor-pointer hover:underline" (click)="sharedPost.userId ? openProfileByUserId(sharedPost.userId) : null">{{ sharedPost.author }}</span>
+                  <span class="text-[10px] text-gray-400">{{ sharedPost.username }}</span>
+                  <span class="text-[10px] text-gray-400">&middot; {{ getTimeAgo(sharedPost) }}</span>
+                </div>
+                <div class="px-3 py-2">
+                  <p class="text-sm leading-relaxed dm-text" [innerHTML]="formatContent(sharedPost.content)"></p>
+                  @if (sharedPost.image && !isVideoUrl(sharedPost.image)) {
+                    <div class="rounded-lg overflow-hidden mt-2 max-h-40"><img [src]="sharedPost.image" class="max-h-40 w-full object-contain" /></div>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Reactions Display -->
+          @if (getPostReactions(post.id).length > 0) {
+            <div class="mt-2 ml-[52px] flex flex-wrap gap-1">
+              @for (r of getPostReactions(post.id); track r.emoji) {
+                <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs border dm-border" [class.bg-emerald-50]="!darkMode" [class.border-emerald-200]="!darkMode" [class.bg-emerald-900/30]="darkMode">
+                  {{ r.emoji }} <span class="font-medium dm-text">{{ r.count }}</span>
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Floating Reaction Animation -->
+          @if (floatingReaction && floatingReaction.postId === post.id) {
+            <div class="floating-reaction ml-[52px]">{{ floatingReaction.emoji }}</div>
+          }
+
+          <!-- Post Actions -->
+          <div class="flex items-center gap-5 mt-3 ml-[52px]">
+            <button (click)="startReply(post.id)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-emerald-500 transition">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" /></svg>
+              <span>{{ post.comments || 0 }}</span>
             </button>
-            <button class="flex items-center gap-1.5 text-xs hover:text-green-500">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
-              {{ post.reposts }}
+            <button (click)="repostPost(post)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-green-500 transition">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3-3" /></svg>
+              <span>{{ post.reposts || 0 }}</span>
             </button>
-            <button class="flex items-center gap-1.5 text-xs hover:text-red-500">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
-              {{ post.likes }}
+            <div class="relative">
+              <button (click)="toggleReactionPicker(post.id, $event)" class="flex items-center gap-1.5 text-xs transition" [class.text-red-500]="getUserReaction(post.id)" [class.text-gray-400]="!getUserReaction(post.id)" [class.hover:text-red-500]="true">
+                @if (getUserReaction(post.id)) { <span class="text-base">{{ getUserReaction(post.id) }}</span> }
+                @else { <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg> }
+                <span>{{ post.likes || 0 }}</span>
+              </button>
+              @if (showReactionsPostId === post.id) {
+                <div class="absolute bottom-full left-0 mb-2 flex gap-1 px-2 py-1.5 rounded-full border shadow-lg z-30 dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+                  @for (emoji of reactionEmojis; track emoji) {
+                    <button (click)="reactToPost(post, emoji, $event)" class="text-lg hover:scale-125 transition-transform p-0.5" [class.opacity-50]="getUserReaction(post.id) === emoji">{{ emoji }}</button>
+                  }
+                </div>
+              }
+            </div>
+            <button (click)="openShareModal(post)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-emerald-500 transition" [class.opacity-40]="isOwnPost(post)" [disabled]="isOwnPost(post)" [title]="isOwnPost(post) ? 'Cannot share own post' : 'Share to feed'">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" /></svg>
             </button>
-            <button class="text-xs hover:text-[#38a9f3]">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+            <!-- Save -->
+            <button (click)="toggleSavePost(post)" class="flex items-center gap-1 text-xs transition" [class.text-emerald-500]="isPostSaved(post.id)" [class.text-gray-400]="!isPostSaved(post.id)" title="Save post">
+              @if (isPostSaved(post.id)) {
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 2h14a1 1 0 011 1v19.143a.5.5 0 01-.766.424L12 18.03l-7.234 4.536A.5.5 0 014 22.143V3a1 1 0 011-1z" /></svg>
+              } @else {
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
+              }
+            </button>
+            <!-- Favorite -->
+            <button (click)="toggleFavoritePost(post)" class="flex items-center gap-1 text-xs transition" [class.text-yellow-500]="isPostFavorited(post.id)" [class.text-gray-400]="!isPostFavorited(post.id)" title="Add to favorites">
+              @if (isPostFavorited(post.id)) {
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+              } @else {
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+              }
             </button>
           </div>
         </div>
+
+        <!-- Replies Section -->
+        @if (expandedRepliesPostId === post.id) {
+          <div class="border-t dm-border px-4 py-3" [class.border-gray-100]="!darkMode" [class.bg-gray-50/50]="!darkMode" [class.bg-gray-800/30]="darkMode">
+            @for (reply of repliesMap.get(post.id) || []; track reply.id) {
+              <div class="flex items-start gap-2 mb-3">
+                <img [src]="reply.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + reply.author" class="w-7 h-7 rounded-full" />
+                <div class="flex-1">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold dm-text">{{ reply.author }}</span>
+                    <span class="text-[10px] text-gray-400">&middot; {{ getTimeAgo(reply) }}</span>
+                  </div>
+                  <p class="text-xs dm-text mt-0.5" [innerHTML]="formatContent(reply.content)"></p>
+                </div>
+              </div>
+            }
+            @if (replyingToPostId === post.id) {
+              <div class="flex items-start gap-2 mt-2">
+                <img [src]="'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user?.name || 'teacher')" class="w-7 h-7 rounded-full" />
+                <div class="flex-1">
+                  <textarea [(ngModel)]="replyContent" rows="2" placeholder="Write a reply..." class="w-full resize-none rounded-lg px-3 py-1.5 text-xs border dm-bg dm-border dm-text" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode"></textarea>
+                  @if (replyError) { <p class="text-[10px] text-red-500 mt-0.5">{{ replyError }}</p> }
+                  <div class="flex gap-2 mt-1.5">
+                    <button (click)="submitReply(post.id)" class="px-3 py-1 text-[11px] font-semibold text-white bg-emerald-500 rounded-lg hover:bg-emerald-600">Reply</button>
+                    <button (click)="cancelReply()" class="px-3 py-1 text-[11px] font-semibold text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (filteredPosts.length === 0) {
+      <div class="text-center py-16 rounded-xl border dm-border dm-bg" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+        <div class="text-5xl mb-3">📝</div>
+        <p class="text-gray-400 text-sm">No discussions yet. Be the first to share!</p>
+      </div>
+    }
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="w-72 shrink-0 space-y-4">
+    <!-- New Topic Card -->
+    <div class="rounded-xl border shadow-sm p-4 dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold dm-text">Discussion Topics</h3>
+        <button (click)="toggleNewTopicForm()" class="text-emerald-500 hover:text-emerald-600 transition">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+        </button>
+      </div>
+
+      @if (showNewTopicForm) {
+        <div class="mb-3 space-y-2">
+          <input [(ngModel)]="newTopicTitle" placeholder="#TopicTitle" class="w-full px-3 py-1.5 text-sm rounded-lg border dm-bg dm-border dm-text" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode" />
+          @if (topicTitleError) { <p class="text-[10px] text-red-500">{{ topicTitleError }}</p> }
+          <input [(ngModel)]="newTopicCategory" placeholder="Category (e.g. Pedagogy)" class="w-full px-3 py-1.5 text-sm rounded-lg border dm-bg dm-border dm-text" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode" />
+          @if (topicCategoryError) { <p class="text-[10px] text-red-500">{{ topicCategoryError }}</p> }
+          <button (click)="createTopic()" class="w-full py-1.5 text-xs font-semibold text-white bg-emerald-500 rounded-lg hover:bg-emerald-600">Create Topic</button>
+        </div>
+      }
+
+      @for (topic of trendingTopics; track topic.id || topic.title) {
+        <button (click)="selectTopic(topic)" class="w-full text-left mb-2 p-2 rounded-lg transition-colors" [class.bg-emerald-50]="selectedTopicId === topic.id && !darkMode" [class.bg-emerald-900/30]="selectedTopicId === topic.id && darkMode" [class.hover:bg-gray-50]="selectedTopicId !== topic.id && !darkMode" [class.hover:bg-gray-800]="selectedTopicId !== topic.id && darkMode">
+          <p class="text-[10px] text-gray-400 uppercase tracking-wide">{{ topic.category }}</p>
+          <p class="text-sm font-semibold dm-text">{{ topic.title }}</p>
+          <p class="text-[10px] text-gray-400">{{ topic.postCount || 0 }} posts &middot; {{ topic.viewCount || 0 }} views</p>
+        </button>
+      }
+      @if (trendingTopics.length === 0) {
+        <p class="text-xs text-gray-400 text-center py-2">No topics yet</p>
       }
     </div>
 
-    <!-- Right Sidebar -->
-    <div class="w-[260px] shrink-0 space-y-4">
-      <!-- Trending Topics -->
-      <div class="bg-white rounded-xl border border-[#eef1f4] p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-[13px] font-bold text-[#0f1419]">Trending Topics</h3>
-          <button class="text-[#9ca3af]"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
+    <!-- Quick Stats -->
+    <div class="rounded-xl border shadow-sm p-4 dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+      <h3 class="text-sm font-bold dm-text mb-3">Quick Stats</h3>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Total Discussions</span>
+          <span class="text-xs font-bold text-emerald-600">{{ posts.length }}</span>
         </div>
-        @for (topic of trendingTopics; track topic.title) {
-          <div class="mb-3">
-            <p class="text-[10px] text-[#9ca3af]">{{ topic.category }}</p>
-            <p class="text-sm font-bold text-[#0f1419]">{{ topic.title }}</p>
-            <p class="text-[10px] text-[#9ca3af]">{{ topic.posts }}</p>
-          </div>
-        }
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Active Topics</span>
+          <span class="text-xs font-bold text-teal-600">{{ trendingTopics.length }}</span>
+        </div>
       </div>
+    </div>
 
-      <!-- Top Contributors -->
-      <div class="bg-white rounded-xl border border-[#eef1f4] p-5">
-        <h3 class="text-[13px] font-bold text-[#0f1419] mb-3">Top Contributors</h3>
-        @for (contributor of topContributors; track contributor.name) {
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-full bg-[#e6f6ff] flex items-center justify-center text-xs">👤</div>
-              <div>
-                <p class="text-xs font-medium text-[#0f1419]">{{ contributor.name }}</p>
-                <p class="text-[10px] text-[#9ca3af]">{{ contributor.handle }}</p>
-              </div>
-            </div>
-            <button class="px-3 py-1 text-[11px] font-semibold text-white bg-[#0f1419] rounded-full hover:bg-[#1a2a3a]">Follow</button>
-          </div>
-        }
-        <button class="text-[11px] text-[#38a9f3] hover:underline">Show more</button>
-      </div>
-
-      <div class="text-[10px] text-[#9ca3af] space-x-2">
-        <a href="#" class="hover:underline">Terms of Service</a>
-        <a href="#" class="hover:underline">Privacy Policy</a>
-        <a href="#" class="hover:underline">Accessibility</a>
-        <br>
-        <span>Ads Info &copy; 2024 NiNo Inc.</span>
-      </div>
+    <div class="text-[10px] text-gray-400 px-2">
+      <p>NiNoLingo Teacher Community</p>
+      <p class="mt-1">Connect with educators worldwide</p>
     </div>
   </div>
 </div>
+
+<!-- Report Modal -->
+@if (showReportModal) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]" (click)="closeReportModal()">
+    <div class="w-[480px] rounded-2xl shadow-2xl p-6 dm-bg" [class.bg-white]="!darkMode" (click)="$event.stopPropagation()">
+      <h2 class="text-lg font-bold dm-text mb-4">Report Post</h2>
+      @if (reportSuccess) {
+        <div class="flex items-center gap-2 p-3 rounded-lg bg-green-50 text-green-700 text-sm mb-3">
+          <span>✅</span>{{ reportSuccess }}
+        </div>
+      } @else {
+        <p class="text-sm text-gray-500 mb-4">Why are you reporting this post?</p>
+        <div class="space-y-2 mb-4">
+          @for (reason of reportReasons; track reason) {
+            <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition" [class.border-emerald-500]="reportReason === reason" [class.bg-emerald-50]="reportReason === reason && !darkMode" [class.border-gray-200]="reportReason !== reason && !darkMode" [class.dm-border]="reportReason !== reason" [class.dm-bg]="reportReason !== reason">
+              <input type="radio" name="reportReason" [value]="reason" [(ngModel)]="reportReason" class="accent-emerald-500" />
+              <div><p class="text-sm font-medium dm-text">{{ reason }}</p></div>
+            </label>
+          }
+        </div>
+        <textarea [(ngModel)]="reportDescription" placeholder="Additional details (optional)..." rows="3" class="w-full rounded-lg px-3 py-2 text-sm border dm-bg dm-border dm-text mb-3" [class.bg-gray-50]="!darkMode" [class.border-gray-200]="!darkMode"></textarea>
+        @if (reportError) { <p class="text-xs text-red-500 mb-2">{{ reportError }}</p> }
+        <div class="flex justify-end gap-2">
+          <button (click)="closeReportModal()" class="px-4 py-2 text-sm text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
+          <button (click)="submitReport()" [disabled]="reportSubmitting" class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 disabled:opacity-50">{{ reportSubmitting ? 'Submitting...' : 'Submit Report' }}</button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- Share Modal (Facebook-style) -->
+@if (showShareModal && sharingPost) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[1000]" (click)="closeShareModal()">
+    <div class="w-[500px] rounded-2xl shadow-2xl overflow-hidden dm-bg" [class.bg-white]="!darkMode" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+          </div>
+          <div>
+            <h3 class="text-white font-bold text-sm">Share to Your Feed</h3>
+            <p class="text-white/70 text-xs">Add your thoughts and share</p>
+          </div>
+        </div>
+        <button (click)="closeShareModal()" class="text-white/80 hover:text-white"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+      </div>
+
+      <!-- Your Message -->
+      <div class="px-5 pt-4">
+        <div class="flex items-start gap-3">
+          <img [src]="(user | json) !== 'null' ? ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + user!.name) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=teacher'" class="w-9 h-9 rounded-full" />
+          <div class="flex-1 relative">
+            <textarea [(ngModel)]="shareMessage" (input)="onShareMessageInput()" placeholder="Say something about this post... Use @user to tag" class="w-full text-sm placeholder-gray-400 outline-none bg-transparent resize-none min-h-[50px] max-h-[90px] leading-relaxed dm-text" rows="2" maxlength="500"></textarea>
+            @if (shareShowUserSuggestions && shareUserSuggestions.length > 0) {
+              <div class="absolute left-0 top-full mt-1 rounded-lg shadow-xl z-30 w-56 overflow-hidden dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+                @for (u of shareUserSuggestions; track u.username) {
+                  <button (click)="selectShareUserTag(u, $event)" class="w-full flex items-center gap-2 px-3 py-2 hover:bg-emerald-50 dm-hover transition text-left">
+                    <img [src]="u.avatar" class="w-6 h-6 rounded-full" /><span class="text-xs font-medium dm-text truncate">{{ u.name }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+        <div class="flex items-center gap-1 mt-2 border-b dm-border pb-3" [class.border-gray-100]="!darkMode">
+          <button (click)="toggleShareEmojiPicker($event)" class="p-1.5 rounded-lg text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition" title="Add emoji">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" /></svg>
+          </button>
+          @if (shareMessage.length > 0) { <span class="text-[10px] text-gray-400 ml-auto">{{ shareMessage.length }}/500</span> }
+        </div>
+        @if (showShareEmojiPicker) {
+          <div class="mt-2 rounded-lg border shadow-lg overflow-hidden dm-bg dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode" (click)="$event.stopPropagation()">
+            <div class="flex gap-0.5 px-2 py-1.5 border-b dm-border overflow-x-auto">
+              @for (cat of emojiCategories; track cat.name; let i = $index) {
+                <button (click)="activeEmojiCategory = i; $event.stopPropagation()" class="px-1.5 py-1 text-base rounded-lg transition shrink-0" [class.bg-emerald-100]="activeEmojiCategory === i">{{ cat.icon }}</button>
+              }
+            </div>
+            <div class="p-2 h-32 overflow-y-auto">
+              <div class="flex flex-wrap gap-0.5">
+                @for (emoji of emojiCategories[activeEmojiCategory].emojis; track emoji) {
+                  <button (click)="insertShareEmoji(emoji, $event)" class="w-7 h-7 flex items-center justify-center text-base hover:bg-gray-100 rounded transition">{{ emoji }}</button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Embedded Post Preview -->
+      <div class="px-5 pt-3 pb-2">
+        <div class="rounded-xl border overflow-hidden dm-border" [class.border-gray-200]="!darkMode" [class.bg-gray-50]="!darkMode">
+          <div class="flex items-center gap-2 px-3 py-2 border-b dm-border" [class.border-gray-100]="!darkMode">
+            <img [src]="sharingPost.avatar" class="w-6 h-6 rounded-full" />
+            <span class="text-xs font-bold dm-text">{{ sharingPost.author }}</span>
+            <span class="text-[10px] text-gray-400">{{ sharingPost.username }}</span>
+          </div>
+          <div class="px-3 py-2">
+            <p class="text-sm dm-text leading-relaxed line-clamp-3" [innerHTML]="formatContent(sharingPost.content)"></p>
+            @if (sharingPost.image && !isVideoUrl(sharingPost.image)) {
+              <div class="rounded-lg overflow-hidden mt-2 max-h-28"><img [src]="sharingPost.image" class="max-h-28 w-full object-contain" /></div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-5 pb-4 pt-2 flex gap-3">
+        <button (click)="closeShareModal()" class="flex-1 py-2 text-sm font-semibold text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
+        <button (click)="submitShare()" class="flex-1 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+          Share Now
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- View Profile Modal -->
+@if (showProfileModal) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[1000]" (click)="closeProfileModal()">
+    <div class="w-[500px] max-h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden dm-bg" [class.bg-white]="!darkMode" (click)="$event.stopPropagation()">
+      @if (profileLoading) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      } @else if (profileUser) {
+        <!-- Profile Header -->
+        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-5 text-white shrink-0">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <img [src]="profileUser.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + profileUser.name" class="w-14 h-14 rounded-full border-2 border-white/30" />
+              <div>
+                <h3 class="text-base font-bold">{{ profileUser.name }}</h3>
+                <p class="text-white/80 text-xs">{{ profileUser.username }}</p>
+                @if (profileUser.bio) { <p class="text-white/70 text-xs mt-1">{{ profileUser.bio }}</p> }
+                <div class="flex items-center gap-3 mt-1.5">
+                  @if (profileUser.specialization) { <span class="bg-white/20 px-2 py-0.5 rounded-full text-[10px]">{{ profileUser.specialization }}</span> }
+                  @if (profileUser.yearsOfExperience) { <span class="text-xs">{{ profileUser.yearsOfExperience }}y exp</span> }
+                </div>
+              </div>
+            </div>
+            <button (click)="closeProfileModal()" class="text-white/80 hover:text-white p-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+          </div>
+          @if (profileFriendRequest) {
+            <div class="flex items-center gap-2 mt-4 bg-white/15 rounded-lg px-4 py-2.5">
+              <svg class="w-5 h-5 text-white/80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>
+              <span class="text-sm flex-1">Wants to be your colleague</span>
+              <button (click)="acceptFriendRequestFromProfile(profileFriendRequest)" class="px-3 py-1 bg-white text-emerald-600 text-xs font-bold rounded-lg hover:bg-gray-100">Accept</button>
+              <button (click)="rejectFriendRequestFromProfile(profileFriendRequest)" class="px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-lg hover:bg-white/30">Decline</button>
+            </div>
+          }
+        </div>
+        <!-- Posts -->
+        <div class="flex-1 overflow-y-auto px-5 py-4">
+          <h4 class="text-sm font-bold dm-text mb-3">Posts ({{ profileUserPosts.length }})</h4>
+          @for (post of profileUserPosts; track post.id) {
+            <div class="border rounded-lg p-3 mb-3 dm-border" [class.border-gray-200]="!darkMode">
+              <p class="text-sm dm-text leading-relaxed" [innerHTML]="formatContent(post.content)"></p>
+              @if (post.sharedPost) {
+                <div class="mt-2 rounded-lg border overflow-hidden dm-border" [class.border-gray-200]="!darkMode" [class.bg-gray-50]="!darkMode">
+                  <div class="flex items-center gap-2 px-3 py-1.5 border-b dm-border" [class.border-gray-100]="!darkMode">
+                    <img [src]="post.sharedPost.avatar" class="w-5 h-5 rounded-full" />
+                    <span class="text-[11px] font-bold dm-text">{{ post.sharedPost.author }}</span>
+                  </div>
+                  <div class="px-3 py-1.5"><p class="text-xs text-gray-500 line-clamp-2">{{ post.sharedPost.content }}</p></div>
+                </div>
+              }
+              @if (post.image) { <div class="rounded-lg overflow-hidden mt-2 max-h-28"><img [src]="post.image" class="max-h-28 w-full object-contain" /></div> }
+              <div class="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                <span>{{ getTimeAgo(post) }}</span>
+                <span>❤️ {{ post.likes }}</span>
+                <span>💬 {{ post.comments }}</span>
+                <span>🔄 {{ post.reposts }}</span>
+              </div>
+            </div>
+          }
+          @if (profileUserPosts.length === 0) {
+            <div class="text-center py-8"><p class="text-sm text-gray-400">No posts yet</p></div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
