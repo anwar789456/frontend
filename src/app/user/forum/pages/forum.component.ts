@@ -153,6 +153,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   // Save & Favorite
   savedPostIds: Set<number> = new Set();
   favoritePostIds: Set<number> = new Set();
+  activeTab: 'all' | 'saved' | 'favorites' = 'all';
 
   // Facebook-style Share
   shareMessage = '';
@@ -308,6 +309,11 @@ export class ForumComponent implements OnInit, OnDestroy {
 
   applyFilter(): void {
     let result = this.posts;
+    if (this.activeTab === 'saved') {
+      result = result.filter(p => this.savedPostIds.has(p.id));
+    } else if (this.activeTab === 'favorites') {
+      result = result.filter(p => this.favoritePostIds.has(p.id));
+    }
     if (this.selectedTopicId !== null) {
       const topic = this.trendingTopics.find(t => t.id === this.selectedTopicId);
       if (topic?.title) {
@@ -328,6 +334,14 @@ export class ForumComponent implements OnInit, OnDestroy {
     }
     this.filteredPosts = result;
   }
+
+  switchTab(tab: 'all' | 'saved' | 'favorites'): void {
+    this.activeTab = tab;
+    this.applyFilter();
+  }
+
+  getSavedCount(): number { return this.savedPostIds.size; }
+  getFavoriteCount(): number { return this.favoritePostIds.size; }
 
   onSearchChange(): void {
     this.applyFilter();

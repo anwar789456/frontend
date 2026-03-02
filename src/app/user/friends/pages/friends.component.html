@@ -21,14 +21,19 @@
 
     <!-- Header -->
     <div class="px-5 pt-5 pb-3">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#38a9f3] to-[#6366f1] flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+      <div class="relative overflow-hidden rounded-2xl mb-4 p-4 bg-gradient-to-r from-[#38a9f3] via-[#6366f1] to-[#a855f7]">
+        <div class="absolute top-1 right-10 text-lg float-bubble opacity-50">✨</div>
+        <div class="absolute bottom-1 right-4 text-sm float-bubble-delay opacity-40">🌟</div>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 mascot-bounce overflow-hidden">
+            <img src="mino_images/1770148246099.png" alt="MinoLingo" class="w-10 h-10 object-contain drop-shadow-lg" />
           </div>
-          <div>
-            <h1 class="text-lg font-bold text-[#0f1724]">Friends</h1>
-            <p class="text-[10px] text-gray-400">{{ friends.length }} friends · {{ onlineFriends.length }} online</p>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-base font-extrabold text-white tracking-tight">My Friends</h1>
+              <img src="mino_images/mino_with_pen.png" alt="" class="w-5 h-5 object-contain mascot-wave" />
+            </div>
+            <p class="text-white/80 text-[11px] font-medium">{{ friends.length }} friends · {{ onlineFriends.length }} online</p>
           </div>
         </div>
       </div>
@@ -121,12 +126,14 @@
           }
           @if (filteredFriends.length === 0) {
             <div class="text-center py-12 px-6">
-              <div class="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+              <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#38a9f3]/10 to-[#a855f7]/10 flex items-center justify-center overflow-hidden">
+                <img src="mino_images/nino.png" alt="MinoLingo" class="w-16 h-16 object-contain mascot-float drop-shadow-md" />
               </div>
-              <p class="text-sm font-medium text-gray-400">No friends yet</p>
-              <p class="text-xs text-gray-300 mt-1">Explore and add people!</p>
-              <button (click)="activeTab = 'explore'" class="mt-3 text-xs text-[#38a9f3] font-semibold hover:underline">Find Friends</button>
+              <p class="text-sm font-bold text-[#0f1724]">No friends yet!</p>
+              <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">MinoLingo is more fun with friends!<br>Let's find some learning buddies!</p>
+              <button (click)="activeTab = 'explore'" class="mt-4 px-5 py-2 bg-gradient-to-r from-[#38a9f3] to-[#6366f1] text-white text-xs font-bold rounded-xl hover:shadow-lg hover:scale-105 transition-all">
+                Find Friends ✨
+              </button>
             </div>
           }
         </div>
@@ -155,11 +162,11 @@
           }
           @if (friendRequests.length === 0) {
             <div class="text-center py-12 px-6">
-              <div class="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+              <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
+                <span class="text-4xl mascot-float">📬</span>
               </div>
-              <p class="text-sm font-medium text-gray-400">No pending requests</p>
-              <p class="text-xs text-gray-300 mt-1">When someone sends you a request, it will appear here</p>
+              <p class="text-sm font-bold text-[#0f1724]">All caught up!</p>
+              <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">No pending friend requests right now.<br>Check back soon!</p>
             </div>
           }
         </div>
@@ -290,11 +297,16 @@
 
           @if (messages.length === 0) {
             <div class="flex flex-col items-center justify-center h-full text-center">
-              <div class="w-20 h-20 bg-[#38a9f3]/10 rounded-full flex items-center justify-center mb-4">
-                <svg class="w-10 h-10 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+              <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#38a9f3]/10 to-[#a855f7]/10 flex items-center justify-center mb-5 mascot-float overflow-hidden p-1">
+                <img src="mino_images/writing_on_table-removebg-preview.png" alt="MinoLingo" class="w-full h-full object-contain drop-shadow-md" />
               </div>
-              <p class="text-sm font-medium text-gray-500">Start a conversation</p>
-              <p class="text-xs text-gray-400 mt-1">Say hi to {{ selectedFriend.name }}!</p>
+              <p class="text-base font-extrabold text-[#0f1724]">Say hello!</p>
+              <p class="text-sm text-gray-400 mt-1.5 leading-relaxed">Start practicing English with {{ selectedFriend.name }}!<br>Send a message, emoji, or GIF!</p>
+              <div class="flex items-center gap-2 mt-4">
+                <span class="text-xl mascot-bounce">👋</span>
+                <span class="text-xl mascot-bounce" style="animation-delay: 0.2s;">😊</span>
+                <span class="text-xl mascot-bounce" style="animation-delay: 0.4s;">🎉</span>
+              </div>
             </div>
           }
         }
@@ -394,12 +406,21 @@
       </div>
     } @else {
       <!-- No Chat Selected -->
-      <div class="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50/30">
-        <div class="w-28 h-28 bg-gradient-to-br from-[#38a9f3]/10 to-[#6366f1]/10 rounded-3xl flex items-center justify-center mb-6 rotate-6">
-          <svg class="w-14 h-14 text-[#38a9f3] -rotate-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+      <div class="flex-1 flex flex-col items-center justify-center relative overflow-hidden" style="background: linear-gradient(135deg, #f0f9ff 0%, #fef3f2 25%, #fefce8 50%, #ecfdf5 75%, #f0f9ff 100%);">
+        <div class="absolute top-10 left-10 text-2xl float-bubble opacity-30">💬</div>
+        <div class="absolute top-20 right-16 text-xl float-bubble-delay opacity-25">✨</div>
+        <div class="absolute bottom-16 left-20 text-lg sparkle opacity-20">⭐</div>
+        <div class="absolute bottom-10 right-10 text-xl float-bubble opacity-20">🌟</div>
+        <div class="w-32 h-32 rounded-3xl bg-gradient-to-br from-[#38a9f3]/15 to-[#a855f7]/15 flex items-center justify-center mb-6 mascot-float overflow-hidden p-2">
+          <img src="mino_images/writing_on_board-removebg-preview.png" alt="MinoLingo" class="w-full h-full object-contain drop-shadow-xl" />
         </div>
-        <h2 class="text-xl font-bold text-[#0f1724] mb-2">Your Messages</h2>
-        <p class="text-sm text-gray-400 text-center max-w-xs">Select a friend from the list to start chatting. Share photos, GIFs, and posts!</p>
+        <h2 class="text-xl font-extrabold text-[#0f1724] mb-2">Hey there, friend!</h2>
+        <p class="text-sm text-gray-400 text-center max-w-xs leading-relaxed">Pick a buddy from the list to start chatting!<br>Share photos, GIFs, and practice English together!</p>
+        <div class="flex items-center gap-3 mt-5">
+          <span class="text-2xl mascot-bounce">📸</span>
+          <span class="text-2xl mascot-bounce" style="animation-delay: 0.3s;">🎭</span>
+          <span class="text-2xl mascot-bounce" style="animation-delay: 0.6s;">🎮</span>
+        </div>
       </div>
     }
   </div>
