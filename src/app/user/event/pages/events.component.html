@@ -140,10 +140,34 @@
                 Cancel
               </button>
             </div>
+            } @else if (isWaitlisted(featuredEvent.id)) {
+            <div class="flex items-center gap-2">
+              <span
+                class="text-[14px] font-bold text-[#d97706] bg-[#fffbeb] px-4 py-2 rounded-full border border-[#fde68a] flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                On Waitlist
+              </span>
+              <button (click)="cancelRegistration(featuredEvent.id)"
+                class="text-[13px] text-[#536471] hover:text-[#ff4b4b] transition-colors font-medium"
+                [disabled]="registrationLoading.has(featuredEvent.id)">
+                Leave
+              </button>
+            </div>
             } @else if (isEventFull(featuredEvent)) {
-            <span class="text-[14px] font-bold text-[#536471] bg-[#eff3f4] px-5 py-2.5 rounded-full cursor-not-allowed">
-              Event Full
-            </span>
+            <button (click)="registerForEvent(featuredEvent)"
+              class="bg-[#d97706] text-white text-[15px] font-bold px-5 py-2.5 rounded-full hover:bg-[#b45309] transition-all active:scale-95"
+              [disabled]="registrationLoading.has(featuredEvent.id)">
+              @if (registrationLoading.has(featuredEvent.id)) {
+              <span class="flex items-center gap-2">
+                <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Joining...
+              </span>
+              } @else {
+              ⏳ Join Waitlist
+              }
+            </button>
             } @else {
             <button (click)="registerForEvent(featuredEvent)"
               class="bg-[#38a9f3] text-white text-[15px] font-bold px-5 py-2.5 rounded-full hover:bg-[#2196e3] transition-all active:scale-95"
@@ -220,8 +244,29 @@
                 class="text-[11px] text-[#536471] hover:text-[#ff4b4b] transition-colors"
                 [disabled]="registrationLoading.has(event.id)">✕</button>
             </div>
+            } @else if (isWaitlisted(event.id)) {
+            <div class="flex items-center gap-1.5">
+              <span
+                class="text-[12px] font-bold text-[#d97706] bg-[#fffbeb] px-3 py-1.5 rounded-full border border-[#fde68a] flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Waitlist
+              </span>
+              <button (click)="cancelRegistration(event.id)"
+                class="text-[11px] text-[#536471] hover:text-[#ff4b4b] transition-colors"
+                [disabled]="registrationLoading.has(event.id)">✕</button>
+            </div>
             } @else if (isEventFull(event)) {
-            <span class="text-[12px] font-medium text-[#536471] bg-[#eff3f4] px-3 py-1.5 rounded-full">Full</span>
+            <button (click)="registerForEvent(event)"
+              class="text-[13px] font-bold text-[#d97706] border border-[#d97706] px-4 py-1.5 rounded-full hover:bg-[#d97706] hover:text-white transition-all active:scale-95"
+              [disabled]="registrationLoading.has(event.id)">
+              @if (registrationLoading.has(event.id)) {
+              <div class="w-4 h-4 border-2 border-[#d97706]/30 border-t-[#d97706] rounded-full animate-spin"></div>
+              } @else {
+              ⏳ Waitlist
+              }
+            </button>
             } @else {
             <button (click)="registerForEvent(event)"
               class="text-[13px] font-bold text-[#38a9f3] border border-[#38a9f3] px-4 py-1.5 rounded-full hover:bg-[#38a9f3] hover:text-white transition-all active:scale-95"

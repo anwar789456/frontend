@@ -82,7 +82,7 @@ export class EventsComponent implements OnInit {
   // --- Registration Actions ---
 
   registerForEvent(event: Event): void {
-    if (this.isRegistered(event.id) || this.registrationLoading.has(event.id)) return;
+    if (this.isRegistered(event.id) || this.isWaitlisted(event.id) || this.registrationLoading.has(event.id)) return;
 
     this.registrationLoading.add(event.id);
     this.cdr.markForCheck();
@@ -98,10 +98,13 @@ export class EventsComponent implements OnInit {
         // Ensure eventId is set (backend may not populate read-only FK on insert)
         created.eventId = event.id;
         this.userRegistrations.push(created);
-        // Update local event's attendee count
-        const ev = this.events.find(e => e.id === event.id);
-        if (ev) {
-          ev.currentAttendees = (ev.currentAttendees || 0) + 1;
+
+        // Only increment attendee count if actually registered (not waitlisted)
+        if (created.status !== 'WAITLISTED') {
+          const ev = this.events.find(e => e.id === event.id);
+          if (ev) {
+            ev.currentAttendees = (ev.currentAttendees || 0) + 1;
+          }
         }
         this.registrationLoading.delete(event.id);
         this.cdr.markForCheck();
@@ -118,16 +121,20 @@ export class EventsComponent implements OnInit {
     const registration = this.getRegistration(eventId);
     if (!registration?.id || this.registrationLoading.has(eventId)) return;
 
+    const wasRegistered = registration.status !== 'WAITLISTED';
+
     this.registrationLoading.add(eventId);
     this.cdr.markForCheck();
 
     this.registrationService.delete(registration.id).subscribe({
       next: () => {
         this.userRegistrations = this.userRegistrations.filter(r => r.id !== registration.id);
-        // Update local event's attendee count
-        const ev = this.events.find(e => e.id === eventId);
-        if (ev && ev.currentAttendees && ev.currentAttendees > 0) {
-          ev.currentAttendees -= 1;
+        // Only decrement attendee count if was actually registered (not waitlisted)
+        if (wasRegistered) {
+          const ev = this.events.find(e => e.id === eventId);
+          if (ev && ev.currentAttendees && ev.currentAttendees > 0) {
+            ev.currentAttendees -= 1;
+          }
         }
         this.registrationLoading.delete(eventId);
         this.cdr.markForCheck();
@@ -143,7 +150,15 @@ export class EventsComponent implements OnInit {
   // --- Registration Helpers ---
 
   isRegistered(eventId: number): boolean {
-    return this.userRegistrations.some(r => this.getEventIdFromRegistration(r) === eventId);
+    return this.userRegistrations.some(r =>
+      this.getEventIdFromRegistration(r) === eventId && r.status !== 'WAITLISTED' && r.status !== 'CANCELLED'
+    );
+  }
+
+  isWaitlisted(eventId: number): boolean {
+    return this.userRegistrations.some(r =>
+      this.getEventIdFromRegistration(r) === eventId && r.status === 'WAITLISTED'
+    );
   }
 
   getRegistration(eventId: number): EventRegistration | undefined {
