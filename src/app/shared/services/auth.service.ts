@@ -36,16 +36,11 @@ export class AuthService {
     private router: Router
   ) {}
 
-  login(email: string, pwd: string, challengeId: string, selectedIndex: number): Observable<AuthUser> {
-    return this.http.post<AuthUser>(`${this.apiUrl}/login`, { email, pwd, challengeId, selectedIndex }).pipe(
+  login(email: string, pwd: string, captchaId: string, captchaIndex: number): Observable<AuthUser> {
+    return this.http.post<AuthUser>(`${this.apiUrl}/login`, { email, pwd, captchaId, captchaIndex }).pipe(
       switchMap((user: AuthUser) => {
-        // Fetch full profile to check banned status
         return this.http.get<AuthUser>(`${this.apiUrl}/get-user-by-id/${user.id}`).pipe(
           switchMap((fullUser: AuthUser) => {
-            if (fullUser['banned']) {
-              const reason = fullUser['banReason'] ? ` Reason: ${fullUser['banReason']}` : '';
-              return throwError(() => `Your account has been banned.${reason} Please contact support for assistance.`);
-            }
             this.setSession(fullUser);
             return of(fullUser);
           })
@@ -104,6 +99,18 @@ export class AuthService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
+    // Handle banned user (403 with banned flag)
+    if (error.status === 403 && error.error?.banned) {
+      const banError: BanErrorInfo = {
+        type: 'ban',
+        message: error.error.message || 'Your account is banned.',
+        banReason: error.error.banReason,
+        permanent: error.error.permanent,
+        banExpiresAt: error.error.banExpiresAt
+      };
+      return throwError(() => banError);
+    }
+
     let message = 'An unexpected error occurred. Please try again.';
     if (error.status === 0) {
       message = 'Unable to connect to the server. Please check your internet connection.';
@@ -111,6 +118,8 @@ export class AuthService {
       message = error.error?.message || 'Invalid email or password.';
     } else if (error.status === 400) {
       message = error.error?.message || 'Invalid request. Please check your input.';
+    } else if (error.status === 403) {
+      message = error.error?.message || 'Access denied.';
     } else if (error.status >= 500) {
       message = 'Server error. Please try again later.';
     }
