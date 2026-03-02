@@ -37,7 +37,7 @@ export class EventsComponent implements OnInit {
   userRegistrations: EventRegistration[] = [];
   registrationLoading: Set<number> = new Set(); // eventIds currently being processed
   readonly MOCK_USER_ID = 1; // hardcoded until auth is implemented
-
+  // Constructor
   constructor(
     private eventService: EventService,
     private registrationService: EventRegistrationService,
