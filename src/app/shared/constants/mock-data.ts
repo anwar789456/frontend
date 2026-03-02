@@ -63,51 +63,62 @@ export const MOCK_USER: User = {
 export const MOCK_FRIENDS: Friend[] = [
   {
     id: 1,
+    friendshipId: 1,
     name: 'Priya Patel',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
     lastMessage: 'Are you joining the session?',
-    time: '2m',
+    lastMessageTime: '2m',
     online: true,
-    status: 'Chatting'
+    unreadCount: 1
   },
   {
     id: 2,
+    friendshipId: 2,
     name: 'Alex Chen',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=AlexChen',
     lastMessage: 'Thanks for the help with gram...',
-    time: '1h',
-    online: false
+    lastMessageTime: '1h',
+    online: false,
+    unreadCount: 0
   },
   {
     id: 3,
+    friendshipId: 3,
     name: 'Maria Garcia',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria',
     lastMessage: 'Did you finish the quiz?',
-    time: 'Yesterday',
-    online: false
+    lastMessageTime: 'Yesterday',
+    online: false,
+    unreadCount: 0
   },
   {
     id: 4,
+    friendshipId: 4,
     name: 'David Okafor',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
     lastMessage: "Let's practice speaking tomorr...",
-    time: '2d',
-    online: false
+    lastMessageTime: '2d',
+    online: false,
+    unreadCount: 0
   }
 ];
 
 export const MOCK_FRIEND_REQUESTS: FriendRequest[] = [
   {
     id: 1,
+    friendshipId: 5,
     name: 'Hassan M.',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hassan',
-    info: 'Sends 50XP'
+    userId: 5,
+    createdAt: '2024-03-01T10:00:00'
   },
   {
     id: 2,
+    friendshipId: 6,
     name: 'Yuki S.',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Yuki',
-    info: 'Language Partner'
+    userId: 6,
+    createdAt: '2024-03-02T14:30:00'
   }
 ];
 
@@ -115,37 +126,57 @@ export const MOCK_CHAT_MESSAGES: ChatMessage[] = [
   {
     id: 1,
     senderId: 1,
-    text: 'Hi! Are you going to the English Club meetup later?',
-    time: '10:30 AM',
-    isMine: false
+    senderName: 'Priya Patel',
+    senderAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
+    receiverId: 0,
+    receiverName: 'Alex Johnson',
+    content: 'Hi! Are you going to the English Club meetup later?',
+    messageType: 'TEXT',
+    createdAt: '2024-03-02T10:30:00'
   },
   {
     id: 2,
     senderId: 0,
-    text: "Hey Priya! Yes, I'm planning to. It starts at 4 PM right?",
-    time: '10:32 AM',
-    isMine: true
+    senderName: 'Alex Johnson',
+    senderAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+    receiverId: 1,
+    receiverName: 'Priya Patel',
+    content: "Hey Priya! Yes, I'm planning to. It starts at 4 PM right?",
+    messageType: 'TEXT',
+    createdAt: '2024-03-02T10:32:00'
   },
   {
     id: 3,
     senderId: 1,
-    text: "Yes! 4 PM on Zoom. I'm a bit nervous about the speaking part.",
-    time: '10:33 AM',
-    isMine: false
+    senderName: 'Priya Patel',
+    senderAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
+    receiverId: 0,
+    receiverName: 'Alex Johnson',
+    content: "Yes! 4 PM on Zoom. I'm a bit nervous about the speaking part.",
+    messageType: 'TEXT',
+    createdAt: '2024-03-02T10:33:00'
   },
   {
     id: 4,
     senderId: 0,
-    text: "Don't worry! You're doing great. We can practice together beforehand if you want?",
-    time: '10:35 AM',
-    isMine: true
+    senderName: 'Alex Johnson',
+    senderAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+    receiverId: 1,
+    receiverName: 'Priya Patel',
+    content: "Don't worry! You're doing great. We can practice together beforehand if you want?",
+    messageType: 'TEXT',
+    createdAt: '2024-03-02T10:35:00'
   },
   {
     id: 5,
     senderId: 1,
-    text: 'That would be amazing! Are you joining the session now?',
-    time: '10:45 AM',
-    isMine: false
+    senderName: 'Priya Patel',
+    senderAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
+    receiverId: 0,
+    receiverName: 'Alex Johnson',
+    content: 'That would be amazing! Are you joining the session now?',
+    messageType: 'TEXT',
+    createdAt: '2024-03-02T10:45:00'
   }
 ];
 
