@@ -37,7 +37,7 @@ export interface StripeConfig {
   providedIn: 'root'
 })
 export class StripePaymentService {
-  private readonly apiUrl = '/api/payments';
+  private readonly apiUrl = 'https://minolingo.online/api/abonnements/payments';
   private stripe: Stripe | null = null;
 
   constructor(private http: HttpClient) {}
@@ -67,11 +67,22 @@ export class StripePaymentService {
    * Create a Stripe Checkout session
    */
   createCheckoutSession(request: CreateCheckoutSessionRequest): Observable<CreateCheckoutSessionResponse> {
-    return this.http.post<CreateCheckoutSessionResponse>(
-      `${this.apiUrl}/create-checkout-session`,
-      request
-    ).pipe(
-      catchError(this.handleError)
+    const fullUrl = `https://minolingo.online/api/abonnements/payments/create-checkout-session`;
+    
+    console.log('=== StripePaymentService: Create Checkout Session ===');
+    console.log('Full URL:', fullUrl);
+    console.log('Request Data:', JSON.stringify(request, null, 2));
+    console.log('API Base URL:', this.apiUrl);
+    
+    return this.http.post<CreateCheckoutSessionResponse>(fullUrl, request).pipe(
+      catchError(error => {
+        console.error('=== StripePaymentService: Create Checkout Session FAILED ===');
+        console.error('Error Status:', error.status);
+        console.error('Error URL:', error.url);
+        console.error('Error Details:', error.error);
+        console.error('Full Error:', error);
+        return this.handleError(error);
+      })
     );
   }
 
@@ -88,11 +99,22 @@ export class StripePaymentService {
    * Confirm payment and activate subscription
    */
   confirmPayment(request: ConfirmPaymentRequest): Observable<ConfirmPaymentResponse> {
-    return this.http.post<ConfirmPaymentResponse>(
-      `${this.apiUrl}/confirm`,
-      request
-    ).pipe(
-      catchError(this.handleError)
+    const fullUrl = `${this.apiUrl}/confirm`;
+    
+    console.log('=== StripePaymentService: Confirm Payment ===');
+    console.log('Full URL:', fullUrl);
+    console.log('Request Data:', JSON.stringify(request, null, 2));
+    console.log('API Base URL:', this.apiUrl);
+    
+    return this.http.post<ConfirmPaymentResponse>(fullUrl, request).pipe(
+      catchError(error => {
+        console.error('=== StripePaymentService: Confirm Payment FAILED ===');
+        console.error('Error Status:', error.status);
+        console.error('Error URL:', error.url);
+        console.error('Error Details:', error.error);
+        console.error('Full Error:', error);
+        return this.handleError(error);
+      })
     );
   }
 

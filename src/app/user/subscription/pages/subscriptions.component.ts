@@ -173,7 +173,18 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
    */
   private initiateStripePayment(userId: number, planId: number, plan: SubscriptionPlan): void {
     const user = this.authService.currentUser;
+    
+    console.log('=== SubscriptionsComponent: Initiate Stripe Payment ===');
+    console.log('User:', user);
+    console.log('User ID:', userId);
+    console.log('User Email:', user?.email);
+    console.log('Plan ID:', planId);
+    console.log('Plan:', plan);
+    console.log('Plan Name:', this.planDisplayNames[plan.name]);
+    console.log('Plan Price:', plan.price);
+    
     if (!user?.email) {
+      console.error('User email is missing!');
       this.subscriptionError = 'User email is required for payment. Please update your profile.';
       this.isBooking = false;
       this.activePlanId = null;
@@ -185,13 +196,23 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
     sessionStorage.setItem('stripe_payment_userId', userId.toString());
     sessionStorage.setItem('stripe_payment_planId', planId.toString());
     sessionStorage.setItem('stripe_payment_email', user.email);
+    
+    console.log('Session Storage Set:', {
+      userId: sessionStorage.getItem('stripe_payment_userId'),
+      planId: sessionStorage.getItem('stripe_payment_planId'),
+      email: sessionStorage.getItem('stripe_payment_email')
+    });
 
     // Create Stripe checkout session and redirect
-    this.stripeService.createCheckoutSession({
+    const requestPayload = {
       userId: userId,
       planId: planId,
       email: user.email
-    }).pipe(
+    };
+    
+    console.log('Sending request payload:', JSON.stringify(requestPayload, null, 2));
+    
+    this.stripeService.createCheckoutSession(requestPayload).pipe(
       takeUntil(this.destroy$),
       finalize(() => {
         this.isBooking = false;
@@ -199,9 +220,14 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (response) => {
+        console.log('=== SubscriptionsComponent: Stripe Session Created Successfully ===');
+        console.log('Session ID:', response.sessionId);
+        console.log('Session URL:', response.sessionUrl);
+        
         // Redirect to Stripe Checkout
         this.stripeService.redirectToCheckout(response.sessionUrl).catch(err => {
-          console.error('Stripe redirect failed:', err);
+          console.error('=== SubscriptionsComponent: Stripe Redirect FAILED ===');
+          console.error('Error:', err);
           this.subscriptionError = 'Failed to redirect to payment. Please try again.';
           this.setMessageTimeout();
           // Clear session storage on error
@@ -211,7 +237,11 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
         });
       },
       error: (err: any) => {
-        console.error('Stripe session creation failed:', err);
+        console.error('=== SubscriptionsComponent: Stripe Session Creation FAILED ===');
+        console.error('Error:', err);
+        console.error('Error Message:', err.message);
+        console.error('Error Status:', err.status);
+        console.error('Error Details:', err.details);
         this.subscriptionError = err.message || 'Failed to create payment session. Please try again.';
         this.setMessageTimeout();
         // Clear session storage on error
