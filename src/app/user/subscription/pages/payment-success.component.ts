@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StripePaymentService } from '../services/stripe-payment.service';
+import { StripePaymentService, SendEmailRequest } from '../services/stripe-payment.service';
 
 @Component({
   selector: 'app-payment-success',
@@ -18,22 +18,23 @@ export class PaymentSuccessComponent implements OnInit {
   isConfirmed = false;
   errorMessage = '';
   subscription: any = null;
+  emailSent = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private stripeService: StripePaymentService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     console.log('=== PaymentSuccessComponent: Initialized ===');
-    
+
     // Get session ID from URL query parameters
     this.sessionId = this.route.snapshot.queryParamMap.get('session_id');
-    
+
     console.log('Session ID from URL:', this.sessionId);
     console.log('Full URL Query Params:', this.route.snapshot.queryParamMap);
-    
+
     // Get userId and planId from session storage (stored before redirect)
     const storedUserId = sessionStorage.getItem('stripe_payment_userId');
     const storedPlanId = sessionStorage.getItem('stripe_payment_planId');
@@ -71,7 +72,7 @@ export class PaymentSuccessComponent implements OnInit {
 
   confirmPayment(email?: string): void {
     console.log('=== PaymentSuccessComponent: Confirm Payment ===');
-    
+
     if (!this.sessionId || !this.userId || !this.planId) {
       console.error('Missing required parameters for confirmation');
       return;
@@ -90,14 +91,20 @@ export class PaymentSuccessComponent implements OnInit {
       next: (response) => {
         console.log('=== PaymentSuccessComponent: Payment Confirmed Successfully ===');
         console.log('Response:', response);
-        
+
         this.isLoading = false;
-        
+
         if (response.success) {
           console.log('Payment successful! Subscription created.');
           this.isConfirmed = true;
           this.subscription = response.subscription;
           console.log('Subscription Details:', this.subscription);
+
+          // Send confirmation email to the user
+          if (email) {
+            this.sendConfirmationEmail(email, this.subscription);
+          }
+
           // Clear session storage
           sessionStorage.removeItem('stripe_payment_userId');
           sessionStorage.removeItem('stripe_payment_planId');
@@ -116,6 +123,48 @@ export class PaymentSuccessComponent implements OnInit {
         console.error('Error Details:', error.details);
         this.isLoading = false;
         this.errorMessage = error.message || 'Failed to confirm payment';
+      }
+    });
+  }
+
+  /**
+   * Send a confirmation email to the user after successful payment.
+   * This is fire-and-forget — failures are logged but don't block the success UX.
+   */
+  private sendConfirmationEmail(userEmail: string, subscription: any): void {
+    console.log('=== PaymentSuccessComponent: Sending Confirmation Email ===');
+
+    const planName = subscription?.plan?.name || 'Premium';
+    const amount = subscription?.plan?.price != null ? `$${subscription.plan.price.toFixed(2)}` : '';
+    const subscriptionDate = subscription?.subscribedAt
+      ? new Date(subscription.subscribedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const expirationDate = subscription?.expiresAt
+      ? new Date(subscription.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '';
+
+    const emailRequest: SendEmailRequest = {
+      toEmail: userEmail,
+      subject: 'Your MiNoLingo Subscription is Active! 🎉',
+      userName: userEmail.split('@')[0], // Use email prefix as display name
+      planName: planName,
+      amount: amount,
+      subscriptionDate: subscriptionDate,
+      expirationDate: expirationDate
+    };
+
+    console.log('Email Request:', JSON.stringify(emailRequest, null, 2));
+
+    this.stripeService.sendConfirmationEmail(emailRequest).subscribe({
+      next: (response) => {
+        console.log('=== PaymentSuccessComponent: Email Sent Successfully ===');
+        console.log('Email Response:', response);
+        this.emailSent = true;
+      },
+      error: (error) => {
+        console.error('=== PaymentSuccessComponent: Email Send FAILED ===');
+        console.error('Email Error:', error);
+        // Don't show error to user — email failure is non-critical
       }
     });
   }
