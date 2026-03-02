@@ -19,7 +19,7 @@ export interface SimulatePaymentResponse {
   providedIn: 'root'
 })
 export class PaymentSimulationService {
-  private readonly apiUrl = 'https://minolingo.online/api/payments';
+  private readonly apiUrl = 'https://minolingo.online/api/abonnements/payments';
 
   constructor(private http: HttpClient) { }
 
