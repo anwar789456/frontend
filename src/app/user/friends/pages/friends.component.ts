@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -85,7 +85,8 @@ export class FriendsComponent implements OnInit, OnDestroy {
     private friendsService: FriendsService,
     private authService: AuthService,
     private userService: UserService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -138,6 +139,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         for (const friend of this.friends) {
           this.loadLastMessageForFriend(friend);
         }
+        this.cdr.detectChanges();
       }
     });
   }

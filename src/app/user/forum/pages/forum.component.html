@@ -1,4 +1,4 @@
-<div class="forum-container flex gap-8 px-8 py-6 min-h-screen transition-all" [class.forum-dark]="darkMode">
+<div class="forum-container flex gap-5 px-6 py-6 min-h-screen transition-all" [class.forum-dark]="darkMode">
   <!-- Hidden file input -->
   <input type="file" #fileInput class="hidden" accept="image/*,video/*" (change)="onFileSelected($event)" />
 
@@ -15,8 +15,108 @@
     }
   </div>
 
-  <!-- Main Content -->
-  <div class="flex-1">
+  <!-- ═══ LEFT SIDEBAR (sticky) ═══ -->
+  <div class="w-64 shrink-0 hidden lg:block">
+    <div class="sticky top-6 flex flex-col gap-4 max-h-[calc(100vh-48px)] overflow-y-auto pb-4 scrollbar-thin">
+
+      <!-- Profile Card -->
+      @if (user) {
+        <div class="sidebar-section dm-card p-4">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 avatar-ring shrink-0">
+              <div class="w-full h-full rounded-full overflow-hidden" [class.bg-white]="!darkMode" [class.bg-[#1e293b]]="darkMode">
+                <img [src]="$any(user).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" [alt]="user.name" class="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1">
+                <p class="text-sm font-bold dm-text truncate" [class.text-[#0f1724]]="!darkMode">{{ user.name }}</p>
+                @if (getEquippedBadge()) {
+                  <span class="text-sm" [title]="getEquippedBadge()!.name">{{ getEquippedBadge()!.icon }}</span>
+                }
+              </div>
+              <p class="text-[11px] text-gray-400 truncate">{{'@' + user.name.replace(' ', '_').toLowerCase()}}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] text-gray-400 mb-3">
+            <span>Lv.{{ userXP.level }}</span>
+            <span>·</span>
+            <span>{{ userXP.xp }} XP</span>
+            <span>·</span>
+            <span>🔥 {{ userStreak.currentStreak }}</span>
+          </div>
+          <a href="/user/profile" class="w-full block text-center py-2 text-xs font-semibold text-[#38a9f3] bg-[#38a9f3]/10 rounded-xl hover:bg-[#38a9f3]/20 transition">View Profile</a>
+        </div>
+      }
+
+      <!-- Feed Tabs: Saved / Favorites -->
+      <div class="sidebar-section dm-card p-3">
+        <h3 class="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-2 px-1">Quick Access</h3>
+        <button (click)="switchTab(activeTab === 'saved' ? 'all' : 'saved')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all mb-1" [class.bg-[#38a9f3]/10]="activeTab === 'saved'" [class.text-[#38a9f3]]="activeTab === 'saved'" [class.text-gray-500]="activeTab !== 'saved'" [class.hover:bg-gray-100]="activeTab !== 'saved' && !darkMode">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
+          Saved Posts
+          @if (getSavedCount() > 0) {
+            <span class="ml-auto w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center bg-[#38a9f3]/15 text-[#38a9f3]">{{ getSavedCount() }}</span>
+          }
+        </button>
+        <button (click)="switchTab(activeTab === 'favorites' ? 'all' : 'favorites')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all" [class.bg-[#f59e0b]/10]="activeTab === 'favorites'" [class.text-[#f59e0b]]="activeTab === 'favorites'" [class.text-gray-500]="activeTab !== 'favorites'" [class.hover:bg-gray-100]="activeTab !== 'favorites' && !darkMode">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+          Favorites
+          @if (getFavoriteCount() > 0) {
+            <span class="ml-auto w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center bg-[#f59e0b]/15 text-[#f59e0b]">{{ getFavoriteCount() }}</span>
+          }
+        </button>
+      </div>
+
+      <!-- Friend Suggestions -->
+      @if (friendSuggestions.length > 0) {
+        <div class="sidebar-section dm-card p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-6 h-6 rounded-lg bg-green-50 flex items-center justify-center">
+              <span class="text-xs">👥</span>
+            </div>
+            <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">People You May Know</h3>
+          </div>
+          @for (s of friendSuggestions; track s.id) {
+            <div class="flex items-center gap-2.5 py-2">
+              <div class="w-9 h-9 rounded-full overflow-hidden bg-gray-200 shrink-0 cursor-pointer" (click)="openProfileByUserId(s.id)">
+                <img [src]="s.avatar" [alt]="s.name" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold dm-text truncate cursor-pointer hover:underline" [class.text-[#0f1724]]="!darkMode" (click)="openProfileByUserId(s.id)">{{ s.name }}</p>
+                <p class="text-[10px] text-gray-400 truncate">{{ s.username }}</p>
+              </div>
+              <button (click)="sendFriendRequestFromSuggestion(s)" class="px-2.5 py-1 text-[10px] font-bold text-[#38a9f3] bg-[#38a9f3]/10 rounded-lg hover:bg-[#38a9f3]/20 transition shrink-0">Add</button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Chat Link -->
+      <div class="sidebar-section dm-card p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
+            <span class="text-xs">💬</span>
+          </div>
+          <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Chat</h3>
+        </div>
+        <a href="/user/friends" class="w-full block text-center py-2 text-xs font-semibold text-[#38a9f3] bg-[#38a9f3]/10 rounded-xl hover:bg-[#38a9f3]/20 transition">Open Friends &amp; Chat</a>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-[10px] text-gray-400 dm-text-muted leading-relaxed px-1">
+        <div class="flex flex-wrap gap-x-2 gap-y-0.5">
+          <a class="hover:text-[#38a9f3] cursor-pointer">Terms</a>
+          <a class="hover:text-[#38a9f3] cursor-pointer">Privacy</a>
+          <a class="hover:text-[#38a9f3] cursor-pointer">Cookies</a>
+        </div>
+        <p class="mt-1">&copy; 2024 MiNoLingo Inc.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CENTER CONTENT (scrollable) ═══ -->
+  <div class="flex-1 min-w-0">
     <!-- MinoLingo Welcome Banner -->
     <div class="relative overflow-hidden rounded-2xl mb-6 p-5" [class.bg-gradient-to-r]="!darkMode" [class.from-[#38a9f3]]="!darkMode" [class.via-[#6366f1]]="!darkMode" [class.to-[#a855f7]]="!darkMode" [class.bg-gradient-to-r]="darkMode" [class.from-[#1e3a5f]]="darkMode" [class.via-[#2d2563]]="darkMode" [class.to-[#3b1f5e]]="darkMode">
       <div class="absolute top-2 right-16 text-2xl float-bubble opacity-60">✨</div>
@@ -29,10 +129,10 @@
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
-            <h1 class="text-xl font-extrabold text-white tracking-tight">MinoLingo Community</h1>
+            <h1 class="text-xl font-extrabold text-black tracking-tight">MinoLingo Community</h1>
             <img src="mino_images/mino_with_pen.png" alt="" class="w-7 h-7 object-contain mascot-wave" />
           </div>
-          <p class="text-white/80 text-sm mt-0.5 font-medium">Share your English adventures, help friends, and earn XP!</p>
+          <p class="text-black/80 text-sm mt-0.5 font-medium">Share your English adventures, help friends, and earn XP!</p>
         </div>
         <div class="hidden md:flex items-center gap-2 shrink-0">
           <div class="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-1.5 text-center">
@@ -232,27 +332,14 @@
       </div>
     </div>
 
-    <!-- Feed Tabs: All / Saved / Favorites -->
-    <div class="flex items-center gap-1 mb-5 p-1 rounded-2xl dm-card" [class.bg-gray-100/80]="!darkMode" [class.bg-[#1e293b]]="darkMode">
-      <button (click)="switchTab('all')" class="feed-tab flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all" [class.bg-white]="activeTab === 'all' && !darkMode" [class.shadow-sm]="activeTab === 'all'" [class.text-[#38a9f3]]="activeTab === 'all'" [class.bg-[#293548]]="activeTab === 'all' && darkMode" [class.text-gray-400]="activeTab !== 'all'" [class.hover:text-gray-600]="activeTab !== 'all' && !darkMode">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
-        All Posts
-      </button>
-      <button (click)="switchTab('saved')" class="feed-tab flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all" [class.bg-white]="activeTab === 'saved' && !darkMode" [class.shadow-sm]="activeTab === 'saved'" [class.text-[#38a9f3]]="activeTab === 'saved'" [class.bg-[#293548]]="activeTab === 'saved' && darkMode" [class.text-gray-400]="activeTab !== 'saved'" [class.hover:text-gray-600]="activeTab !== 'saved' && !darkMode">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
-        Saved
-        @if (getSavedCount() > 0) {
-          <span class="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center" [class.bg-[#38a9f3]/15]="activeTab === 'saved'" [class.text-[#38a9f3]]="activeTab === 'saved'" [class.bg-gray-200]="activeTab !== 'saved' && !darkMode" [class.text-gray-500]="activeTab !== 'saved'" [class.bg-gray-700]="activeTab !== 'saved' && darkMode">{{ getSavedCount() }}</span>
-        }
-      </button>
-      <button (click)="switchTab('favorites')" class="feed-tab flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all" [class.bg-white]="activeTab === 'favorites' && !darkMode" [class.shadow-sm]="activeTab === 'favorites'" [class.text-[#f59e0b]]="activeTab === 'favorites'" [class.bg-[#293548]]="activeTab === 'favorites' && darkMode" [class.text-gray-400]="activeTab !== 'favorites'" [class.hover:text-gray-600]="activeTab !== 'favorites' && !darkMode">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
-        Favorites
-        @if (getFavoriteCount() > 0) {
-          <span class="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center" [class.bg-[#f59e0b]/15]="activeTab === 'favorites'" [class.text-[#f59e0b]]="activeTab === 'favorites'" [class.bg-gray-200]="activeTab !== 'favorites' && !darkMode" [class.text-gray-500]="activeTab !== 'favorites'" [class.bg-gray-700]="activeTab !== 'favorites' && darkMode">{{ getFavoriteCount() }}</span>
-        }
-      </button>
-    </div>
+    <!-- Active Filter Indicator -->
+    @if (activeTab !== 'all') {
+      <div class="flex items-center gap-2 mb-4 px-1">
+        <span class="text-sm text-gray-500">Showing:</span>
+        <span class="text-sm font-semibold px-3 py-0.5 rounded-full" [class.bg-[#38a9f3]/10]="activeTab === 'saved'" [class.text-[#38a9f3]]="activeTab === 'saved'" [class.bg-[#f59e0b]/10]="activeTab === 'favorites'" [class.text-[#f59e0b]]="activeTab === 'favorites'">{{ activeTab === 'saved' ? 'Saved Posts' : 'Favorites' }}</span>
+        <button (click)="switchTab('all')" class="text-xs text-gray-400 hover:text-gray-600 underline">Show all</button>
+      </div>
+    }
 
     <!-- Topic Filter Indicator -->
     @if (selectedTopicId !== null) {
@@ -290,6 +377,9 @@
             } @else {
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-sm font-bold dm-text cursor-pointer hover:underline" [class.text-[#0f1724]]="!darkMode" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.author }}</span>
+                @if (getUserEquippedBadgeIcon(post.userId)) {
+                  <span class="text-sm" [title]="'Badge'">{{ getUserEquippedBadgeIcon(post.userId) }}</span>
+                }
                 <span class="text-sm text-gray-400 dm-text-muted cursor-pointer hover:underline" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.username }}</span>
                 <span class="text-sm text-gray-400 dm-text-muted">· {{ getTimeAgo(post) }}</span>
                 @if (post.isEdited) {
@@ -411,12 +501,7 @@
             <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" /></svg>
             <span class="text-xs font-medium">{{ post.comments }}</span>
           </button>
-          <!-- Repost -->
-          <button (click)="repostPost(post)" [disabled]="isOwnPost(post)" class="action-btn" [class.opacity-40]="isOwnPost(post)" [class.cursor-not-allowed]="isOwnPost(post)" [title]="isOwnPost(post) ? 'You cannot repost your own post' : 'Repost'">
-            <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
-            <span class="text-xs font-medium">{{ post.reposts }}</span>
-          </button>
-          <!-- React (replaces old Like) -->
+                    <!-- React (replaces old Like) -->
           <div class="relative">
             <button (click)="toggleReactionPicker(post.id, $event)" [disabled]="isOwnPost(post)" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all" [class.hover:bg-red-50]="!isOwnPost(post)" [class.hover:text-red-400]="!isOwnPost(post)" [class.opacity-40]="isOwnPost(post)" [class.cursor-not-allowed]="isOwnPost(post)" [class.text-red-400]="getUserReaction(post.id)" [title]="isOwnPost(post) ? 'You cannot react to your own post' : 'React'">
               @if (getUserReaction(post.id)) {
@@ -541,8 +626,9 @@
     }
   </div>
 
-  <!-- Right Sidebar -->
-  <div class="w-80 shrink-0 flex flex-col gap-4">
+  <!-- ═══ RIGHT SIDEBAR (sticky) ═══ -->
+  <div class="w-72 shrink-0 hidden lg:block">
+    <div class="sticky top-6 flex flex-col gap-4 max-h-[calc(100vh-48px)] overflow-y-auto pb-4 scrollbar-thin">
     <!-- Top Bar: Theme + Notifications -->
     <div class="flex items-center justify-between px-1">
       <span class="text-xs font-semibold dm-text-sec" [class.text-gray-500]="!darkMode">Theme</span>
@@ -713,11 +799,19 @@
         <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Badges</h3>
         <span class="ml-auto text-[10px] text-gray-400">{{ getUserBadges().length }}/{{ allBadges.length }}</span>
       </div>
+      @if (equippedBadgeId) {
+        <div class="flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50" [class.from-yellow-900/20]="darkMode" [class.to-orange-900/20]="darkMode">
+          <span class="text-lg">{{ getEquippedBadge()?.icon }}</span>
+          <span class="text-[10px] font-bold dm-text" [class.text-[#0f1724]]="!darkMode">{{ getEquippedBadge()?.name }}</span>
+          <span class="ml-auto text-[9px] text-green-500 font-bold">EQUIPPED</span>
+        </div>
+      }
+      <p class="text-[10px] text-gray-400 mb-2">Tap an unlocked badge to equip it</p>
       <div class="flex flex-wrap gap-1.5">
         @for (badge of getUserBadges(); track badge.id) {
-          <div class="group relative w-9 h-9 rounded-lg flex items-center justify-center text-lg cursor-default transition-transform hover:scale-110" [class.bg-gradient-to-br]="true" [class.from-yellow-50]="!darkMode" [class.to-orange-50]="!darkMode" [class.from-yellow-900/30]="darkMode" [class.to-orange-900/30]="darkMode" [title]="badge.name + ': ' + badge.description">
+          <div (click)="toggleEquipBadge(badge)" class="group relative w-9 h-9 rounded-lg flex items-center justify-center text-lg cursor-pointer transition-all hover:scale-110" [class.ring-2]="equippedBadgeId === badge.id" [class.ring-[#38a9f3]]="equippedBadgeId === badge.id" [class.bg-gradient-to-br]="true" [class.from-yellow-50]="!darkMode" [class.to-orange-50]="!darkMode" [class.from-yellow-900/30]="darkMode" [class.to-orange-900/30]="darkMode" [title]="badge.name + ': ' + badge.description + (equippedBadgeId === badge.id ? ' (equipped - click to unequip)' : ' (click to equip)')">
             {{ badge.icon }}
-            <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[8px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">{{ badge.name }}</span>
+            <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[8px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">{{ equippedBadgeId === badge.id ? 'Unequip' : 'Equip' }}</span>
           </div>
         }
         @for (badge of getLockedBadges(); track badge.id) {
@@ -776,15 +870,6 @@
       }
     </div>
 
-    <!-- Footer -->
-    <div class="text-[11px] text-gray-400 dm-text-muted leading-relaxed px-1">
-      <div class="flex flex-wrap gap-x-2 gap-y-1">
-        <a class="hover:text-[#38a9f3] cursor-pointer">Terms of Service</a>
-        <a class="hover:text-[#38a9f3] cursor-pointer">Privacy Policy</a>
-        <a class="hover:text-[#38a9f3] cursor-pointer">Cookie Policy</a>
-        <a class="hover:text-[#38a9f3] cursor-pointer">Accessibility</a>
-      </div>
-      <p class="mt-2">&copy; 2024 MiNoLingo Inc.</p>
     </div>
   </div>
 </div>

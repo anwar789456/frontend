@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -125,7 +125,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   gifResults: { url: string; preview: string }[] = [];
   gifLoading = false;
   private gifSearchTimeout: any;
-  private readonly GIPHY_KEY = 'GlVGYR8KgYBgoK546FpLBaAZeLp5MHaX';
+  private readonly TENOR_KEY = 'AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ';
 
   // Dark Mode
   darkMode = false;
@@ -195,13 +195,20 @@ export class ForumComponent implements OnInit, OnDestroy {
   profileFriendRequest: FriendRequest | null = null;
   profileLoading = false;
 
+  // Badge Equip
+  equippedBadgeId: string | null = null;
+
+  // Friends Suggestions (left sidebar)
+  friendSuggestions: { id: number; name: string; avatar: string; username: string }[] = [];
+
   constructor(
     private forumService: ForumService,
     private authService: AuthService,
     private userService: UserService,
     private friendsService: FriendsService,
     private sanitizer: DomSanitizer,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdRef: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -221,6 +228,8 @@ export class ForumComponent implements OnInit, OnDestroy {
     this.loadTrendingGifs();
     this.loadTagNotifications();
     this.loadPendingFriendRequests();
+    this.loadEquippedBadge();
+    this.loadFriendSuggestions();
     this.forumService.newTopic$.subscribe(() => {
       this.toggleNewTopicForm();
     });
@@ -287,6 +296,7 @@ export class ForumComponent implements OnInit, OnDestroy {
         this.resolveSharedPosts();
         this.buildKnownUsers();
         this.applyFilter();
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -418,54 +428,75 @@ export class ForumComponent implements OnInit, OnDestroy {
       }
     }
 
-    let imageValue = this.newPostImage.trim() || '';
-    if (this.filePreviewUrl && this.fileType === 'image') {
-      imageValue = this.filePreviewUrl;
-    }
-
     let finalContent = this.newPostContent.trim();
     if (this.newPostLocation.trim()) {
       finalContent += '\n[LOC:' + this.newPostLocation.trim() + ']';
     }
 
-    const post: any = {
-      content: finalContent,
-      author: this.user.name,
-      username: '@' + this.user.name.replace(/\s+/g, '_').toLowerCase(),
-      avatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
-      userId: this.user.id,
-      comments: 0,
-      reposts: 0,
-      likes: 0
-    };
-    if (imageValue) post.image = imageValue;
-    if (topicId) post.topicId = topicId;
+    const doCreatePost = (imageUrl?: string) => {
+      const post: any = {
+        content: finalContent,
+        author: this.user!.name,
+        username: '@' + this.user!.name.replace(/\s+/g, '_').toLowerCase(),
+        avatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user!.name,
+        userId: this.user!.id,
+        comments: 0,
+        reposts: 0,
+        likes: 0
+      };
+      if (imageUrl) post.image = imageUrl;
+      if (topicId) post.topicId = topicId;
 
-    this.forumService.createPost(post).subscribe({
-      next: (res) => {
-        // Send tag notifications for @mentions
-        this.sendTagNotifications(finalContent, res);
-        this.newPostContent = '';
-        this.newPostImage = '';
-        this.showImageInput = false;
-        this.postError = '';
-        this.removeSelectedFile();
-        this.newPostLocation = '';
-        this.showLocationInput = false;
-        this.showEmojiPicker = false;
-        this.showGifPicker = false;
-        this.loadPosts();
-        this.loadTrendingTopics();
-        this.awardXP(ForumService.XP_REWARDS.post, 'post');
-        this.checkWotdInContent(finalContent);
-        this.addNotification('Your post has been published!', 'success');
-      },
-      error: (err) => {
-        console.error('[Forum] Failed to create post:', err);
-        this.postError = `Failed to post (${err?.status || 'network error'}). Please try again.`;
-        this.addNotification('Failed to publish post. Please try again.', 'warning');
-      }
-    });
+      this.forumService.createPost(post).subscribe({
+        next: (res) => {
+          this.sendTagNotifications(finalContent, res);
+          this.newPostContent = '';
+          this.newPostImage = '';
+          this.showImageInput = false;
+          this.postError = '';
+          this.removeSelectedFile();
+          this.newPostLocation = '';
+          this.showLocationInput = false;
+          this.showEmojiPicker = false;
+          this.showGifPicker = false;
+          this.loadPosts();
+          this.loadTrendingTopics();
+          this.awardXP(ForumService.XP_REWARDS.post, 'post');
+          this.checkWotdInContent(finalContent);
+          this.addNotification('Your post has been published!', 'success');
+          this.cdRef.detectChanges();
+        },
+        error: (err) => {
+          console.error('[Forum] Failed to create post:', err);
+          this.postError = `Failed to post (${err?.status || 'network error'}). Please try again.`;
+          this.addNotification('Failed to publish post. Please try again.', 'warning');
+          this.cdRef.detectChanges();
+        }
+      });
+    };
+
+    // If a file is selected, upload it first via the file upload service
+    if (this.selectedFile) {
+      this.postError = '';
+      this.addNotification('Uploading image...', 'info');
+      this.forumService.uploadFile(this.selectedFile).subscribe({
+        next: (url) => {
+          doCreatePost(url);
+        },
+        error: (err) => {
+          console.error('[Forum] File upload failed:', err);
+          this.postError = 'Failed to upload image. Please try again.';
+          this.addNotification('Image upload failed.', 'warning');
+          this.cdRef.detectChanges();
+        }
+      });
+    } else if (this.filePreviewUrl && this.fileType === 'image') {
+      // GIF URL or pasted URL
+      doCreatePost(this.filePreviewUrl);
+    } else {
+      const imageValue = this.newPostImage.trim() || '';
+      doCreatePost(imageValue || undefined);
+    }
   }
 
   toggleImageInput(): void {
@@ -1067,12 +1098,12 @@ export class ForumComponent implements OnInit, OnDestroy {
 
   loadTrendingGifs(): void {
     this.gifLoading = true;
-    this.http.get<any>(`https://api.giphy.com/v1/gifs/trending?api_key=${this.GIPHY_KEY}&limit=20&rating=g`).subscribe({
+    this.http.get<any>(`https://tenor.googleapis.com/v2/featured?key=${this.TENOR_KEY}&limit=20&contentfilter=high&media_filter=gif,tinygif`).subscribe({
       next: (res) => {
-        this.gifResults = (res.data || []).map((g: any) => ({
-          url: g.images?.original?.url || g.images?.downsized_medium?.url,
-          preview: g.images?.fixed_height_small?.url || g.images?.preview_gif?.url
-        }));
+        this.gifResults = (res.results || []).map((g: any) => ({
+          url: g.media_formats?.gif?.url || g.media_formats?.mediumgif?.url || '',
+          preview: g.media_formats?.tinygif?.url || g.media_formats?.nanogif?.url || ''
+        })).filter((g: any) => g.url);
         this.gifLoading = false;
       },
       error: () => { this.gifLoading = false; }
@@ -1087,12 +1118,12 @@ export class ForumComponent implements OnInit, OnDestroy {
     }
     this.gifSearchTimeout = setTimeout(() => {
       this.gifLoading = true;
-      this.http.get<any>(`https://api.giphy.com/v1/gifs/search?api_key=${this.GIPHY_KEY}&q=${encodeURIComponent(this.gifSearchQuery)}&limit=20&rating=g`).subscribe({
+      this.http.get<any>(`https://tenor.googleapis.com/v2/search?key=${this.TENOR_KEY}&q=${encodeURIComponent(this.gifSearchQuery)}&limit=20&contentfilter=high&media_filter=gif,tinygif`).subscribe({
         next: (res) => {
-          this.gifResults = (res.data || []).map((g: any) => ({
-            url: g.images?.original?.url || g.images?.downsized_medium?.url,
-            preview: g.images?.fixed_height_small?.url || g.images?.preview_gif?.url
-          }));
+          this.gifResults = (res.results || []).map((g: any) => ({
+            url: g.media_formats?.gif?.url || g.media_formats?.mediumgif?.url || '',
+            preview: g.media_formats?.tinygif?.url || g.media_formats?.nanogif?.url || ''
+          })).filter((g: any) => g.url);
           this.gifLoading = false;
         },
         error: () => { this.gifLoading = false; }
@@ -1664,5 +1695,85 @@ export class ForumComponent implements OnInit, OnDestroy {
 
   isTranslating(postId: number): boolean {
     return this.translatingPostId === postId;
+  }
+
+  // ── Badge Equip ──
+
+  private loadEquippedBadge(): void {
+    if (!this.user) return;
+    this.equippedBadgeId = this.forumService.getEquippedBadge(this.user.id);
+  }
+
+  toggleEquipBadge(badge: ForumBadge): void {
+    if (!this.user) return;
+    if (this.equippedBadgeId === badge.id) {
+      this.forumService.unequipBadge(this.user.id);
+      this.equippedBadgeId = null;
+      this.addNotification('Badge unequipped', 'info');
+    } else {
+      this.forumService.equipBadge(this.user.id, badge.id);
+      this.equippedBadgeId = badge.id;
+      this.addNotification(`Equipped badge: ${badge.icon} ${badge.name}!`, 'success');
+    }
+  }
+
+  getEquippedBadge(): ForumBadge | null {
+    if (!this.equippedBadgeId) return null;
+    return this.forumService.getBadgeById(this.equippedBadgeId) || null;
+  }
+
+  getUserEquippedBadgeIcon(userId: number | undefined): string | null {
+    if (!userId) return null;
+    const badgeId = this.forumService.getEquippedBadge(userId);
+    if (!badgeId) return null;
+    const badge = this.forumService.getBadgeById(badgeId);
+    return badge ? badge.icon : null;
+  }
+
+  // ── Friend Suggestions (Left Sidebar) ──
+
+  private loadFriendSuggestions(): void {
+    if (!this.user) return;
+    this.friendsService.getFriends(this.user.id).subscribe({
+      next: (friendships) => {
+        const friendIds = new Set(friendships.map(f => f.friendId));
+        friendIds.add(this.user!.id);
+        this.userService.getAllUsers().subscribe({
+          next: (users) => {
+            this.friendSuggestions = users
+              .filter(u => !friendIds.has(u.id))
+              .slice(0, 5)
+              .map(u => ({
+                id: u.id,
+                name: u.name,
+                avatar: u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.name,
+                username: '@' + u.name.replace(/\s+/g, '_').toLowerCase()
+              }));
+          }
+        });
+      }
+    });
+  }
+
+  sendFriendRequestFromSuggestion(suggestion: { id: number; name: string; avatar: string }): void {
+    if (!this.user) return;
+    const friendship: Friendship = {
+      userId: this.user.id,
+      userName: this.user.name,
+      userAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      friendId: suggestion.id,
+      friendName: suggestion.name,
+      friendAvatar: suggestion.avatar,
+      status: 'PENDING'
+    };
+    this.friendsService.sendFriendRequest(friendship).subscribe({
+      next: () => {
+        this.friendSuggestions = this.friendSuggestions.filter(s => s.id !== suggestion.id);
+        this.addNotification(`Friend request sent to ${suggestion.name}!`, 'success');
+      },
+      error: () => {
+        this.addNotification('Failed to send friend request', 'warning');
+      }
+    });
   }
 }

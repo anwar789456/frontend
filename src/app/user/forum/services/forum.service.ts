@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, map } from 'rxjs';
 import { ForumPost, TrendingTopic, ForumBadge, UserForumXP, UserStreak, WordOfTheDay } from '../models/forum.model';
 import { ForumReport } from '../models/forum-report.model';
 
@@ -341,6 +341,30 @@ export class ForumService {
   markWotdUsed(userId: number): void {
     const today = new Date().toISOString().slice(0, 10);
     localStorage.setItem(`forum_wotd_${userId}_${today}`, 'true');
+  }
+
+  // ── File Upload ──
+  uploadFile(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(
+      'https://minolingo.online/api/cours/file/upload',
+      formData,
+      { responseType: 'text' }
+    ).pipe(map(url => url.trim()));
+  }
+
+  // ── Badge Equip ──
+  getEquippedBadge(userId: number): string | null {
+    return localStorage.getItem(`forum_equipped_badge_${userId}`);
+  }
+
+  equipBadge(userId: number, badgeId: string): void {
+    localStorage.setItem(`forum_equipped_badge_${userId}`, badgeId);
+  }
+
+  unequipBadge(userId: number): void {
+    localStorage.removeItem(`forum_equipped_badge_${userId}`);
   }
 
   // ── Translation ──
