@@ -33,6 +33,21 @@ export interface StripeConfig {
   publishableKey: string;
 }
 
+export interface SendEmailRequest {
+  toEmail: string;
+  subject: string;
+  userName?: string;
+  planName?: string;
+  amount?: string;
+  subscriptionDate?: string;
+  expirationDate?: string;
+}
+
+export interface SendEmailResponse {
+  success: boolean;
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -40,7 +55,7 @@ export class StripePaymentService {
   private readonly apiUrl = 'https://minolingo.online/api/abonnements/payments';
   private stripe: Stripe | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /**
    * Initialize Stripe with publishable key
@@ -68,12 +83,12 @@ export class StripePaymentService {
    */
   createCheckoutSession(request: CreateCheckoutSessionRequest): Observable<CreateCheckoutSessionResponse> {
     const fullUrl = `https://minolingo.online/api/abonnements/payments/create-checkout-session`;
-    
+
     console.log('=== StripePaymentService: Create Checkout Session ===');
     console.log('Full URL:', fullUrl);
     console.log('Request Data:', JSON.stringify(request, null, 2));
     console.log('API Base URL:', this.apiUrl);
-    
+
     return this.http.post<CreateCheckoutSessionResponse>(fullUrl, request).pipe(
       catchError(error => {
         console.error('=== StripePaymentService: Create Checkout Session FAILED ===');
@@ -100,12 +115,12 @@ export class StripePaymentService {
    */
   confirmPayment(request: ConfirmPaymentRequest): Observable<ConfirmPaymentResponse> {
     const fullUrl = `${this.apiUrl}/confirm`;
-    
+
     console.log('=== StripePaymentService: Confirm Payment ===');
     console.log('Full URL:', fullUrl);
     console.log('Request Data:', JSON.stringify(request, null, 2));
     console.log('API Base URL:', this.apiUrl);
-    
+
     return this.http.post<ConfirmPaymentResponse>(fullUrl, request).pipe(
       catchError(error => {
         console.error('=== StripePaymentService: Confirm Payment FAILED ===');
@@ -113,6 +128,25 @@ export class StripePaymentService {
         console.error('Error URL:', error.url);
         console.error('Error Details:', error.error);
         console.error('Full Error:', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  /**
+   * Send a confirmation email via the backend
+   */
+  sendConfirmationEmail(request: SendEmailRequest): Observable<SendEmailResponse> {
+    const fullUrl = `https://minolingo.online/api/abonnements/email/send`;
+
+    console.log('=== StripePaymentService: Send Confirmation Email ===');
+    console.log('Full URL:', fullUrl);
+    console.log('Request Data:', JSON.stringify(request, null, 2));
+
+    return this.http.post<SendEmailResponse>(fullUrl, request).pipe(
+      catchError(error => {
+        console.error('=== StripePaymentService: Send Email FAILED ===');
+        console.error('Error:', error);
         return this.handleError(error);
       })
     );

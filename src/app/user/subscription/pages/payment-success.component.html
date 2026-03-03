@@ -35,7 +35,8 @@
       </div>
 
       <div class="info-box">
-        <p><strong>A confirmation email has been sent to your email address.</strong></p>
+        <p *ngIf="emailSent"><strong>✅ A confirmation email has been sent to your email address.</strong></p>
+        <p *ngIf="!emailSent"><strong>📧 Sending confirmation email to your inbox...</strong></p>
         <p>Please check your inbox for the receipt and subscription details.</p>
       </div>
 
