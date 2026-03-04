@@ -31,8 +31,26 @@
 
   <!-- Hero Banner -->
   <div class="relative overflow-hidden bg-gradient-to-br from-[#38a9f3] via-[#2196e3] to-[#1565c0]">
-    <div class="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/5"></div>
-    <div class="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-white/5"></div>
+    <!-- Animated blob decorations -->
+    <div class="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/5 animate-pulse"></div>
+    <div class="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-white/5 animate-pulse" style="animation-delay: 0.5s;"></div>
+    <div class="absolute top-1/2 right-1/4 w-32 h-32 rounded-full bg-white/5 animate-pulse" style="animation-delay: 1s;"></div>
+    
+    <!-- Floating stars -->
+    <div class="absolute top-8 right-[15%] w-6 h-6 text-yellow-300/60 animate-bounce" style="animation-duration: 2s;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+    <div class="absolute bottom-12 right-[10%] w-4 h-4 text-yellow-200/50 animate-pulse" style="animation-delay: 0.3s;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+    <div class="absolute top-16 left-[20%] w-5 h-5 text-yellow-300/40 animate-bounce" style="animation-duration: 2.5s; animation-delay: 0.7s;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+
+    <!-- Mascot (hidden on small screens) -->
+    <div class="hidden lg:block absolute right-8 bottom-4 w-28 h-28 animate-bounce" style="animation-duration: 3s;">
+      <img src="/mino_images/nino.png" alt="MinoLingo Mascot" class="w-full h-full object-contain drop-shadow-lg opacity-90" />
+    </div>
 
     <div class="relative max-w-5xl mx-auto px-6 py-10">
       <div class="flex flex-col sm:flex-row items-center sm:items-end gap-6">
