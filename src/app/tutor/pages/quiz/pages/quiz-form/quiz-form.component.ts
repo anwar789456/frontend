@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -9,7 +9,8 @@ import { Quiz, QuizCategory, QuizLevel, QuizStatus } from '../../models/quiz.mod
   selector: 'app-tutor-quiz-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './quiz-form.component.html'
+  templateUrl: './quiz-form.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TutorQuizFormComponent implements OnInit {
   quizForm!: FormGroup;
@@ -27,7 +28,8 @@ export class TutorQuizFormComponent implements OnInit {
     private fb: FormBuilder,
     private quizService: TutorQuizService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -52,13 +54,21 @@ export class TutorQuizFormComponent implements OnInit {
 
   private loadCategories(): void {
     this.quizService.getAllCategories().subscribe({
-      next: (data) => this.categories = data,
-      error: (err) => console.error('Failed to load categories:', err)
+      next: (data) => {
+        this.categories = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to load categories:', err);
+        this.cdr.markForCheck();
+      }
     });
   }
 
   private loadQuiz(id: number): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.quizService.getQuizById(id).subscribe({
       next: (quiz) => {
         this.quizForm.patchValue({
@@ -70,10 +80,12 @@ export class TutorQuizFormComponent implements OnInit {
           courseId: quiz.courseId
         });
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Failed to load quiz:', err);
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -81,6 +93,8 @@ export class TutorQuizFormComponent implements OnInit {
   save(): void {
     if (this.quizForm.invalid || this.isSaving) return;
     this.isSaving = true;
+    this.cdr.markForCheck();
+
     const formVal = this.quizForm.value;
 
     const action = this.isEditMode && this.quizId
@@ -90,11 +104,13 @@ export class TutorQuizFormComponent implements OnInit {
     action.subscribe({
       next: () => {
         this.isSaving = false;
+        this.cdr.markForCheck();
         this.router.navigate(['/tutor/quiz']);
       },
       error: (err) => {
         console.error('Failed to save quiz:', err);
         this.isSaving = false;
+        this.cdr.markForCheck();
       }
     });
   }

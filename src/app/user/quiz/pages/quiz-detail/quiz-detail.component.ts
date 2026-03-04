@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
@@ -9,6 +9,7 @@ import { Quiz, QuizAttempt } from '../../models/quiz.model';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './quiz-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     .anim-fade-up { animation: fadeInUp 0.4s ease-out both; }
@@ -23,7 +24,8 @@ export class UserQuizDetailComponent implements OnInit {
   constructor(
     private quizService: QuizService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   get userId(): number | null {
@@ -40,23 +42,38 @@ export class UserQuizDetailComponent implements OnInit {
 
   private loadQuiz(): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.quizService.getQuizById(this.quizId).subscribe({
       next: (quiz) => {
         this.quiz = quiz;
+        this.cdr.markForCheck(); // show quiz info while attempt loads
         this.loadAttempt();
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
   private loadAttempt(): void {
-    if (!this.userId) { this.isLoading = false; return; }
+    if (!this.userId) {
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.quizService.getUserAttempts(this.userId).subscribe({
       next: (attempts) => {
         this.attempt = attempts.find(a => a.quizId === this.quizId) || null;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -93,6 +110,7 @@ export class UserQuizDetailComponent implements OnInit {
     this.quizService.startOrResumeAttempt(this.userId, this.quizId).subscribe({
       next: (attempt) => {
         this.attempt = attempt;
+        this.cdr.markForCheck();
         this.router.navigate(['/quiz', this.quizId, 'play']);
       },
       error: (err) => console.error('Failed to start quiz:', err)

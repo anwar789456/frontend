@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
@@ -9,6 +9,7 @@ import { Quiz, QuestionQuiz, QuizAttempt } from '../../models/quiz.model';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './quiz-result.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes scaleIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
@@ -51,9 +52,17 @@ export class UserQuizResultComponent implements OnInit {
   quizId!: number;
   attemptId!: number;
 
+  confettiItems = Array.from({ length: 12 }, (_, i) => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 1,
+    color: ['#38a9f3', '#f59e0b', '#22c55e', '#8b5cf6', '#ef4444', '#ec4899'][i % 6],
+    size: 6 + Math.random() * 6
+  }));
+
   constructor(
     private quizService: QuizService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -64,13 +73,19 @@ export class UserQuizResultComponent implements OnInit {
 
   private loadData(): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.quizService.getQuizById(this.quizId).subscribe({
       next: (quiz) => {
         this.quiz = quiz;
-        this.questions = quiz.questions || [];
+        this.questions = [...(quiz.questions || [])];
+        this.cdr.markForCheck();
         this.loadAttempt();
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -79,8 +94,12 @@ export class UserQuizResultComponent implements OnInit {
       next: (attempt) => {
         this.attempt = attempt;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -88,9 +107,7 @@ export class UserQuizResultComponent implements OnInit {
     if (!this.attempt?.answers || !this.questions.length) return 0;
     let count = 0;
     for (const q of this.questions) {
-      if (q.id && this.attempt.answers[q.id] === q.correctAnswer) {
-        count++;
-      }
+      if (q.id && this.attempt.answers[q.id] === q.correctAnswer) count++;
     }
     return count;
   }
@@ -135,11 +152,4 @@ export class UserQuizResultComponent implements OnInit {
     if (!q.id || !this.attempt?.answers) return '—';
     return this.attempt.answers[q.id] || '—';
   }
-
-  confettiItems = Array.from({ length: 12 }, (_, i) => ({
-    left: Math.random() * 100,
-    delay: Math.random() * 1,
-    color: ['#38a9f3', '#f59e0b', '#22c55e', '#8b5cf6', '#ef4444', '#ec4899'][i % 6],
-    size: 6 + Math.random() * 6
-  }));
 }

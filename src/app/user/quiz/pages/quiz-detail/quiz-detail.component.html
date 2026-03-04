@@ -78,13 +78,9 @@
               </a>
             }
             @case ('completed') {
-              <button (click)="startQuiz()"
-                class="flex-1 py-3 text-sm font-semibold text-[#38a9f3] border border-[#38a9f3] rounded-xl hover:bg-[#38a9f3]/10 transition-colors">
-                Retake Quiz
-              </button>
               @if (attempt) {
                 <a [routerLink]="['/quiz', quizId, 'result', attempt.id]"
-                  class="flex-1 py-3 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-center block">
+                  class="flex-1 py-3 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3] transition-colors text-center block">
                   View Results
                 </a>
               }

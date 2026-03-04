@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
+import { UserService } from '../../../user/services/user.service';
 import { StoryQuiz, StoryBlank, StoryWordBank, StoryAttempt } from '../../models/quiz.model';
+import { User } from '../../../user/models/user.model';
 
 interface StorySegment {
   type: 'text' | 'blank';
@@ -15,6 +17,7 @@ interface StorySegment {
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './story-quiz-play.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(139,92,246,0.3); } 50% { box-shadow: 0 0 12px 4px rgba(139,92,246,0.2); } }
@@ -56,10 +59,19 @@ export class StoryQuizPlayComponent implements OnInit {
   // Parsed story segments
   segments: StorySegment[] = [];
 
+  confettiItems = Array.from({ length: 10 }, (_, i) => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 0.8,
+    color: ['#38a9f3', '#f59e0b', '#22c55e', '#8b5cf6', '#ef4444'][i % 5],
+    size: 6 + Math.random() * 6
+  }));
+
   constructor(
     private quizService: QuizService,
+    private userService: UserService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   get userId(): number | null {
@@ -99,13 +111,19 @@ export class StoryQuizPlayComponent implements OnInit {
 
   private loadData(): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.quizService.getStoryQuizById(this.storyQuizId).subscribe({
       next: (sq) => {
         this.storyQuiz = sq;
         this.parseStory();
+        this.cdr.markForCheck(); // update segments + storyQuiz before word bank loads
         this.loadWordBank();
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -113,21 +131,32 @@ export class StoryQuizPlayComponent implements OnInit {
     this.quizService.getStoryWordBank(this.storyQuizId).subscribe({
       next: (wb) => {
         this.wordBank = this.shuffle([...wb.words]);
+        this.cdr.markForCheck();
         this.startAttempt();
       },
       error: () => {
-        // Fallback: use blank correct words if word bank not found
         this.wordBank = [];
+        this.cdr.markForCheck();
         this.startAttempt();
       }
     });
   }
 
   private startAttempt(): void {
-    if (!this.userId) { this.isLoading = false; return; }
+    if (!this.userId) {
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.quizService.startOrResumeStoryAttempt(this.userId, this.storyQuizId).subscribe({
       next: (attempt) => {
         this.attempt = attempt;
+        // Redirect if story quiz is already completed (prevent retakes)
+        if (attempt.completed) {
+          this.router.navigate(['/quiz']);
+          return;
+        }
         // Restore previously filled answers
         if (attempt.answers) {
           for (const [key, value] of Object.entries(attempt.answers)) {
@@ -135,10 +164,17 @@ export class StoryQuizPlayComponent implements OnInit {
             this.filledBlanks[idx] = value;
             this.usedWords.add(value);
           }
+          // New object reference so OnPush detects the change
+          this.filledBlanks = { ...this.filledBlanks };
+          this.usedWords = new Set(this.usedWords);
         }
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -166,26 +202,28 @@ export class StoryQuizPlayComponent implements OnInit {
   selectBlank(blankIndex: number): void {
     if (this.showResults) return;
 
-    // If blank is already filled, return the word to bank
     if (this.filledBlanks[blankIndex]) {
       const word = this.filledBlanks[blankIndex];
+      this.usedWords = new Set(this.usedWords); // new reference
       this.usedWords.delete(word);
+      this.filledBlanks = { ...this.filledBlanks }; // new reference
       delete this.filledBlanks[blankIndex];
       this.selectedBlankIndex = blankIndex;
-      return;
+    } else {
+      this.selectedBlankIndex = this.selectedBlankIndex === blankIndex ? null : blankIndex;
     }
 
-    this.selectedBlankIndex = this.selectedBlankIndex === blankIndex ? null : blankIndex;
+    this.cdr.markForCheck();
   }
 
   selectWord(word: string): void {
     if (this.showResults || this.usedWords.has(word)) return;
 
     if (this.selectedBlankIndex !== null) {
-      // Place word into selected blank
-      this.filledBlanks[this.selectedBlankIndex] = word;
-      this.usedWords.add(word);
+      this.filledBlanks = { ...this.filledBlanks, [this.selectedBlankIndex]: word }; // new reference
+      this.usedWords = new Set([...this.usedWords, word]); // new reference
       this.selectedBlankIndex = null;
+      this.cdr.markForCheck();
     }
   }
 
@@ -225,12 +263,20 @@ export class StoryQuizPlayComponent implements OnInit {
       next: (results) => {
         this.validationResults = results;
         this.showResults = true;
+        this.cdr.markForCheck();
 
         if (this.allCorrect) {
           this.showCompletionModal = true;
+          this.cdr.markForCheck();
+
           if (this.attempt?.id) {
             this.quizService.completeStoryAttempt(this.attempt.id, this.filledBlanks).subscribe({
-              next: (completed) => this.attempt = completed,
+              next: (completed) => {
+                this.attempt = completed;
+                this.cdr.markForCheck();
+                // Add XP to user profile
+                this.addXpToUser(completed.score || this.storyQuiz?.xpReward || 0);
+              },
               error: () => {}
             });
           }
@@ -240,10 +286,36 @@ export class StoryQuizPlayComponent implements OnInit {
     });
   }
 
+  private addXpToUser(xpEarned: number): void {
+    if (!this.userId || xpEarned <= 0) return;
+
+    this.userService.getUserById(this.userId).subscribe({
+      next: (user: User) => {
+        const updatedUser: User = {
+          ...user,
+          xp: (user.xp || 0) + xpEarned
+        };
+        this.userService.updateUser(this.userId!, updatedUser).subscribe({
+          next: (updated) => {
+            // Update localStorage with new XP
+            const storedUser = JSON.parse(localStorage.getItem('auth_user') || 'null');
+            if (storedUser) {
+              storedUser.xp = updated.xp;
+              localStorage.setItem('auth_user', JSON.stringify(storedUser));
+            }
+          },
+          error: () => {}
+        });
+      },
+      error: () => {}
+    });
+  }
+
   tryAgain(): void {
     this.validationResults = null;
     this.showResults = false;
     this.showCompletionModal = false;
+    this.cdr.markForCheck();
   }
 
   saveAndExit(): void {
@@ -251,6 +323,7 @@ export class StoryQuizPlayComponent implements OnInit {
       this.quizService.saveStoryProgress(this.attempt.id, this.filledBlanks).subscribe({
         next: () => {
           this.toastMessage = 'Your progress is saved! Come back anytime.';
+          this.cdr.markForCheck();
           setTimeout(() => this.router.navigate(['/quiz']), 1500);
         },
         error: () => this.router.navigate(['/quiz'])
@@ -262,6 +335,7 @@ export class StoryQuizPlayComponent implements OnInit {
 
   closeCompletionModal(): void {
     this.showCompletionModal = false;
+    this.cdr.markForCheck();
     this.router.navigate(['/quiz']);
   }
 
@@ -272,11 +346,4 @@ export class StoryQuizPlayComponent implements OnInit {
     }
     return arr;
   }
-
-  confettiItems = Array.from({ length: 10 }, (_, i) => ({
-    left: Math.random() * 100,
-    delay: Math.random() * 0.8,
-    color: ['#38a9f3', '#f59e0b', '#22c55e', '#8b5cf6', '#ef4444'][i % 5],
-    size: 6 + Math.random() * 6
-  }));
 }

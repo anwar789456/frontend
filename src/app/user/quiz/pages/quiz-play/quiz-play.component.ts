@@ -1,14 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
+import { UserService } from '../../../user/services/user.service';
 import { Quiz, QuestionQuiz, QuizAttempt } from '../../models/quiz.model';
+import { User } from '../../../user/models/user.model';
 
 @Component({
   selector: 'app-user-quiz-play',
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './quiz-play.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -39,8 +42,10 @@ export class UserQuizPlayComponent implements OnInit {
 
   constructor(
     private quizService: QuizService,
+    private userService: UserService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   get userId(): number | null {
@@ -70,49 +75,78 @@ export class UserQuizPlayComponent implements OnInit {
 
   private loadQuizAndAttempt(): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.quizService.getQuizById(this.quizId).subscribe({
       next: (quiz) => {
         this.quiz = quiz;
-        this.questions = quiz.questions || [];
+        this.questions = [...(quiz.questions || [])];
+        this.cdr.markForCheck(); // reflect quiz data while attempt loads
         this.startAttempt();
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
   private startAttempt(): void {
-    if (!this.userId) { this.isLoading = false; return; }
+    if (!this.userId) {
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.quizService.startOrResumeAttempt(this.userId, this.quizId).subscribe({
       next: (attempt) => {
         this.attempt = attempt;
-        // Resume from where user left off
+        // Redirect if quiz is already completed (prevent retakes)
+        if (attempt.completed) {
+          this.router.navigate(['/quiz', this.quizId, 'result', attempt.id]);
+          return;
+        }
         if (attempt.answers) {
           const answeredCount = Object.keys(attempt.answers).length;
           this.currentIndex = Math.min(answeredCount, this.questions.length - 1);
         }
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
   selectAnswer(answer: string): void {
     if (this.answerSubmitted) return;
     this.selectedAnswer = answer;
+    this.cdr.markForCheck();
   }
 
   submitAnswer(): void {
     if (!this.selectedAnswer || !this.attempt?.id || !this.currentQuestion?.id || this.answerSubmitted) return;
+
     this.answerSubmitted = true;
     this.isCorrect = this.selectedAnswer === this.currentQuestion.correctAnswer;
+    this.cdr.markForCheck();
 
     if (this.isCorrect) {
       this.showXpPop = true;
-      setTimeout(() => this.showXpPop = false, 1200);
+      this.cdr.markForCheck();
+      setTimeout(() => {
+        this.showXpPop = false;
+        this.cdr.markForCheck();
+      }, 1200);
     }
 
     this.quizService.submitAnswer(this.attempt.id, this.currentQuestion.id, this.selectedAnswer).subscribe({
-      next: (updated) => this.attempt = updated,
+      next: (updated) => {
+        this.attempt = updated;
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error('Failed to submit answer:', err)
     });
   }
@@ -123,24 +157,58 @@ export class UserQuizPlayComponent implements OnInit {
       this.selectedAnswer = null;
       this.answerSubmitted = false;
       this.isCorrect = false;
+      this.cdr.markForCheck();
     } else {
       this.completeQuiz();
     }
   }
 
   private completeQuiz(): void {
-    if (!this.attempt?.id) return;
+    if (!this.attempt?.id || !this.userId) return;
     this.quizService.completeAttempt(this.attempt.id).subscribe({
       next: (completed) => {
         this.attempt = completed;
-        this.router.navigate(['/quiz', this.quizId, 'result', completed.id]);
+        this.cdr.markForCheck();
+        // Add XP to user profile
+        const attemptId = completed.id || this.attempt?.id || 0;
+        this.addXpToUser(completed.score || 0, attemptId);
       },
       error: (err) => console.error('Failed to complete quiz:', err)
     });
   }
 
+  private addXpToUser(xpEarned: number, attemptId: number): void {
+    if (!this.userId || xpEarned <= 0) {
+      this.router.navigate(['/quiz', this.quizId, 'result', attemptId]);
+      return;
+    }
+
+    this.userService.getUserById(this.userId).subscribe({
+      next: (user: User) => {
+        const updatedUser: User = {
+          ...user,
+          xp: (user.xp || 0) + xpEarned
+        };
+        this.userService.updateUser(this.userId!, updatedUser).subscribe({
+          next: (updated) => {
+            // Update localStorage with new XP
+            const storedUser = JSON.parse(localStorage.getItem('auth_user') || 'null');
+            if (storedUser) {
+              storedUser.xp = updated.xp;
+              localStorage.setItem('auth_user', JSON.stringify(storedUser));
+            }
+            this.router.navigate(['/quiz', this.quizId, 'result', attemptId]);
+          },
+          error: () => this.router.navigate(['/quiz', this.quizId, 'result', attemptId])
+        });
+      },
+      error: () => this.router.navigate(['/quiz', this.quizId, 'result', attemptId])
+    });
+  }
+
   saveAndExit(): void {
     this.toastMessage = 'Progress saved! You can continue later.';
+    this.cdr.markForCheck();
     setTimeout(() => this.router.navigate(['/quiz']), 1500);
   }
 

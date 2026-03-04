@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -9,7 +9,8 @@ import { StoryQuiz, StoryBlank, StoryWordBank } from '../../models/quiz.model';
   selector: 'app-tutor-story-quiz-form',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './story-quiz-form.component.html'
+  templateUrl: './story-quiz-form.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TutorStoryQuizFormComponent implements OnInit {
   isEditMode = false;
@@ -41,7 +42,8 @@ export class TutorStoryQuizFormComponent implements OnInit {
   constructor(
     private quizService: TutorQuizService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -55,6 +57,8 @@ export class TutorStoryQuizFormComponent implements OnInit {
 
   private loadStoryQuiz(id: number): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.quizService.getStoryQuizById(id).subscribe({
       next: (sq) => {
         this.title = sq.title;
@@ -63,6 +67,7 @@ export class TutorStoryQuizFormComponent implements OnInit {
         this.illustration = sq.illustration || '';
         this.storyTemplate = sq.storyTemplate;
         this.detectBlanks();
+
         if (sq.blanks) {
           this.blanks = sq.blanks.map(b => ({
             blankIndex: b.blankIndex,
@@ -70,13 +75,24 @@ export class TutorStoryQuizFormComponent implements OnInit {
             hint: b.hint || ''
           }));
         }
-        // Load word bank
+
         this.quizService.getWordBank(id).subscribe({
-          next: (wb) => { this.wordBankWords = wb.words || []; this.isLoading = false; },
-          error: () => { this.buildWordBankFromBlanks(); this.isLoading = false; }
+          next: (wb) => {
+            this.wordBankWords = wb.words || [];
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.buildWordBankFromBlanks();
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          }
         });
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -85,6 +101,7 @@ export class TutorStoryQuizFormComponent implements OnInit {
     const placeholder = `{blank_${this.blankCount}}`;
     this.storyTemplate += placeholder;
     this.syncBlanks();
+    this.cdr.markForCheck();
   }
 
   detectBlanks(): void {
@@ -95,12 +112,12 @@ export class TutorStoryQuizFormComponent implements OnInit {
   onStoryChange(): void {
     this.detectBlanks();
     this.syncBlanks();
+    this.cdr.markForCheck();
   }
 
   private syncBlanks(): void {
     const matches = this.storyTemplate.match(/\{blank_(\d+)\}/g) || [];
     const indices = matches.map(m => parseInt(m.replace(/\{blank_|\}/g, ''), 10));
-
     const existing = new Map(this.blanks.map(b => [b.blankIndex, b]));
     this.blanks = indices.map(idx => existing.get(idx) || { blankIndex: idx, correctWord: '', hint: '' });
   }
@@ -114,7 +131,6 @@ export class TutorStoryQuizFormComponent implements OnInit {
       this.syncBlanks();
     }
     if (step === 4) {
-      // Auto-add correct words to word bank
       const correctWords = this.blanks.filter(b => b.correctWord).map(b => b.correctWord);
       for (const w of correctWords) {
         if (!this.wordBankWords.includes(w)) {
@@ -123,6 +139,7 @@ export class TutorStoryQuizFormComponent implements OnInit {
       }
     }
     this.currentStep = step;
+    this.cdr.markForCheck();
   }
 
   addDistractor(): void {
@@ -130,11 +147,13 @@ export class TutorStoryQuizFormComponent implements OnInit {
     if (!word) return;
     if (this.wordBankWords.includes(word)) {
       this.wordBankError = 'Word already in bank.';
+      this.cdr.markForCheck();
       return;
     }
     this.wordBankWords.push(word);
     this.newDistractorWord = '';
     this.wordBankError = '';
+    this.cdr.markForCheck();
   }
 
   removeWord(index: number): void {
@@ -142,10 +161,12 @@ export class TutorStoryQuizFormComponent implements OnInit {
     const isCorrect = this.blanks.some(b => b.correctWord === word);
     if (isCorrect) {
       this.wordBankError = 'Cannot remove a correct answer word.';
+      this.cdr.markForCheck();
       return;
     }
     this.wordBankWords.splice(index, 1);
     this.wordBankError = '';
+    this.cdr.markForCheck();
   }
 
   hasIncompleteAnswers(): boolean {
@@ -172,6 +193,7 @@ export class TutorStoryQuizFormComponent implements OnInit {
   save(): void {
     if (!this.canSave || this.isSaving) return;
     this.isSaving = true;
+    this.cdr.markForCheck();
 
     const storyQuiz: StoryQuiz = {
       title: this.title,
@@ -195,11 +217,23 @@ export class TutorStoryQuizFormComponent implements OnInit {
         const quizId = saved.id!;
         const wordBank: StoryWordBank = { storyQuizId: quizId, words: this.wordBankWords };
         this.quizService.saveWordBank(quizId, wordBank).subscribe({
-          next: () => { this.isSaving = false; this.router.navigate(['/tutor/quiz/story']); },
-          error: () => { this.isSaving = false; this.router.navigate(['/tutor/quiz/story']); }
+          next: () => {
+            this.isSaving = false;
+            this.cdr.markForCheck();
+            this.router.navigate(['/tutor/quiz/story']);
+          },
+          error: () => {
+            this.isSaving = false;
+            this.cdr.markForCheck();
+            this.router.navigate(['/tutor/quiz/story']);
+          }
         });
       },
-      error: (err) => { console.error('Save failed:', err); this.isSaving = false; }
+      error: (err) => {
+        console.error('Save failed:', err);
+        this.isSaving = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -208,6 +242,7 @@ export class TutorStoryQuizFormComponent implements OnInit {
     const regex = /\{blank_(\d+)\}/g;
     let lastIdx = 0;
     let match: RegExpExecArray | null;
+
     while ((match = regex.exec(this.storyTemplate)) !== null) {
       if (match.index > lastIdx) {
         parts.push({ type: 'text', value: this.storyTemplate.slice(lastIdx, match.index) });
@@ -217,9 +252,11 @@ export class TutorStoryQuizFormComponent implements OnInit {
       parts.push({ type: 'blank', value: filled?.correctWord || '____', index: blankIdx });
       lastIdx = regex.lastIndex;
     }
+
     if (lastIdx < this.storyTemplate.length) {
       parts.push({ type: 'text', value: this.storyTemplate.slice(lastIdx) });
     }
+
     return parts;
   }
 }

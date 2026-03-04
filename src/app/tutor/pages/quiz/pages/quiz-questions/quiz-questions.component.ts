@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -9,7 +9,8 @@ import { Quiz, QuestionQuiz, QuestionType } from '../../models/quiz.model';
   selector: 'app-tutor-quiz-questions',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './quiz-questions.component.html'
+  templateUrl: './quiz-questions.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TutorQuizQuestionsComponent implements OnInit {
   quiz: Quiz | null = null;
@@ -26,7 +27,8 @@ export class TutorQuizQuestionsComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private quizService: TutorQuizService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -40,12 +42,26 @@ export class TutorQuizQuestionsComponent implements OnInit {
       question: ['', Validators.required],
       type: [QuestionType.MCQ, Validators.required],
       options: this.fb.array([
-        this.fb.control('', Validators.required),
-        this.fb.control('', Validators.required)
+        this.fb.control(''),
+        this.fb.control('')
       ]),
       correctAnswer: ['', Validators.required],
       explanation: ['']
     });
+
+    this.applyOptionValidators(true);
+  }
+
+  private applyOptionValidators(required: boolean): void {
+    this.optionsArray.controls.forEach(ctrl => {
+      if (required) {
+        ctrl.setValidators(Validators.required);
+      } else {
+        ctrl.clearValidators();
+      }
+      ctrl.updateValueAndValidity();
+    });
+    this.optionsArray.updateValueAndValidity();
   }
 
   get optionsArray(): FormArray {
@@ -56,29 +72,43 @@ export class TutorQuizQuestionsComponent implements OnInit {
     return this.questionForm.get('type')?.value;
   }
 
+  onTypeChange(type: string): void {
+    this.questionForm.patchValue({ type, correctAnswer: '' });
+    this.applyOptionValidators(type !== 'TRUE_FALSE');
+    this.cdr.markForCheck();
+  }
+
   addOption(): void {
     if (this.optionsArray.length < 6) {
       this.optionsArray.push(this.fb.control('', Validators.required));
+      this.cdr.markForCheck();
     }
   }
 
   removeOption(index: number): void {
     if (this.optionsArray.length > 2) {
       this.optionsArray.removeAt(index);
+      this.cdr.markForCheck();
     }
   }
 
   loadQuiz(): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.quizService.getQuizById(this.quizId).subscribe({
       next: (quiz) => {
         this.quiz = quiz;
-        this.questions = quiz.questions || [];
+        this.questions = [...(quiz.questions || [])]; // spread to ensure new reference
         this.isLoading = false;
+        this.showForm = false;       // ← reset form here after data is fresh
+        this.editingQuestion = null; // ← reset editing state here too
+        this.cdr.markForCheck();     // ← single markForCheck after ALL state is updated
       },
       error: (err) => {
         console.error('Failed to load quiz:', err);
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -86,10 +116,15 @@ export class TutorQuizQuestionsComponent implements OnInit {
   openAddForm(): void {
     this.editingQuestion = null;
     this.questionForm.reset({ question: '', type: QuestionType.MCQ, correctAnswer: '', explanation: '' });
+
     while (this.optionsArray.length > 2) this.optionsArray.removeAt(this.optionsArray.length - 1);
-    while (this.optionsArray.length < 2) this.optionsArray.push(this.fb.control('', Validators.required));
+    while (this.optionsArray.length < 2) this.optionsArray.push(this.fb.control(''));
     this.optionsArray.controls.forEach(c => c.setValue(''));
+
+    this.applyOptionValidators(true);
+
     this.showForm = true;
+    this.cdr.markForCheck();
   }
 
   openEditForm(q: QuestionQuiz): void {
@@ -100,26 +135,34 @@ export class TutorQuizQuestionsComponent implements OnInit {
       correctAnswer: q.correctAnswer,
       explanation: q.explanation
     });
+
     while (this.optionsArray.length > 0) this.optionsArray.removeAt(0);
-    (q.options || []).forEach(opt => this.optionsArray.push(this.fb.control(opt, Validators.required)));
+    (q.options || []).forEach(opt => this.optionsArray.push(this.fb.control(opt)));
     if (this.optionsArray.length < 2) {
-      while (this.optionsArray.length < 2) this.optionsArray.push(this.fb.control('', Validators.required));
+      while (this.optionsArray.length < 2) this.optionsArray.push(this.fb.control(''));
     }
+
+    this.applyOptionValidators(q.type !== 'TRUE_FALSE');
+
     this.showForm = true;
+    this.cdr.markForCheck();
   }
 
   cancelForm(): void {
     this.showForm = false;
     this.editingQuestion = null;
+    this.cdr.markForCheck();
   }
 
   setCorrectAnswer(value: string): void {
     this.questionForm.patchValue({ correctAnswer: value });
+    this.cdr.markForCheck();
   }
 
   saveQuestion(): void {
     if (this.questionForm.invalid || this.isSaving) return;
     this.isSaving = true;
+    this.cdr.markForCheck();
 
     const formVal = this.questionForm.value;
     const payload: QuestionQuiz = {
@@ -138,13 +181,13 @@ export class TutorQuizQuestionsComponent implements OnInit {
     action.subscribe({
       next: () => {
         this.isSaving = false;
-        this.showForm = false;
-        this.editingQuestion = null;
+        // Don't touch showForm/editingQuestion here — loadQuiz() handles it
         this.loadQuiz();
       },
       error: (err) => {
         console.error('Failed to save question:', err);
         this.isSaving = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -153,7 +196,10 @@ export class TutorQuizQuestionsComponent implements OnInit {
     if (!q.id || !confirm('Delete this question?')) return;
     this.quizService.deleteQuestion(q.id).subscribe({
       next: () => this.loadQuiz(),
-      error: (err) => console.error('Failed to delete question:', err)
+      error: (err) => {
+        console.error('Failed to delete question:', err);
+        this.cdr.markForCheck();
+      }
     });
   }
 }
