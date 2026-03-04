@@ -33,6 +33,7 @@ export class SidebarComponent {
     { label: 'Events', icon: 'events', route: '/events' },
     { label: 'Profile', icon: 'profile', route: '/profile' },
     { label: 'Donations', icon: 'donations', route: '/donations' },
-    { label: 'Subscriptions', icon: 'subscriptions', route: '/subscriptions' }
+    { label: 'Subscriptions', icon: 'subscriptions', route: '/subscriptions' },
+    { label: 'Billing', icon: 'billing', route: '/subscriptions/billing-history' }
   ];
 }
