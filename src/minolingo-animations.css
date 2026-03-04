@@ -1,0 +1,139 @@
+/* ===== MinoLingo Kid-Friendly Animations ===== */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  75% { transform: rotate(-10deg); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.5); }
+  70% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-up-fade {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(56, 169, 243, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(56, 169, 243, 0.8), 0 0 30px rgba(56, 169, 243, 0.4); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes shake-happy {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px) rotate(-2deg); }
+  40% { transform: translateX(3px) rotate(2deg); }
+  60% { transform: translateX(-3px) rotate(-1deg); }
+  80% { transform: translateX(3px) rotate(1deg); }
+}
+
+@keyframes rainbow-border {
+  0% { border-color: #ff6b6b; }
+  25% { border-color: #feca57; }
+  50% { border-color: #48dbfb; }
+  75% { border-color: #ff9ff3; }
+  100% { border-color: #ff6b6b; }
+}
+
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-bounce-soft { animation: bounce-soft 2s ease-in-out infinite; }
+.animate-wave { animation: wave 1.5s ease-in-out infinite; }
+.animate-sparkle { animation: sparkle 2s ease-in-out infinite; }
+.animate-pop-in { animation: pop-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; }
+.animate-slide-up { animation: slide-up-fade 0.6s ease-out forwards; }
+.animate-wiggle { animation: wiggle 0.5s ease-in-out; }
+.animate-wiggle-hover:hover { animation: wiggle 0.3s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-twinkle { animation: twinkle 1.5s ease-in-out infinite; }
+.animate-shake-happy { animation: shake-happy 0.6s ease-in-out; }
+
+.shadow-playful {
+  box-shadow: 0 10px 40px -10px rgba(56, 169, 243, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-card-hover {
+  transition: all 0.3s ease;
+}
+.shadow-card-hover:hover {
+  box-shadow: 0 20px 60px -15px rgba(56, 169, 243, 0.4), 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+/* Fun gradient backgrounds */
+.bg-gradient-ocean {
+  background: linear-gradient(135deg, #667eea 0%, #38a9f3 50%, #7dd3fc 100%);
+}
+
+.bg-gradient-sunny {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+.bg-gradient-candy {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.bg-gradient-forest {
+  background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+}
+
+/* Decorative elements */
+.star-decoration {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #fbbf24;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.bubble-decoration {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(56,169,243,0.2) 100%);
+  border: 2px solid rgba(255,255,255,0.5);
+}
+
+/* Input focus effects for kids */
+.input-fun:focus {
+  border-color: #38a9f3;
+  box-shadow: 0 0 0 4px rgba(56, 169, 243, 0.15), 0 4px 12px rgba(56, 169, 243, 0.2);
+}
+
+/* Button hover effects */
+.btn-fun {
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.btn-fun:hover {
+  transform: scale(1.05);
+}
+.btn-fun:active {
+  transform: scale(0.98);
+}
