@@ -5,11 +5,12 @@ import { RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
 import { AuthService } from '../../../../shared/services/auth.service';
+import { OnboardingComponent, OnboardingStep } from '../../../../shared/components/onboarding/onboarding.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, OnboardingComponent],
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit {
@@ -38,6 +39,38 @@ export class ProfileComponent implements OnInit {
   currentPasswordTouched = false;
   newPasswordTouched = false;
   confirmNewPasswordTouched = false;
+
+  // Onboarding steps
+  profileOnboardingSteps: OnboardingStep[] = [
+    {
+      title: 'Your Profile! 👤',
+      description: 'This is your personal space on MinoLingo. View your stats, achievements, and customize your profile!',
+      icon: '🏠',
+      mascotMessage: 'Your space!',
+      highlightColor: '#38a9f3'
+    },
+    {
+      title: 'Track Your Progress 📊',
+      description: 'See your XP, streaks, coins, and learning stats. Keep pushing to reach new milestones!',
+      icon: '📈',
+      mascotMessage: 'Keep going!',
+      highlightColor: '#22c55e'
+    },
+    {
+      title: 'Edit Your Info ✏️',
+      description: 'Click "Edit Profile" to update your name, username, or profile picture anytime!',
+      icon: '🎨',
+      mascotMessage: 'Make it yours!',
+      highlightColor: '#6366f1'
+    },
+    {
+      title: 'Stay Secure 🔒',
+      description: 'You can change your password anytime in the security section. Keep your account safe!',
+      icon: '🛡️',
+      mascotMessage: 'Stay safe!',
+      highlightColor: '#f59e0b'
+    }
+  ];
 
   get isStudent(): boolean {
     return this.user?.role === 'ETUDIANT';

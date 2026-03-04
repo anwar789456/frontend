@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
+import { OnboardingComponent, OnboardingStep } from '../../../../shared/components/onboarding/onboarding.component';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, OnboardingComponent],
   templateUrl: './reset-password.component.html'
 })
 export class ResetPasswordComponent implements OnInit {
@@ -24,6 +25,31 @@ export class ResetPasswordComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
   tokenInvalid = false;
+
+  // Onboarding steps
+  resetPasswordOnboardingSteps: OnboardingStep[] = [
+    {
+      title: 'Create New Password 🔐',
+      description: 'Time to set a brand new password for your account. Make it strong and memorable!',
+      icon: '🛡️',
+      mascotMessage: 'New start!',
+      highlightColor: '#22c55e'
+    },
+    {
+      title: 'Strong Password Tips 💪',
+      description: 'Use at least 8 characters with uppercase, lowercase, numbers, and symbols for best security!',
+      icon: '🔒',
+      mascotMessage: 'Stay safe!',
+      highlightColor: '#6366f1'
+    },
+    {
+      title: 'Confirm & Done! ✅',
+      description: 'Type your new password twice to confirm, then click reset. You\'ll be back to learning in no time!',
+      icon: '🎉',
+      mascotMessage: 'Almost done!',
+      highlightColor: '#38a9f3'
+    }
+  ];
 
   constructor(
     private route: ActivatedRoute,

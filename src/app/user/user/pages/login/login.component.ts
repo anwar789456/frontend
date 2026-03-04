@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, BanErrorInfo } from '../../../../shared/services/auth.service';
 import { ImageCaptchaComponent, CaptchaResult } from '../../../../shared/components/image-captcha/image-captcha.component';
+import { OnboardingComponent, OnboardingStep } from '../../../../shared/components/onboarding/onboarding.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ImageCaptchaComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ImageCaptchaComponent, OnboardingComponent],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
@@ -27,6 +28,38 @@ export class LoginComponent {
 
   emailTouched = false;
   passwordTouched = false;
+
+  // Onboarding steps for login page
+  loginOnboardingSteps: OnboardingStep[] = [
+    {
+      title: 'Welcome to MinoLingo! 🎉',
+      description: 'Your fun and interactive English learning adventure starts here. Let\'s show you around!',
+      icon: '👋',
+      mascotMessage: 'Hi there!',
+      highlightColor: '#38a9f3'
+    },
+    {
+      title: 'Enter Your Email 📧',
+      description: 'Type in the email address you used when creating your account. We\'ll use this to find your profile.',
+      icon: '✉️',
+      mascotMessage: 'Easy peasy!',
+      highlightColor: '#6366f1'
+    },
+    {
+      title: 'Your Secret Password 🔐',
+      description: 'Enter your password to securely access your account. Click the eye icon to show or hide it!',
+      icon: '🔑',
+      mascotMessage: 'Keep it safe!',
+      highlightColor: '#8b5cf6'
+    },
+    {
+      title: 'Ready to Learn! 🚀',
+      description: 'Click "Sign in" and continue your learning journey. Earn XP, maintain streaks, and have fun!',
+      icon: '🎯',
+      mascotMessage: 'Let\'s go!',
+      highlightColor: '#22c55e'
+    }
+  ];
 
   constructor(
     private authService: AuthService,
