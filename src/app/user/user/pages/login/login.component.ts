@@ -23,6 +23,7 @@ export class LoginComponent {
   showPassword = false;
   rememberMe = false;
   captchaResult: CaptchaResult | null = null;
+  showCaptcha = false;
 
   emailTouched = false;
   passwordTouched = false;
@@ -30,7 +31,7 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   get emailError(): string {
     if (!this.emailTouched) return '';
@@ -48,7 +49,21 @@ export class LoginComponent {
 
   get isFormValid(): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(this.email) && this.password.length > 0 && this.captchaResult !== null;
+    const captchaValid = !this.showCaptcha || this.captchaResult !== null;
+    return emailRegex.test(this.email) && this.password.length > 0 && captchaValid;
+  }
+
+  get formattedBanExpiry(): string {
+    if (!this.banInfo?.banExpiresAt) return '';
+    try {
+      const date = new Date(this.banInfo.banExpiresAt);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch {
+      return this.banInfo.banExpiresAt;
+    }
   }
 
   onCaptchaSolved(result: CaptchaResult): void {
@@ -61,6 +76,13 @@ export class LoginComponent {
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
+  }
+
+  toggleCaptcha(): void {
+    this.showCaptcha = !this.showCaptcha;
+    if (!this.showCaptcha) {
+      this.captchaResult = null;
+    }
   }
 
   onSubmit(): void {
@@ -77,8 +99,8 @@ export class LoginComponent {
     this.authService.login(
       this.email,
       this.password,
-      this.captchaResult!.challengeId,
-      this.captchaResult!.selectedIndex
+      this.captchaResult?.challengeId ?? '',
+      this.captchaResult?.selectedIndex ?? -1
     ).subscribe({
       next: (user) => {
         this.isLoading = false;

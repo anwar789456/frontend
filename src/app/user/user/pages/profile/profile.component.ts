@@ -253,7 +253,14 @@ export class ProfileComponent implements OnInit {
     this.userService.changePassword(this.user!.id, this.currentPassword, this.newPassword).subscribe({
       next: () => {
         this.isChangingPassword = false;
-        this.passwordSuccessMessage = 'Password changed successfully! 🎉';
+        this.passwordSuccessMessage = 'Password changed successfully! ';
+        // Reload user data so this.user.pwd reflects the new password
+        this.userService.getUserById(this.user!.id).subscribe({
+          next: (u) => {
+            this.user = { ...u };
+            localStorage.setItem('auth_user', JSON.stringify(u));
+          }
+        });
         this.resetPasswordForm();
         this.showPasswordSection = false;
         setTimeout(() => this.passwordSuccessMessage = '', 4000);

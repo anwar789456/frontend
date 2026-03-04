@@ -58,7 +58,7 @@ export class RegisterComponent {
   constructor(
     private userService: UserService,
     private router: Router
-  ) {}
+  ) { }
 
   // --- Step 1 Validators ---
 
@@ -294,7 +294,7 @@ export class RegisterComponent {
         this.isLoading = false;
         // ✅ Redirect to verification code page instead of auto-login
         this.router.navigate(['/verify-code'], {
-          queryParams: { email: this.email.trim() }
+          queryParams: { email: this.email.trim(), role: this.role }
         });
       },
       error: (err: any) => {

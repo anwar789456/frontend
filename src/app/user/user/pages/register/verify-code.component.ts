@@ -13,6 +13,7 @@ import { AuthService } from '../../../../shared/services/auth.service';
 })
 export class VerifyCodeComponent implements OnInit {
   email = '';
+  role = '';
   code = '';
   isLoading = false;
   isResending = false;
@@ -33,6 +34,7 @@ export class VerifyCodeComponent implements OnInit {
 
   ngOnInit(): void {
     this.email = this.route.snapshot.queryParamMap.get('email') || '';
+    this.role = this.route.snapshot.queryParamMap.get('role') || '';
     if (!this.email) {
       this.router.navigate(['/register']);
     }
@@ -91,7 +93,8 @@ export class VerifyCodeComponent implements OnInit {
 
         // Store user session via AuthService (uses 'auth_user' key)
         this.authService.setSessionFromVerification(response.user);
-        const role = response.user?.role || response.role;
+        // Use role from response, or fall back to query param from registration
+        const role = response.user?.role || response.role || this.role;
 
         setTimeout(() => {
           const redirectUrl = this.authService.getRedirectUrlForRole(role);
