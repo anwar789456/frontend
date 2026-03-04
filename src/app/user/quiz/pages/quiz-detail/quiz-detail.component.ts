@@ -12,7 +12,9 @@ import { Quiz, QuizAttempt } from '../../models/quiz.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
     .anim-fade-up { animation: fadeInUp 0.4s ease-out both; }
+    .anim-float { animation: float 6s ease-in-out infinite; }
   `]
 })
 export class UserQuizDetailComponent implements OnInit {
