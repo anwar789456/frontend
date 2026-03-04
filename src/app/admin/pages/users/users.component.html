@@ -5,7 +5,8 @@
       <h1 class="text-2xl font-bold text-[#0f1419]">User Management</h1>
       <div class="relative">
         <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-        <input type="text" [(ngModel)]="searchQuery" placeholder="Search users, emails, or roles..." class="pl-10 pr-4 py-2 w-[280px] bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search users, emails, or roles..."
+          class="pl-10 pr-4 py-2 w-[280px] bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
       </div>
     </div>
 
@@ -42,7 +43,7 @@
         <div class="flex gap-1">
           @for (tab of tabs; track tab) {
             <button
-              (click)="activeTab = tab"
+              (click)="onTabChange(tab)"
               class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
               [class.bg-[#e6f6ff]]="activeTab === tab"
               [class.text-[#38a9f3]]="activeTab === tab"
@@ -51,7 +52,20 @@
             >{{ tab }}</button>
           }
         </div>
-        <button (click)="openAddModal()" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3]">+ Add User</button>
+        <div class="flex items-center gap-3">
+          <!-- Page size selector -->
+          <div class="flex items-center gap-2 text-[13px] text-[#536471]">
+            <span>Show</span>
+            <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()"
+              class="border border-[#eef1f4] rounded-lg px-2 py-1.5 text-[13px] text-[#0f1419] bg-[#f7f9fa] outline-none focus:border-[#38a9f3] cursor-pointer">
+              @for (opt of pageSizeOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+              }
+            </select>
+            <span>per page</span>
+          </div>
+          <button (click)="openAddModal()" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3]">+ Add User</button>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -77,7 +91,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (user of filteredUsers; track user.id) {
+            @for (user of paginatedUsers; track user.id) {
               <tr class="border-t border-[#f7f9fa] cursor-pointer hover:bg-[#fafcfd]"
                   [class.bg-[#f0f9ff]]="selectedUser?.id === user.id"
                   (click)="selectUser(user)">
@@ -128,6 +142,89 @@
             }
           </tbody>
         </table>
+
+        <!-- ─── PAGINATION BAR ──────────────────────────────────── -->
+        @if (filteredUsers.length > 0) {
+          <div class="flex items-center justify-between mt-5 pt-4 border-t border-[#f0f2f5]">
+
+            <!-- Left: results info -->
+            <p class="text-[13px] text-[#536471]">
+              Showing
+              <span class="font-semibold text-[#0f1419]">{{ startIndex }}</span>
+              –
+              <span class="font-semibold text-[#0f1419]">{{ endIndex }}</span>
+              of
+              <span class="font-semibold text-[#0f1419]">{{ filteredUsers.length }}</span>
+              users
+            </p>
+
+            <!-- Right: page buttons -->
+            <div class="flex items-center gap-1.5">
+
+              <!-- Prev button -->
+              <button
+                (click)="prevPage()"
+                [disabled]="currentPage === 1"
+                class="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-lg border transition-all duration-150"
+                [class.border-[#eef1f4]]="currentPage === 1"
+                [class.text-[#c4c9cf]]="currentPage === 1"
+                [class.cursor-not-allowed]="currentPage === 1"
+                [class.border-[#d1d9e0]]="currentPage !== 1"
+                [class.text-[#536471]]="currentPage !== 1"
+                [class.hover:bg-[#f7f9fa]]="currentPage !== 1"
+                [class.hover:border-[#38a9f3]]="currentPage !== 1"
+                [class.hover:text-[#38a9f3]]="currentPage !== 1"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                Prev
+              </button>
+
+              <!-- Page numbers -->
+              @for (page of pageNumbers; track $index) {
+                @if (page === '...') {
+                  <span class="px-2 py-1.5 text-[13px] text-[#9ca3af] select-none">…</span>
+                } @else {
+                  <button
+                    (click)="goToPage(page)"
+                    class="min-w-[34px] h-[34px] flex items-center justify-center text-[13px] font-medium rounded-lg border transition-all duration-150"
+                    [class.bg-[#38a9f3]]="currentPage === page"
+                    [class.text-white]="currentPage === page"
+                    [class.border-[#38a9f3]]="currentPage === page"
+                    [class.shadow-sm]="currentPage === page"
+                    [class.border-[#eef1f4]]="currentPage !== page"
+                    [class.text-[#536471]]="currentPage !== page"
+                    [class.hover:bg-[#f0f9ff]]="currentPage !== page"
+                    [class.hover:border-[#38a9f3]]="currentPage !== page"
+                    [class.hover:text-[#38a9f3]]="currentPage !== page"
+                  >{{ page }}</button>
+                }
+              }
+
+              <!-- Next button -->
+              <button
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                class="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-lg border transition-all duration-150"
+                [class.border-[#eef1f4]]="currentPage === totalPages"
+                [class.text-[#c4c9cf]]="currentPage === totalPages"
+                [class.cursor-not-allowed]="currentPage === totalPages"
+                [class.border-[#d1d9e0]]="currentPage !== totalPages"
+                [class.text-[#536471]]="currentPage !== totalPages"
+                [class.hover:bg-[#f7f9fa]]="currentPage !== totalPages"
+                [class.hover:border-[#38a9f3]]="currentPage !== totalPages"
+                [class.hover:text-[#38a9f3]]="currentPage !== totalPages"
+              >
+                Next
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+        <!-- ─── END PAGINATION ──────────────────────────────────── -->
       }
     </div>
   </div>
@@ -162,7 +259,6 @@
         </div>
       </div>
 
-      <!-- Tutor-specific details -->
       @if (selectedUser.role === 'TUTEUR') {
         <div class="mb-4">
           <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Tutor Info</h4>
@@ -180,7 +276,6 @@
         </div>
       }
 
-      <!-- Student-specific details -->
       @if (selectedUser.role === 'ETUDIANT') {
         <div class="mb-4">
           <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Student Info</h4>
@@ -201,7 +296,6 @@
         </div>
       }
 
-      <!-- Banned Status -->
       @if (selectedUser.banned) {
         <div class="px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl mb-4 space-y-1.5">
           <div class="flex items-center gap-2">
@@ -220,7 +314,11 @@
 
       <div class="flex gap-2 mt-4">
         <button (click)="openEditModal(selectedUser)" class="flex-1 py-2.5 text-sm font-semibold text-[#38a9f3] border border-[#38a9f3] rounded-xl hover:bg-[#f0f9ff] transition-colors">Edit</button>
-        <button (click)="confirmBan(selectedUser)" class="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors" [class.text-white]="!selectedUser.banned" [class.bg-orange-500]="!selectedUser.banned" [class.hover:bg-orange-600]="!selectedUser.banned" [class.text-green-600]="selectedUser.banned" [class.border]="selectedUser.banned" [class.border-green-400]="selectedUser.banned" [class.hover:bg-green-50]="selectedUser.banned">{{ selectedUser.banned ? 'Unban' : 'Ban' }}</button>
+        <button (click)="confirmBan(selectedUser)" class="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors"
+          [class.text-white]="!selectedUser.banned" [class.bg-orange-500]="!selectedUser.banned" [class.hover:bg-orange-600]="!selectedUser.banned"
+          [class.text-green-600]="selectedUser.banned" [class.border]="selectedUser.banned" [class.border-green-400]="selectedUser.banned" [class.hover:bg-green-50]="selectedUser.banned">
+          {{ selectedUser.banned ? 'Unban' : 'Ban' }}
+        </button>
         <button (click)="confirmDelete(selectedUser)" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors">Delete</button>
       </div>
     </div>
@@ -237,79 +335,59 @@
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
-
-      <!-- Modal Error -->
       @if (errorMessage && showModal) {
         <div class="mx-6 mt-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-[13px] px-4 py-2.5 rounded-xl">
           <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
           <span>{{ errorMessage }}</span>
         </div>
       }
-
       <div class="p-6 space-y-4">
-        <!-- Name -->
         <div>
           <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Full Name</label>
           <input type="text" [(ngModel)]="form.name" (blur)="formTouched['name'] = true" placeholder="John Doe"
             class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
-            [class.border-red-400]="fieldError('name')"
-            [class.border-[#d1d9e0]]="!fieldError('name')" />
+            [class.border-red-400]="fieldError('name')" [class.border-[#d1d9e0]]="!fieldError('name')" />
           @if (fieldError('name')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('name') }}</p> }
         </div>
-
-        <!-- Username -->
         <div>
           <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Username</label>
           <input type="text" [(ngModel)]="form.username" (blur)="formTouched['username'] = true" placeholder="johndoe_99"
             class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
-            [class.border-red-400]="fieldError('username')"
-            [class.border-[#d1d9e0]]="!fieldError('username')" />
+            [class.border-red-400]="fieldError('username')" [class.border-[#d1d9e0]]="!fieldError('username')" />
           @if (fieldError('username')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('username') }}</p> }
         </div>
-
-        <!-- Email -->
         <div>
           <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Email</label>
           <input type="email" [(ngModel)]="form.email" (blur)="formTouched['email'] = true" placeholder="user@minolingo.com"
             class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
-            [class.border-red-400]="fieldError('email')"
-            [class.border-[#d1d9e0]]="!fieldError('email')" />
+            [class.border-red-400]="fieldError('email')" [class.border-[#d1d9e0]]="!fieldError('email')" />
           @if (fieldError('email')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('email') }}</p> }
         </div>
-
-        <!-- Password (only for add mode) -->
         @if (modalMode === 'add') {
           <div>
             <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Password</label>
             <input type="password" [(ngModel)]="form.pwd" (blur)="formTouched['pwd'] = true" placeholder="Min. 6 characters"
               class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
-              [class.border-red-400]="fieldError('pwd')"
-              [class.border-[#d1d9e0]]="!fieldError('pwd')" />
+              [class.border-red-400]="fieldError('pwd')" [class.border-[#d1d9e0]]="!fieldError('pwd')" />
             @if (fieldError('pwd')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('pwd') }}</p> }
           </div>
         }
-
-        <!-- Phone & DOB row -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Phone</label>
             <input type="tel" [(ngModel)]="form.numTel" (blur)="formTouched['numTel'] = true" placeholder="+216 XX XXX XXX"
               class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
-              [class.border-red-400]="fieldError('numTel')"
-              [class.border-[#d1d9e0]]="!fieldError('numTel')" />
+              [class.border-red-400]="fieldError('numTel')" [class.border-[#d1d9e0]]="!fieldError('numTel')" />
             @if (fieldError('numTel')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('numTel') }}</p> }
           </div>
           <div>
             <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Date of Birth</label>
             <input type="date" [(ngModel)]="form.dateNaiss" (blur)="formTouched['dateNaiss'] = true"
               class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
-              [class.border-red-400]="fieldError('dateNaiss')"
-              [class.border-[#d1d9e0]]="!fieldError('dateNaiss')" />
+              [class.border-red-400]="fieldError('dateNaiss')" [class.border-[#d1d9e0]]="!fieldError('dateNaiss')" />
             @if (fieldError('dateNaiss')) { <p class="text-[11px] text-red-500 mt-1">{{ fieldError('dateNaiss') }}</p> }
           </div>
         </div>
-
-        <!-- Role -->
         <div>
           <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Role</label>
           <select [(ngModel)]="form.role"
@@ -319,8 +397,6 @@
             <option value="ADMIN">Admin</option>
           </select>
         </div>
-
-        <!-- Inscription & Forum toggles (edit mode) -->
         @if (modalMode === 'edit') {
           <div class="grid grid-cols-2 gap-3">
             <label class="flex items-center gap-2 cursor-pointer">
@@ -334,16 +410,12 @@
           </div>
         }
       </div>
-
-      <!-- Modal Footer -->
       <div class="flex justify-end gap-3 p-6 pt-2">
         <button (click)="closeModal()" class="px-5 py-2.5 text-sm font-medium text-[#536471] border border-[#d1d9e0] rounded-xl hover:bg-[#f7f9fa] transition-colors">Cancel</button>
         <button (click)="saveUser()" [disabled]="isSaving"
           class="px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all duration-200"
-          [class.bg-[#38a9f3]]="!isSaving"
-          [class.hover:bg-[#2196e3]]="!isSaving"
-          [class.bg-[#a8d8f8]]="isSaving"
-          [class.cursor-not-allowed]="isSaving">
+          [class.bg-[#38a9f3]]="!isSaving" [class.hover:bg-[#2196e3]]="!isSaving"
+          [class.bg-[#a8d8f8]]="isSaving" [class.cursor-not-allowed]="isSaving">
           @if (isSaving) {
             <span class="inline-flex items-center gap-2">
               <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -373,15 +445,9 @@
         <button (click)="cancelDelete()" class="flex-1 py-2.5 text-sm font-medium text-[#536471] border border-[#d1d9e0] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
         <button (click)="deleteUser()" [disabled]="isSaving"
           class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors"
-          [class.bg-red-500]="!isSaving"
-          [class.hover:bg-red-600]="!isSaving"
-          [class.bg-red-300]="isSaving"
-          [class.cursor-not-allowed]="isSaving">
-          @if (isSaving) {
-            Deleting...
-          } @else {
-            Delete
-          }
+          [class.bg-red-500]="!isSaving" [class.hover:bg-red-600]="!isSaving"
+          [class.bg-red-300]="isSaving" [class.cursor-not-allowed]="isSaving">
+          {{ isSaving ? 'Deleting...' : 'Delete' }}
         </button>
       </div>
     </div>
@@ -409,24 +475,19 @@
           }
         </p>
       </div>
-
-      <!-- Ban reason & duration (only when banning) -->
       @if (banAction === 'ban') {
         <div class="space-y-3 mb-6">
           <div>
             <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Reason for ban</label>
             <select [(ngModel)]="banReason"
               class="w-full px-3.5 py-2.5 bg-white border rounded-xl text-[14px] text-[#0f1419] outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-              [class.border-red-400]="banReasonError"
-              [class.border-[#d1d9e0]]="!banReasonError">
+              [class.border-red-400]="banReasonError" [class.border-[#d1d9e0]]="!banReasonError">
               <option value="" disabled>Select a reason...</option>
               @for (reason of banReasons; track reason) {
                 <option [value]="reason">{{ reason }}</option>
               }
             </select>
-            @if (banReasonError) {
-              <p class="text-[11px] text-red-500 mt-1">{{ banReasonError }}</p>
-            }
+            @if (banReasonError) { <p class="text-[11px] text-red-500 mt-1">{{ banReasonError }}</p> }
           </div>
           <div>
             <label class="block text-[13px] font-medium text-[#0f1419] mb-1">Ban duration</label>
@@ -441,22 +502,14 @@
           </div>
         </div>
       }
-
       <div class="flex gap-3">
         <button (click)="cancelBan()" class="flex-1 py-2.5 text-sm font-medium text-[#536471] border border-[#d1d9e0] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
         <button (click)="executeBan()" [disabled]="isSaving"
           class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors"
-          [class.bg-orange-500]="banAction === 'ban' && !isSaving"
-          [class.hover:bg-orange-600]="banAction === 'ban' && !isSaving"
-          [class.bg-green-500]="banAction === 'unban' && !isSaving"
-          [class.hover:bg-green-600]="banAction === 'unban' && !isSaving"
-          [class.bg-gray-300]="isSaving"
-          [class.cursor-not-allowed]="isSaving">
-          @if (isSaving) {
-            Processing...
-          } @else {
-            {{ banAction === 'ban' ? 'Ban User' : 'Unban User' }}
-          }
+          [class.bg-orange-500]="banAction === 'ban' && !isSaving" [class.hover:bg-orange-600]="banAction === 'ban' && !isSaving"
+          [class.bg-green-500]="banAction === 'unban' && !isSaving" [class.hover:bg-green-600]="banAction === 'unban' && !isSaving"
+          [class.bg-gray-300]="isSaving" [class.cursor-not-allowed]="isSaving">
+          {{ isSaving ? 'Processing...' : (banAction === 'ban' ? 'Ban User' : 'Unban User') }}
         </button>
       </div>
     </div>
