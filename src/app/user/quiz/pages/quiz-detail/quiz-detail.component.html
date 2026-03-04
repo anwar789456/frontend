@@ -1,0 +1,97 @@
+<div class="p-8 max-w-2xl mx-auto">
+  @if (isLoading) {
+    <div class="flex items-center justify-center py-20">
+      <div class="w-8 h-8 border-3 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  }
+
+  @if (!isLoading && quiz) {
+    <!-- Back link -->
+    <a routerLink="/quiz" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#38a9f3] mb-6 transition-colors">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+      Back to Quizzes
+    </a>
+
+    <!-- Quiz Card -->
+    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden anim-fade-up">
+      <!-- Hero -->
+      <div class="bg-gradient-to-r from-[#38a9f3] to-[#56c8ff] p-8 text-white">
+        <span class="text-xs font-medium px-3 py-1 rounded-full bg-white/20 mb-3 inline-block">{{ getLevelColor(quiz.level + '') ? quiz.level : 'QUIZ' }}</span>
+        <h1 class="text-2xl font-bold font-['SN_Pro'] mb-2">{{ quiz.title }}</h1>
+        <p class="text-sm text-white/80">{{ quiz.description }}</p>
+      </div>
+
+      <div class="p-6">
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-[#0f1724]">{{ questionCount }}</p>
+            <p class="text-xs text-gray-500">Questions</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-[#f59e0b]">{{ quiz.xpReward }}</p>
+            <p class="text-xs text-gray-500">XP Reward</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-[#0f1724]">{{ estimatedTime }}</p>
+            <p class="text-xs text-gray-500">Est. Time</p>
+          </div>
+        </div>
+
+        <!-- Progress (if in progress) -->
+        @if (quizStatus === 'in_progress') {
+          <div class="mb-6 p-4 bg-[#f59e0b]/10 rounded-xl">
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span class="font-semibold text-[#f59e0b]">In Progress</span>
+              <span class="text-gray-500">{{ progress }}% complete</span>
+            </div>
+            <div class="h-2.5 bg-white rounded-full overflow-hidden">
+              <div class="h-full bg-[#f59e0b] rounded-full transition-all" [style.width.%]="progress"></div>
+            </div>
+          </div>
+        }
+
+        <!-- Completed Score -->
+        @if (quizStatus === 'completed' && attempt) {
+          <div class="mb-6 p-4 bg-green-50 rounded-xl text-center">
+            <p class="text-sm font-semibold text-green-700 mb-1">Completed!</p>
+            <p class="text-3xl font-bold text-green-600">{{ attempt.score }} XP earned</p>
+            <p class="text-xs text-green-600/70 mt-1">{{ attempt.answeredQuestions }}/{{ attempt.totalQuestions }} questions answered</p>
+          </div>
+        }
+
+        <!-- CTA Buttons -->
+        <div class="flex items-center gap-3">
+          @switch (quizStatus) {
+            @case ('not_started') {
+              <button (click)="startQuiz()"
+                class="flex-1 py-3 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3] transition-colors text-center">
+                Start Quiz
+              </button>
+            }
+            @case ('in_progress') {
+              <a [routerLink]="['/quiz', quizId, 'play']"
+                class="flex-1 py-3 text-sm font-semibold text-white bg-[#f59e0b] rounded-xl hover:bg-[#d97706] transition-colors text-center block">
+                Continue Quiz
+              </a>
+            }
+            @case ('completed') {
+              <button (click)="startQuiz()"
+                class="flex-1 py-3 text-sm font-semibold text-[#38a9f3] border border-[#38a9f3] rounded-xl hover:bg-[#38a9f3]/10 transition-colors">
+                Retake Quiz
+              </button>
+              @if (attempt) {
+                <a [routerLink]="['/quiz', quizId, 'result', attempt.id]"
+                  class="flex-1 py-3 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-center block">
+                  View Results
+                </a>
+              }
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

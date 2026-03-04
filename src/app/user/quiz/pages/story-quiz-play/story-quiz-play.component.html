@@ -1,0 +1,171 @@
+<div class="min-h-screen bg-gradient-to-b from-[#fef9e7] to-[#fef3c7] relative overflow-hidden">
+  @if (isLoading) {
+    <div class="flex items-center justify-center py-20">
+      <div class="w-8 h-8 border-3 border-[#8b5cf6] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  }
+
+  @if (!isLoading && storyQuiz) {
+    <!-- Top Bar -->
+    <div class="bg-white/80 backdrop-blur-sm border-b border-yellow-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+      <div class="flex items-center gap-3">
+        <a routerLink="/quiz" class="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </a>
+        <h1 class="text-sm font-bold text-[#0f1724] font-['SN_Pro']">📖 {{ storyQuiz.title }}</h1>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-gray-500">{{ filledCount }}/{{ totalBlanks }} filled</span>
+        <span class="text-sm font-semibold text-[#f59e0b] flex items-center gap-1">🌟 {{ storyQuiz.xpReward }} XP</span>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="h-1.5 bg-yellow-200/50">
+      <div class="h-full bg-[#8b5cf6] transition-all duration-500 rounded-r-full" [style.width.%]="progress"></div>
+    </div>
+
+    <div class="max-w-3xl mx-auto px-6 py-8">
+      <!-- Illustration -->
+      @if (storyQuiz.illustration) {
+        <div class="text-center mb-6 anim-fade-up">
+          <img [src]="storyQuiz.illustration" alt="Story illustration"
+            class="w-full max-w-md mx-auto rounded-2xl shadow-lg border-4 border-white" />
+        </div>
+      }
+
+      <!-- Story Text with Blanks -->
+      <div class="bg-white rounded-2xl border-2 border-yellow-200 p-8 mb-8 shadow-sm anim-fade-up" style="animation-delay:0.1s">
+        <p class="text-lg leading-loose font-['SN_Pro'] text-[#0f1724]">
+          @for (seg of segments; track $index) {
+            @if (seg.type === 'text') {
+              <span>{{ seg.value }}</span>
+            } @else {
+              <!-- Blank Box -->
+              <button
+                (click)="selectBlank(seg.blankIndex!)"
+                class="inline-flex items-center justify-center min-w-[100px] px-3 py-1.5 mx-1 rounded-lg border-2 text-sm font-semibold transition-all cursor-pointer align-baseline"
+                [class]="getBlankClass(seg.blankIndex!)"
+                [title]="getHint(seg.blankIndex!) || 'Click to select this blank'">
+                @if (getBlankValue(seg.blankIndex!)) {
+                  {{ getBlankValue(seg.blankIndex!) }}
+                } @else {
+                  <span class="text-gray-300">____</span>
+                }
+                <!-- Validation icons -->
+                @if (showResults && validationResults) {
+                  @if (validationResults[seg.blankIndex!]) {
+                    <span class="ml-1 text-green-500">✓</span>
+                  } @else {
+                    <span class="ml-1 text-red-500">✗</span>
+                  }
+                }
+              </button>
+            }
+          }
+        </p>
+      </div>
+
+      <!-- Selected blank indicator -->
+      @if (selectedBlankIndex !== null) {
+        <div class="text-center mb-3 anim-pop">
+          <span class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#8b5cf6]/10 text-[#8b5cf6] rounded-full text-sm font-semibold">
+            <span class="w-2 h-2 bg-[#8b5cf6] rounded-full animate-pulse"></span>
+            Select a word for blank {{ selectedBlankIndex }}
+          </span>
+        </div>
+      }
+
+      <!-- Word Bank -->
+      <div class="bg-white rounded-2xl border-2 border-yellow-200 p-6 mb-8 shadow-sm anim-fade-up" style="animation-delay:0.2s">
+        <h3 class="text-sm font-bold text-gray-500 mb-3 tracking-wide">WORD BANK</h3>
+        <div class="flex flex-wrap gap-2.5">
+          @for (word of wordBank; track $index) {
+            <button
+              (click)="selectWord(word)"
+              class="px-4 py-2 rounded-full text-base font-bold border-2 transition-all"
+              [class]="isWordUsed(word)
+                ? 'bg-gray-100 border-gray-200 text-gray-300 line-through cursor-not-allowed opacity-40'
+                : (selectedBlankIndex !== null
+                  ? 'bg-yellow-100 border-yellow-400 text-yellow-800 hover:bg-yellow-200 hover:scale-105 cursor-pointer shadow-sm'
+                  : 'bg-yellow-50 border-yellow-300 text-yellow-700 cursor-default opacity-70')"
+              [disabled]="isWordUsed(word) || selectedBlankIndex === null">
+              {{ word }}
+            </button>
+          }
+        </div>
+        @if (wordBank.length === 0) {
+          <p class="text-sm text-gray-400 text-center py-4">No words available.</p>
+        }
+      </div>
+
+      <!-- Validation feedback -->
+      @if (showResults && validationResults && !allCorrect) {
+        <div class="bg-white rounded-2xl border-2 border-orange-200 p-5 mb-6 text-center anim-fade-up">
+          @if (correctCount === 0) {
+            <p class="text-base font-bold text-orange-600 mb-1">Keep trying! You can do it! 🌟</p>
+            <p class="text-sm text-gray-500">None of the blanks are correct yet. Give it another try!</p>
+          } @else {
+            <p class="text-base font-bold text-orange-600 mb-1">Almost there! {{ correctCount }}/{{ totalBlanks }} correct 🎯</p>
+            <p class="text-sm text-gray-500">Fix the red blanks and try again!</p>
+          }
+          <button (click)="tryAgain()" class="mt-3 px-6 py-2.5 text-sm font-semibold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] transition-colors">
+            Try Again
+          </button>
+        </div>
+      }
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-center gap-4 anim-fade-up" style="animation-delay:0.3s">
+        @if (!showResults) {
+          <button (click)="checkAnswers()" [disabled]="filledCount === 0"
+            class="px-8 py-3 text-sm font-semibold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+            Check Answers
+          </button>
+        }
+        <button (click)="saveAndExit()"
+          class="px-8 py-3 text-sm font-semibold text-gray-600 border border-gray-300 bg-white rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+          Save & Exit
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Completion Modal -->
+  @if (showCompletionModal) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <!-- Confetti -->
+      @for (c of confettiItems; track $index) {
+        <div class="absolute top-1/4 rounded-full anim-confetti pointer-events-none"
+          [style.left.%]="c.left"
+          [style.background-color]="c.color"
+          [style.width.px]="c.size"
+          [style.height.px]="c.size"
+          [style.animation-delay]="c.delay + 's'">
+        </div>
+      }
+
+      <div class="bg-white rounded-3xl p-10 w-full max-w-md shadow-2xl text-center anim-pop relative">
+        <div class="text-6xl mb-4 anim-star">🎉</div>
+        <h2 class="text-2xl font-bold text-[#0f1724] font-['SN_Pro'] mb-2">Amazing!</h2>
+        <p class="text-lg text-gray-600 mb-2">You got {{ correctCount }}/{{ totalBlanks }} correct!</p>
+        <div class="text-3xl font-bold text-[#f59e0b] mb-6">
+          You earned {{ attempt?.score || storyQuiz?.xpReward || 0 }} XP! 🌟
+        </div>
+        <button (click)="closeCompletionModal()"
+          class="w-full py-3 text-sm font-semibold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] transition-colors">
+          Back to Quizzes
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Toast -->
+  @if (toastMessage) {
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0f1724] text-white px-6 py-3 rounded-xl shadow-lg text-sm font-medium z-50 anim-fade-up">
+      {{ toastMessage }}
+    </div>
+  }
+</div>

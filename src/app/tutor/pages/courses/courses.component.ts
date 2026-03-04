@@ -153,46 +153,6 @@ export class TutorCoursesComponent implements OnInit {
     });
   }
 
-  // loadCourses(): void {
-  //   this.isLoading = true;
-  //   this.courseService.getAllCours().subscribe({
-  //     next: (data) => {
-  //       console.log('[DEBUG] getAllCours response:', JSON.stringify(data.map(c => ({ id: c.id, title: c.title, image: c.image }))));
-  //       const coursesWithoutImage = data.filter(c => !c.image && c.id);
-  //       if (coursesWithoutImage.length > 0 && data.length > 0) {
-  //         const fetches = data
-  //           .filter(c => c.id)
-  //           .map(c => this.courseService.getCoursById(c.id!));
-  //         forkJoin(fetches).subscribe({
-  //           next: (detailed) => {
-  //             console.log('[DEBUG] Individual fetches:', JSON.stringify(detailed.map(c => ({ id: c.id, image: c.image }))));
-  //             this.courses = detailed;
-  //             this.updateStats();
-  //             this.isLoading = false;
-  //             this.cdr.detectChanges();
-  //           },
-  //           error: () => {
-  //             this.courses = data;
-  //             this.updateStats();
-  //             this.isLoading = false;
-  //             this.cdr.detectChanges();
-  //           }
-  //         });
-  //       } else {
-  //         this.courses = data;
-  //         this.updateStats();
-  //         this.isLoading = false;
-  //         this.cdr.detectChanges();
-  //       }
-  //     },
-  //     error: (err) => {
-  //       console.error('Failed to load courses:', err);
-  //       this.errorMessage = 'Failed to load courses.';
-  //       this.isLoading = false;
-  //       this.cdr.detectChanges();
-  //     }
-  //   });
-  // }
   loadCourses(): void {
     this.isLoading = true;
     this.courseService.getAllCours().subscribe({
@@ -264,13 +224,11 @@ export class TutorCoursesComponent implements OnInit {
     this.isImageUploading = true;
     this.courseService.uploadFile(file).subscribe({
       next: (url) => {
-        console.log('[DEBUG] Image uploaded, URL:', url);
         this.courseImageUrl = url;
         this.isImageUploading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('[DEBUG] Image upload failed:', err);
         this.isImageUploading = false;
         this.cdr.detectChanges();
       }
