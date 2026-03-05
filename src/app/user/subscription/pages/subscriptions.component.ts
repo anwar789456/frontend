@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { SubscriptionPlan, PlanType } from '../models/subscription.model';
+import { SubscriptionPlan, PlanType, UserSubscription } from '../models/subscription.model';
 import { SubscriptionService, ServiceError } from '../services/subscription.service';
 import { AuthService } from '../../../shared/services/auth.service';
 import { StripePaymentService } from '../services/stripe-payment.service';
@@ -21,6 +21,10 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
   isBooking = false;
   activePlanId: number | null = null;
   
+  // Active subscription (Feature 4)
+  currentSubscription: UserSubscription | null = null;
+  isTogglingAutoRenew = false;
+
   // Feedback
   subscriptionMessage: string | null = null;
   subscriptionError: string | null = null;
@@ -71,6 +75,7 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadPlans();
+    this.loadCurrentSubscription();
   }
 
   ngOnDestroy(): void {
@@ -98,6 +103,45 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
       error: (err: ServiceError) => {
         this.subscriptionError = err.message || 'Failed to load subscription plans.';
         console.error('Failed to load plans:', err);
+      }
+    });
+  }
+
+  /**
+   * Load current user's active subscription (Feature 4)
+   */
+  private loadCurrentSubscription(): void {
+    const user = this.authService.currentUser;
+    if (!user) return;
+    this.subscriptionService.getCurrentSubscription(user.id).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (sub) => { this.currentSubscription = sub; },
+      error: () => { this.currentSubscription = null; }
+    });
+  }
+
+  /**
+   * Toggle auto-renew for the current subscription (Feature 4)
+   */
+  onAutoRenewToggle(): void {
+    if (!this.currentSubscription?.id) return;
+    this.isTogglingAutoRenew = true;
+    const newValue = !this.currentSubscription.autoRenew;
+    this.subscriptionService.toggleAutoRenew(this.currentSubscription.id, newValue).pipe(
+      takeUntil(this.destroy$),
+      finalize(() => { this.isTogglingAutoRenew = false; })
+    ).subscribe({
+      next: (updated: UserSubscription) => {
+        this.currentSubscription = updated;
+        this.subscriptionMessage = newValue
+          ? 'Auto-renew enabled. Your subscription will renew automatically.'
+          : 'Auto-renew disabled.';
+        this.setMessageTimeout();
+      },
+      error: (err: ServiceError) => {
+        this.subscriptionError = err.message || 'Failed to update auto-renew setting.';
+        this.setMessageTimeout();
       }
     });
   }
@@ -192,15 +236,15 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Store payment info in session storage for confirmation page
-    sessionStorage.setItem('stripe_payment_userId', userId.toString());
-    sessionStorage.setItem('stripe_payment_planId', planId.toString());
-    sessionStorage.setItem('stripe_payment_email', user.email);
+    // Store payment info in local storage for confirmation page
+    localStorage.setItem('stripe_payment_userId', userId.toString());
+    localStorage.setItem('stripe_payment_planId', planId.toString());
+    localStorage.setItem('stripe_payment_email', user.email);
     
-    console.log('Session Storage Set:', {
-      userId: sessionStorage.getItem('stripe_payment_userId'),
-      planId: sessionStorage.getItem('stripe_payment_planId'),
-      email: sessionStorage.getItem('stripe_payment_email')
+    console.log('Local Storage Set:', {
+      userId: localStorage.getItem('stripe_payment_userId'),
+      planId: localStorage.getItem('stripe_payment_planId'),
+      email: localStorage.getItem('stripe_payment_email')
     });
 
     // Create Stripe checkout session and redirect
@@ -230,10 +274,10 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
           console.error('Error:', err);
           this.subscriptionError = 'Failed to redirect to payment. Please try again.';
           this.setMessageTimeout();
-          // Clear session storage on error
-          sessionStorage.removeItem('stripe_payment_userId');
-          sessionStorage.removeItem('stripe_payment_planId');
-          sessionStorage.removeItem('stripe_payment_email');
+          // Clear local storage on error
+          localStorage.removeItem('stripe_payment_userId');
+          localStorage.removeItem('stripe_payment_planId');
+          localStorage.removeItem('stripe_payment_email');
         });
       },
       error: (err: any) => {
@@ -244,10 +288,10 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
         console.error('Error Details:', err.details);
         this.subscriptionError = err.message || 'Failed to create payment session. Please try again.';
         this.setMessageTimeout();
-        // Clear session storage on error
-        sessionStorage.removeItem('stripe_payment_userId');
-        sessionStorage.removeItem('stripe_payment_planId');
-        sessionStorage.removeItem('stripe_payment_email');
+        // Clear local storage on error
+        localStorage.removeItem('stripe_payment_userId');
+        localStorage.removeItem('stripe_payment_planId');
+        localStorage.removeItem('stripe_payment_email');
       }
     });
   }

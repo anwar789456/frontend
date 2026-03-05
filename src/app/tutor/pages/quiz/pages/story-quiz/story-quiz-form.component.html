@@ -1,0 +1,205 @@
+<div class="p-8 max-w-4xl">
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-6">
+    <a routerLink="/tutor/quiz/story" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-[#0f1724] font-['SN_Pro']">{{ isEditMode ? 'Edit Story Quiz' : 'Create Story Quiz' }}</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Build an interactive fill-in-the-blank story.</p>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="flex items-center justify-center py-20">
+      <div class="w-8 h-8 border-3 border-[#8b5cf6] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <!-- Step Indicator -->
+    <div class="flex items-center gap-2 mb-6">
+      @for (step of [1,2,3,4]; track step) {
+        <button (click)="goToStep(step)"
+          class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg border transition-colors"
+          [class]="currentStep === step ? 'bg-[#8b5cf6] text-white border-[#8b5cf6]' : (step < currentStep ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] border-[#8b5cf6]/30' : 'bg-white text-gray-400 border-gray-200')">
+          {{ step }}.
+          @switch (step) {
+            @case (1) { Basic Info }
+            @case (2) { Story }
+            @case (3) { Answers }
+            @case (4) { Word Bank }
+          }
+        </button>
+      }
+    </div>
+
+    <!-- Step 1: Basic Info -->
+    @if (currentStep === 1) {
+      <div class="bg-white border border-gray-200 rounded-2xl p-6">
+        <h2 class="text-lg font-bold text-[#0f1724] mb-4">Basic Information</h2>
+        <div class="flex flex-col gap-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Title <span class="text-red-400">*</span></label>
+            <input [(ngModel)]="title" type="text" placeholder="e.g. The Enchanted Forest"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6]/30" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Difficulty</label>
+              <select [(ngModel)]="difficulty"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#8b5cf6]">
+                @for (d of difficulties; track d) {
+                  <option [value]="d">{{ d }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">XP Reward</label>
+              <input [(ngModel)]="xpReward" type="number" min="0"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#8b5cf6]" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Illustration URL (optional)</label>
+            <input [(ngModel)]="illustration" type="text" placeholder="https://..."
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#8b5cf6]" />
+            @if (illustration) {
+              <img [src]="illustration" alt="Preview" class="mt-3 w-32 h-32 rounded-xl object-cover border border-gray-200" />
+            }
+          </div>
+          <button (click)="goToStep(2)" [disabled]="!title.trim()"
+            class="self-end px-6 py-2.5 text-sm font-semibold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Next: Write Story →
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Step 2: Story Editor -->
+    @if (currentStep === 2) {
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Editor -->
+        <div class="bg-white border border-gray-200 rounded-2xl p-6">
+          <h2 class="text-lg font-bold text-[#0f1724] mb-2">Story Editor</h2>
+          <p class="text-xs text-gray-400 mb-4">Type your story. Click "Add Blank" to insert a placeholder where a word should go.</p>
+          <textarea [(ngModel)]="storyTemplate" (ngModelChange)="onStoryChange()" rows="12" placeholder="Once upon a time, a little {blank_1} lived in a big {blank_2} forest..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#8b5cf6] resize-none font-mono leading-relaxed"></textarea>
+          <div class="flex items-center justify-between mt-3">
+            <button (click)="insertBlank()" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-[#8b5cf6] border border-[#8b5cf6] rounded-lg hover:bg-[#8b5cf6]/10 transition-colors">
+              + Add Blank Here
+            </button>
+            <span class="text-xs text-gray-400">Blanks detected: <strong class="text-[#8b5cf6]">{{ blankCount }}</strong></span>
+          </div>
+        </div>
+        <!-- Preview -->
+        <div class="bg-white border border-gray-200 rounded-2xl p-6">
+          <h2 class="text-lg font-bold text-[#0f1724] mb-2">Live Preview</h2>
+          <p class="text-xs text-gray-400 mb-4">How students will see the story.</p>
+          <div class="bg-[#fef9e7] rounded-xl p-5 text-base leading-relaxed font-['SN_Pro']">
+            @for (seg of previewSegments; track $index) {
+              @if (seg.type === 'text') {
+                <span>{{ seg.value }}</span>
+              } @else {
+                <span class="inline-block min-w-[80px] px-3 py-1 mx-1 text-center rounded-lg border-2 border-dashed border-[#8b5cf6]/40 bg-white text-[#8b5cf6] font-semibold text-sm">
+                  {{ seg.value }}
+                </span>
+              }
+            }
+            @if (!storyTemplate) {
+              <span class="text-gray-400 italic">Your story will appear here...</span>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <button (click)="goToStep(1)" class="px-6 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">← Back</button>
+        <button (click)="goToStep(3)" [disabled]="blankCount === 0"
+          class="px-6 py-2.5 text-sm font-semibold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          Next: Fill Answers →
+        </button>
+      </div>
+    }
+
+    <!-- Step 3: Correct Answers -->
+    @if (currentStep === 3) {
+      <div class="bg-white border border-gray-200 rounded-2xl p-6">
+        <h2 class="text-lg font-bold text-[#0f1724] mb-2">Correct Answers</h2>
+        <p class="text-xs text-gray-400 mb-4">Fill in the correct word for each blank.</p>
+        <div class="flex flex-col gap-4">
+          @for (blank of blanks; track blank.blankIndex) {
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+              <span class="w-10 h-10 bg-[#8b5cf6]/10 text-[#8b5cf6] rounded-lg flex items-center justify-center text-sm font-bold shrink-0">{{ blank.blankIndex }}</span>
+              <div class="flex-1 grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 mb-1">Correct Word <span class="text-red-400">*</span></label>
+                  <input [(ngModel)]="blank.correctWord" type="text" placeholder="e.g. girl"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#8b5cf6]" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 mb-1">Hint (optional)</label>
+                  <input [(ngModel)]="blank.hint" type="text" placeholder="A young person..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-[#8b5cf6]" />
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="flex items-center justify-between mt-4">
+          <button (click)="goToStep(2)" class="px-6 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">← Back</button>
+          <button (click)="goToStep(4)" [disabled]="hasIncompleteAnswers()"
+            class="px-6 py-2.5 text-sm font-semibold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Next: Word Bank →
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Step 4: Word Bank -->
+    @if (currentStep === 4) {
+      <div class="bg-white border border-gray-200 rounded-2xl p-6">
+        <h2 class="text-lg font-bold text-[#0f1724] mb-2">Word Bank</h2>
+        <p class="text-xs text-gray-400 mb-4">Correct words are auto-included. Add distractor words to make it challenging (minimum 2 distractors required).</p>
+
+        <!-- Word tags -->
+        <div class="flex flex-wrap gap-2 mb-4">
+          @for (word of wordBankWords; track $index; let i = $index) {
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
+              [class]="isCorrectWord(word) ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-yellow-100 text-yellow-700 border border-yellow-300'">
+              {{ word }}
+              <button (click)="removeWord(i)" class="hover:text-red-500 transition-colors text-xs">✕</button>
+            </span>
+          }
+        </div>
+
+        <!-- Add distractor -->
+        <div class="flex items-center gap-2 mb-2">
+          <input [(ngModel)]="newDistractorWord" type="text" placeholder="Add a distractor word..."
+            (keyup.enter)="addDistractor()"
+            class="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#8b5cf6]" />
+          <button (click)="addDistractor()" class="px-4 py-2.5 text-sm font-semibold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] transition-colors">
+            Add Word
+          </button>
+        </div>
+
+        @if (wordBankError) {
+          <p class="text-xs text-red-500 mb-2">{{ wordBankError }}</p>
+        }
+
+        <div class="flex items-center gap-4 text-xs text-gray-400 mb-4">
+          <span>Correct words: <strong class="text-green-600">{{ blanks.length }}</strong></span>
+          <span>Distractors: <strong [class]="distractorCount >= 2 ? 'text-yellow-600' : 'text-red-500'">{{ distractorCount }}</strong> (min 2)</span>
+          <span>Total: <strong class="text-[#8b5cf6]">{{ wordBankWords.length }}</strong></span>
+        </div>
+
+        <div class="flex items-center justify-between mt-4">
+          <button (click)="goToStep(3)" class="px-6 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">← Back</button>
+          <button (click)="save()" [disabled]="!canSave || isSaving"
+            class="px-8 py-2.5 text-sm font-semibold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Story Quiz' : 'Create Story Quiz') }}
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

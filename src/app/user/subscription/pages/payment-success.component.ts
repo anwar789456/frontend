@@ -35,12 +35,12 @@ export class PaymentSuccessComponent implements OnInit {
     console.log('Session ID from URL:', this.sessionId);
     console.log('Full URL Query Params:', this.route.snapshot.queryParamMap);
 
-    // Get userId and planId from session storage (stored before redirect)
-    const storedUserId = sessionStorage.getItem('stripe_payment_userId');
-    const storedPlanId = sessionStorage.getItem('stripe_payment_planId');
-    const storedEmail = sessionStorage.getItem('stripe_payment_email');
+    // Get userId and planId from local storage (stored before redirect)
+    const storedUserId = localStorage.getItem('stripe_payment_userId');
+    const storedPlanId = localStorage.getItem('stripe_payment_planId');
+    const storedEmail = localStorage.getItem('stripe_payment_email');
 
-    console.log('Session Storage Data:', {
+    console.log('Local Storage Data:', {
       userId: storedUserId,
       planId: storedPlanId,
       email: storedEmail
@@ -100,15 +100,15 @@ export class PaymentSuccessComponent implements OnInit {
           this.subscription = response.subscription;
           console.log('Subscription Details:', this.subscription);
 
-          // Send confirmation email to the user
+          // Send confirmation email to user
           if (email) {
             this.sendConfirmationEmail(email, this.subscription);
           }
 
-          // Clear session storage
-          sessionStorage.removeItem('stripe_payment_userId');
-          sessionStorage.removeItem('stripe_payment_planId');
-          sessionStorage.removeItem('stripe_payment_email');
+          // Clear local storage
+          localStorage.removeItem('stripe_payment_userId');
+          localStorage.removeItem('stripe_payment_planId');
+          localStorage.removeItem('stripe_payment_email');
         } else {
           console.error('Payment confirmation returned unsuccessful');
           console.error('Response message:', response.message);
@@ -128,8 +128,8 @@ export class PaymentSuccessComponent implements OnInit {
   }
 
   /**
-   * Send a confirmation email to the user after successful payment.
-   * This is fire-and-forget — failures are logged but don't block the success UX.
+   * Send a confirmation email to user after successful payment.
+   * This is fire-and-forget — failures are logged but don't block success UX.
    */
   private sendConfirmationEmail(userEmail: string, subscription: any): void {
     console.log('=== PaymentSuccessComponent: Sending Confirmation Email ===');

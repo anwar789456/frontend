@@ -33,6 +33,12 @@ export class UsersComponent implements OnInit {
   form: Partial<User> = {};
   formTouched: Record<string, boolean> = {};
 
+  // ─── PAGINATION ───────────────────────────────────────────
+  currentPage = 1;
+  pageSize = 8;
+  pageSizeOptions = [5, 8, 10, 20, 50];
+  // ──────────────────────────────────────────────────────────
+
   constructor(private userService: UserService) {}
 
   ngOnInit(): void {
@@ -76,18 +82,11 @@ export class UsersComponent implements OnInit {
   get filteredUsers(): User[] {
     let users = this.allUsers;
 
-    // Tab filter
-    if (this.activeTab === 'Tutors') {
-      users = users.filter(u => u.role === 'TUTEUR');
-    } else if (this.activeTab === 'Students') {
-      users = users.filter(u => u.role === 'ETUDIANT');
-    } else if (this.activeTab === 'Admins') {
-      users = users.filter(u => u.role === 'ADMIN');
-    } else if (this.activeTab === 'Banned') {
-      users = users.filter(u => u.banned);
-    }
+    if (this.activeTab === 'Tutors') users = users.filter(u => u.role === 'TUTEUR');
+    else if (this.activeTab === 'Students') users = users.filter(u => u.role === 'ETUDIANT');
+    else if (this.activeTab === 'Admins') users = users.filter(u => u.role === 'ADMIN');
+    else if (this.activeTab === 'Banned') users = users.filter(u => u.banned);
 
-    // Search filter
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
       users = users.filter(u =>
@@ -100,6 +99,68 @@ export class UsersComponent implements OnInit {
 
     return users;
   }
+
+  // ─── PAGINATION COMPUTED ──────────────────────────────────
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredUsers.length / this.pageSize));
+  }
+
+  get paginatedUsers(): User[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredUsers.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): (number | '...')[] {
+    const total = this.totalPages;
+    const current = this.currentPage;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+    const pages: (number | '...')[] = [1];
+    if (current > 3) pages.push('...');
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (current < total - 2) pages.push('...');
+    pages.push(total);
+    return pages;
+  }
+
+  get startIndex(): number {
+    return this.filteredUsers.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get endIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.filteredUsers.length);
+  }
+
+  goToPage(page: number | '...'): void {
+    if (page === '...' || typeof page !== 'number') return;
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  onTabChange(tab: string): void {
+    this.activeTab = tab;
+    this.currentPage = 1;
+  }
+
+  onSearchChange(): void {
+    this.currentPage = 1;
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
+  // ──────────────────────────────────────────────────────────
 
   selectUser(user: User): void {
     this.selectedUser = user;
@@ -132,16 +193,9 @@ export class UsersComponent implements OnInit {
   openAddModal(): void {
     this.modalMode = 'add';
     this.form = {
-      name: '',
-      username: '',
-      email: '',
-      pwd: '',
-      numTel: '',
-      dateNaiss: '',
-      role: 'ETUDIANT',
-      inscriptionOk: true,
-      posterForum: true,
-      avatar: ''
+      name: '', username: '', email: '', pwd: '',
+      numTel: '', dateNaiss: '', role: 'ETUDIANT',
+      inscriptionOk: true, posterForum: true, avatar: ''
     };
     this.formTouched = {};
     this.showModal = true;
@@ -166,11 +220,10 @@ export class UsersComponent implements OnInit {
     this.formTouched = {};
   }
 
-  // --- SAVE (Add or Edit) ---
+  // --- SAVE ---
 
   saveUser(): void {
     this.formTouched = { name: true, username: true, email: true, pwd: true, numTel: true, dateNaiss: true };
-
     if (!this.isFormValid) return;
 
     this.isSaving = true;
@@ -211,9 +264,7 @@ export class UsersComponent implements OnInit {
           this.closeModal();
           this.successMessage = 'User updated successfully.';
           this.loadUsers();
-          if (this.selectedUser?.id === userId) {
-            this.selectedUser = updated;
-          }
+          if (this.selectedUser?.id === userId) this.selectedUser = updated;
           this.clearSuccessAfterDelay();
         },
         error: (err: any) => {
@@ -246,11 +297,13 @@ export class UsersComponent implements OnInit {
         this.isSaving = false;
         this.showDeleteConfirm = false;
         this.userToDelete = null;
-        if (this.selectedUser?.id === id) {
-          this.selectedUser = null;
-        }
+        if (this.selectedUser?.id === id) this.selectedUser = null;
         this.successMessage = 'User deleted successfully.';
         this.loadUsers();
+        // Go to prev page if current page becomes empty
+        if (this.paginatedUsers.length === 1 && this.currentPage > 1) {
+          this.currentPage--;
+        }
         this.clearSuccessAfterDelay();
       },
       error: (err: any) => {
@@ -302,7 +355,6 @@ export class UsersComponent implements OnInit {
 
   executeBan(): void {
     if (!this.userToBan) return;
-
     if (this.banAction === 'ban' && !this.banReason.trim()) {
       this.banReasonError = 'Please select a ban reason.';
       return;
@@ -311,8 +363,6 @@ export class UsersComponent implements OnInit {
 
     const id = this.userToBan.id;
     const action = this.banAction;
-
-    // Build the updated user object using the existing updateUser endpoint
     const updatedUser: User = { ...this.userToBan };
 
     if (action === 'ban') {
@@ -333,17 +383,14 @@ export class UsersComponent implements OnInit {
         this.isSaving = false;
         this.showBanConfirm = false;
         this.userToBan = null;
-        // Verify the ban was actually persisted in the response
         const banApplied = action === 'ban' ? updated.banned === true : updated.banned !== true;
         if (banApplied) {
           this.successMessage = action === 'ban' ? 'User banned successfully.' : 'User unbanned successfully.';
         } else {
-          this.errorMessage = `The ${action} operation was not saved by the server. Please redeploy the backend with the latest code.`;
+          this.errorMessage = `The ${action} operation was not saved by the server.`;
         }
         this.loadUsers();
-        if (this.selectedUser?.id === id) {
-          this.selectedUser = updated;
-        }
+        if (this.selectedUser?.id === id) this.selectedUser = updated;
         this.clearSuccessAfterDelay();
       },
       error: (err: any) => {
@@ -368,9 +415,7 @@ export class UsersComponent implements OnInit {
   get isFormValid(): boolean {
     const f = this.form;
     const hasBase = !!(f.name?.trim() && f.username?.trim() && f.email?.trim() && f.numTel?.trim() && f.dateNaiss);
-    if (this.modalMode === 'add') {
-      return hasBase && !!(f.pwd && f.pwd.length >= 6);
-    }
+    if (this.modalMode === 'add') return hasBase && !!(f.pwd && f.pwd.length >= 6);
     return hasBase;
   }
 
@@ -388,19 +433,14 @@ export class UsersComponent implements OnInit {
       };
       return `${labels[field] || field} is required.`;
     }
-    if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-      return 'Invalid email.';
-    }
+    if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return 'Invalid email.';
     return '';
   }
 
   getDurationLabel(duration?: string): string {
     const labels: Record<string, string> = {
-      '1_day': '1 Day',
-      '3_days': '3 Days',
-      '7_days': '7 Days',
-      '30_days': '30 Days',
-      'permanent': 'Permanent'
+      '1_day': '1 Day', '3_days': '3 Days', '7_days': '7 Days',
+      '30_days': '30 Days', 'permanent': 'Permanent'
     };
     return labels[duration || ''] || duration || 'Unknown';
   }

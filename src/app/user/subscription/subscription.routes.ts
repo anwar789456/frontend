@@ -12,5 +12,9 @@ export const SUBSCRIPTION_ROUTES: Routes = [
   {
     path: 'payment-cancel',
     loadComponent: () => import('./pages/payment-cancel.component').then(m => m.PaymentCancelComponent)
+  },
+  {
+    path: 'billing-history',
+    loadComponent: () => import('./pages/billing-history/billing-history.component').then(m => m.BillingHistoryComponent)
   }
 ];

@@ -123,6 +123,23 @@ export class SubscriptionService {
     );
   }
 
+  // ── Auto-Renew ──
+
+  toggleAutoRenew(subscriptionId: number, enabled: boolean): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrl}/${subscriptionId}/auto-renew?enabled=${enabled}`, {}
+    ).pipe(
+      retry(this.maxRetries),
+      catchError(this.handleError)
+    );
+  }
+
+  getCurrentSubscription(userId: number): Observable<UserSubscription> {
+    return this.http.get<UserSubscription>(`${this.apiUrl}/user/${userId}/current-subscription`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   // ── Helper Methods ──
 
   /**

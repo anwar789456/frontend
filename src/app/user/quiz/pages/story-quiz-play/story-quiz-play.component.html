@@ -1,0 +1,190 @@
+<!-- ═════════════════════ Story Quiz Play ══════════════════════════════════════ -->
+<div class="min-h-screen relative overflow-hidden bg-[#fbfeff]">
+
+  <!-- Soft blurred background -->
+  <div class="absolute inset-0 z-0 overflow-hidden">
+    <div class="w-full h-full bg-gradient-to-br from-[#fef3c7] via-[#ede9fe] to-[#dbeafe] opacity-60"></div>
+    <div class="absolute top-10 left-10 w-36 h-36 bg-[#8b5cf6]/10 rounded-full blur-2xl"></div>
+    <div class="absolute bottom-20 right-10 w-40 h-40 bg-[#fbbf24]/10 rounded-full blur-2xl"></div>
+  </div>
+
+  @if (isLoading) {
+    <div class="relative z-10 flex flex-col items-center justify-center py-20">
+      <div class="w-12 h-12 border-4 border-[#8b5cf6] border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-[14px] font-semibold text-gray-500">Loading your story...</p>
+    </div>
+  }
+
+  @if (!isLoading && storyQuiz) {
+    <!-- Top Bar -->
+    <div class="relative z-10 bg-white/80 backdrop-blur-md border-b-2 border-[#e9d5ff] px-6 py-3 flex items-center justify-between sticky top-0">
+      <div class="flex items-center gap-3">
+        <a routerLink="/quiz" class="w-9 h-9 bg-white border-2 border-[#e9d5ff] rounded-full flex items-center justify-center text-[#8b5cf6] hover:bg-[#f5f3ff] transition-colors shadow-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </a>
+        <h1 class="text-[14px] font-extrabold text-[#111827]">📖 {{ storyQuiz.title }}</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-[13px] font-bold text-gray-500 bg-white border border-gray-200 px-3 py-1.5 rounded-full">
+          {{ filledCount }}/{{ totalBlanks }} filled
+        </span>
+        <span class="text-[13px] font-extrabold text-[#f59e0b] bg-[#f59e0b]/10 px-3 py-1.5 rounded-full flex items-center gap-1">
+          ⭐ {{ storyQuiz.xpReward }} XP
+        </span>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="relative z-10 h-3 bg-[#e5e7eb]">
+      <div class="h-full bg-gradient-to-r from-[#8b5cf6] to-[#a78bfa] transition-all duration-500 rounded-r-full" [style.width.%]="progress"></div>
+      <div class="absolute top-1/2 -translate-y-1/2 transition-all duration-500" [style.left.%]="progress">
+        <div class="w-6 h-6 -ml-3 bg-[#fbbf24] rounded-full border-2 border-white shadow-md flex items-center justify-center text-[10px]">📖</div>
+      </div>
+    </div>
+
+    <div class="relative z-10 max-w-3xl mx-auto px-6 py-8">
+      <!-- Illustration -->
+      @if (storyQuiz.illustration) {
+        <div class="text-center mb-6 anim-fade-up">
+          <img [src]="storyQuiz.illustration" alt="Story illustration"
+            class="w-full max-w-md mx-auto rounded-3xl shadow-xl border-4 border-white" />
+        </div>
+      }
+
+      <!-- Story Text with Blanks -->
+      <div class="bg-white rounded-3xl border-2 border-[#e9d5ff] p-8 mb-8 shadow-lg anim-fade-up" style="animation-delay:0.1s">
+        <p class="text-[17px] leading-loose text-[#111827] font-semibold">
+          @for (seg of segments; track $index) {
+            @if (seg.type === 'text') {
+              <span>{{ seg.value }}</span>
+            } @else {
+              <button
+                (click)="selectBlank(seg.blankIndex!)"
+                class="inline-flex items-center justify-center min-w-[110px] px-3 py-1.5 mx-1 rounded-xl border-2 text-[14px] font-extrabold transition-all cursor-pointer align-baseline"
+                [class]="getBlankClass(seg.blankIndex!)"
+                [title]="getHint(seg.blankIndex!) || 'Click to select this blank'">
+                @if (getBlankValue(seg.blankIndex!)) {
+                  {{ getBlankValue(seg.blankIndex!) }}
+                } @else {
+                  <span class="text-gray-300">____</span>
+                }
+                @if (showResults && validationResults) {
+                  @if (validationResults[seg.blankIndex!]) {
+                    <span class="ml-1">🎉</span>
+                  } @else {
+                    <span class="ml-1">😢</span>
+                  }
+                }
+              </button>
+            }
+          }
+        </p>
+      </div>
+
+      <!-- Selected blank indicator -->
+      @if (selectedBlankIndex !== null) {
+        <div class="text-center mb-4 anim-pop">
+          <span class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#8b5cf6]/10 text-[#8b5cf6] rounded-full text-[13px] font-extrabold border-2 border-[#8b5cf6]/20">
+            <span class="w-2.5 h-2.5 bg-[#8b5cf6] rounded-full animate-pulse"></span>
+            Pick a word for blank {{ selectedBlankIndex }}!
+          </span>
+        </div>
+      }
+
+      <!-- Word Bank -->
+      <div class="bg-white rounded-3xl border-2 border-[#fde68a] p-6 mb-8 shadow-lg anim-fade-up" style="animation-delay:0.2s">
+        <h3 class="text-[12px] font-extrabold text-gray-500 mb-3 tracking-widest uppercase flex items-center gap-2">
+          <span class="text-base">🧩</span> Word Bank
+        </h3>
+        <div class="flex flex-wrap gap-3">
+          @for (word of wordBank; track $index) {
+            <button
+              (click)="selectWord(word)"
+              class="px-5 py-2.5 rounded-2xl text-[14px] font-extrabold border-2 transition-all"
+              [class]="isWordUsed(word)
+                ? 'bg-gray-100 border-gray-200 text-gray-300 line-through cursor-not-allowed opacity-40'
+                : (selectedBlankIndex !== null
+                  ? 'bg-[#fefce8] border-[#fbbf24] text-[#92400e] hover:bg-[#fef3c7] hover:scale-105 cursor-pointer shadow-md'
+                  : 'bg-[#fefce8] border-[#fde68a] text-[#92400e] cursor-default opacity-60')"
+              [disabled]="isWordUsed(word) || selectedBlankIndex === null">
+              {{ word }}
+            </button>
+          }
+        </div>
+        @if (wordBank.length === 0) {
+          <p class="text-[13px] text-gray-400 text-center py-4 font-semibold">No words available.</p>
+        }
+      </div>
+
+      <!-- Validation feedback -->
+      @if (showResults && validationResults && !allCorrect) {
+        <div class="bg-white rounded-3xl border-2 border-[#fbbf24] p-6 mb-6 text-center shadow-lg anim-fade-up">
+          @if (correctCount === 0) {
+            <div class="text-4xl mb-2">🌟</div>
+            <p class="text-[15px] font-extrabold text-[#f59e0b] mb-1">Keep trying! You can do it!</p>
+            <p class="text-[13px] text-gray-500 font-semibold">None of the blanks are correct yet. Give it another try!</p>
+          } @else {
+            <div class="text-4xl mb-2">🎯</div>
+            <p class="text-[15px] font-extrabold text-[#f59e0b] mb-1">Almost there! {{ correctCount }}/{{ totalBlanks }} correct!</p>
+            <p class="text-[13px] text-gray-500 font-semibold">Fix the red blanks and try again!</p>
+          }
+          <button (click)="tryAgain()" class="mt-4 px-8 py-3 text-[13px] font-extrabold text-white bg-[#8b5cf6] rounded-2xl hover:bg-[#7c3aed] shadow-[0_4px_0_0_#6d28d9] hover:shadow-[0_2px_0_0_#6d28d9] hover:translate-y-[2px] transition-all uppercase tracking-wide">
+            Try Again!
+          </button>
+        </div>
+      }
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-center gap-4 anim-fade-up" style="animation-delay:0.3s">
+        @if (!showResults) {
+          <button (click)="checkAnswers()" [disabled]="filledCount === 0"
+            class="px-10 py-4 text-[15px] font-extrabold text-white bg-[#8b5cf6] rounded-2xl hover:bg-[#7c3aed] shadow-[0_5px_0_0_#6d28d9] hover:shadow-[0_2px_0_0_#6d28d9] hover:translate-y-[3px] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none uppercase tracking-wide flex items-center gap-2">
+            <span>🎯</span> Check Answers!
+          </button>
+        }
+        <button (click)="saveAndExit()"
+          class="px-8 py-4 text-[13px] font-extrabold text-gray-500 bg-white border-2 border-gray-200 rounded-2xl hover:bg-gray-50 shadow-sm transition-all uppercase tracking-wide">
+          Save & Exit
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Completion Modal -->
+  @if (showCompletionModal) {
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+      @for (c of confettiItems; track $index) {
+        <div class="absolute top-1/4 rounded-full anim-confetti pointer-events-none"
+          [style.left.%]="c.left"
+          [style.background-color]="c.color"
+          [style.width.px]="c.size"
+          [style.height.px]="c.size"
+          [style.animation-delay]="c.delay + 's'">
+        </div>
+      }
+
+      <div class="bg-white rounded-3xl p-10 w-full max-w-md shadow-2xl text-center anim-pop relative border-2 border-[#e9d5ff]">
+        <div class="text-7xl mb-4 anim-star">🎉</div>
+        <h2 class="text-[26px] font-extrabold text-[#111827] mb-2">Amazing Job!</h2>
+        <p class="text-[16px] text-gray-600 mb-3 font-semibold">You got {{ correctCount }}/{{ totalBlanks }} correct!</p>
+        <div class="inline-flex items-center gap-2 bg-[#fefce8] border-2 border-[#fde68a] rounded-2xl px-6 py-3 mb-6">
+          <span class="text-2xl">⭐</span>
+          <span class="text-[28px] font-extrabold text-[#f59e0b]">{{ attempt?.score || storyQuiz?.xpReward || 0 }} XP</span>
+        </div>
+        <button (click)="closeCompletionModal()"
+          class="w-full py-4 text-[15px] font-extrabold text-white bg-[#8b5cf6] rounded-2xl hover:bg-[#7c3aed] shadow-[0_5px_0_0_#6d28d9] hover:shadow-[0_2px_0_0_#6d28d9] hover:translate-y-[3px] transition-all uppercase tracking-wide flex items-center justify-center gap-2">
+          <span>🏠</span> Back to Quiz Hub
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Toast -->
+  @if (toastMessage) {
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#111827] text-white px-6 py-3 rounded-2xl shadow-xl text-[13px] font-bold z-50 anim-fade-up flex items-center gap-2 border-2 border-white/10">
+      <span>💾</span> {{ toastMessage }}
+    </div>
+  }
+</div>

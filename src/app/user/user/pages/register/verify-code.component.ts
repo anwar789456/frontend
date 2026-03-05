@@ -4,15 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../../../shared/services/auth.service';
+import { OnboardingComponent, OnboardingStep } from '../../../../shared/components/onboarding/onboarding.component';
 
 @Component({
   selector: 'app-verify-code',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, OnboardingComponent],
   templateUrl: './verify-code.component.html'
 })
 export class VerifyCodeComponent implements OnInit {
   email = '';
+  role = '';
   code = '';
   isLoading = false;
   isResending = false;
@@ -24,6 +26,31 @@ export class VerifyCodeComponent implements OnInit {
   // 6 individual digit inputs
   digits: string[] = ['', '', '', '', '', ''];
 
+  // Onboarding steps
+  verifyOnboardingSteps: OnboardingStep[] = [
+    {
+      title: 'Check Your Email! 📬',
+      description: 'We sent a 6-digit verification code to your email. Check your inbox (and spam folder)!',
+      icon: '✉️',
+      mascotMessage: 'Check inbox!',
+      highlightColor: '#a855f7'
+    },
+    {
+      title: 'Enter the Code 🔢',
+      description: 'Type the 6-digit code from your email into the boxes below. Each box is for one digit!',
+      icon: '🔐',
+      mascotMessage: 'Type it in!',
+      highlightColor: '#38a9f3'
+    },
+    {
+      title: 'Almost There! ✨',
+      description: 'Once verified, you\'ll have full access to MinoLingo. Your learning adventure awaits!',
+      icon: '🎉',
+      mascotMessage: 'So close!',
+      highlightColor: '#22c55e'
+    }
+  ];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -33,6 +60,7 @@ export class VerifyCodeComponent implements OnInit {
 
   ngOnInit(): void {
     this.email = this.route.snapshot.queryParamMap.get('email') || '';
+    this.role = this.route.snapshot.queryParamMap.get('role') || '';
     if (!this.email) {
       this.router.navigate(['/register']);
     }
@@ -91,7 +119,8 @@ export class VerifyCodeComponent implements OnInit {
 
         // Store user session via AuthService (uses 'auth_user' key)
         this.authService.setSessionFromVerification(response.user);
-        const role = response.user?.role || response.role;
+        // Use role from response, or fall back to query param from registration
+        const role = response.user?.role || response.role || this.role;
 
         setTimeout(() => {
           const redirectUrl = this.authService.getRedirectUrlForRole(role);

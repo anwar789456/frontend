@@ -31,7 +31,8 @@ export class AdminLayoutComponent {
         { label: 'Reports', icon: 'reports', route: '/admin/reports', badge: 3 },
         { label: 'Forums', icon: 'forums', route: '/admin/forums' },
         { label: 'Donations', icon: 'donations', route: '/admin/donations' },
-        { label: 'Subscriptions', icon: 'subscriptions', route: '/admin/subscriptions' }
+        { label: 'Subscriptions', icon: 'subscriptions', route: '/admin/subscriptions' },
+        { label: 'Analytics', icon: 'analytics', route: '/admin/analytics' }
       ]
     }
   ];

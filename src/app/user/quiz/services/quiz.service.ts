@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { QuizCard, QuizCategory, Quiz, QuestionQuiz } from '../models/quiz.model';
+import { QuizCard, QuizCategory, Quiz, QuestionQuiz, QuizAttempt, StoryQuiz, StoryWordBank, StoryAttempt } from '../models/quiz.model';
 
 @Injectable({
   providedIn: 'root'
@@ -101,5 +101,63 @@ export class QuizService {
 
   deleteQuestion(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/questions/delete-question/${id}`);
+  }
+
+  // ── Quiz Attempts ──
+
+  startOrResumeAttempt(userId: number, quizId: number): Observable<QuizAttempt> {
+    return this.http.post<QuizAttempt>(`${this.apiUrl}/quiz-attempts/start`, { userId, quizId });
+  }
+
+  submitAnswer(attemptId: number, questionId: number, answer: string): Observable<QuizAttempt> {
+    return this.http.put<QuizAttempt>(`${this.apiUrl}/quiz-attempts/${attemptId}/answer`, { questionId, answer });
+  }
+
+  completeAttempt(attemptId: number): Observable<QuizAttempt> {
+    return this.http.put<QuizAttempt>(`${this.apiUrl}/quiz-attempts/${attemptId}/complete`, {});
+  }
+
+  getUserAttempts(userId: number): Observable<QuizAttempt[]> {
+    return this.http.get<QuizAttempt[]>(`${this.apiUrl}/quiz-attempts/user/${userId}`);
+  }
+
+  getAttempt(attemptId: number): Observable<QuizAttempt> {
+    return this.http.get<QuizAttempt>(`${this.apiUrl}/quiz-attempts/${attemptId}`);
+  }
+
+  // ── Story Quizzes ──
+
+  getAllStoryQuizzes(): Observable<StoryQuiz[]> {
+    return this.http.get<StoryQuiz[]>(`${this.apiUrl}/story-quizzes/all`);
+  }
+
+  getStoryQuizById(id: number): Observable<StoryQuiz> {
+    return this.http.get<StoryQuiz>(`${this.apiUrl}/story-quizzes/${id}`);
+  }
+
+  getStoryWordBank(storyQuizId: number): Observable<StoryWordBank> {
+    return this.http.get<StoryWordBank>(`${this.apiUrl}/story-quizzes/${storyQuizId}/word-bank`);
+  }
+
+  validateStoryAnswers(storyQuizId: number, answers: { [key: number]: string }): Observable<{ [key: number]: boolean }> {
+    return this.http.post<{ [key: number]: boolean }>(`${this.apiUrl}/story-quizzes/${storyQuizId}/validate`, answers);
+  }
+
+  // ── Story Attempts ──
+
+  startOrResumeStoryAttempt(userId: number, storyQuizId: number): Observable<StoryAttempt> {
+    return this.http.post<StoryAttempt>(`${this.apiUrl}/story-quizzes/attempts/start`, { userId, storyQuizId });
+  }
+
+  saveStoryProgress(attemptId: number, answers: { [key: number]: string }): Observable<StoryAttempt> {
+    return this.http.put<StoryAttempt>(`${this.apiUrl}/story-quizzes/attempts/${attemptId}/save`, answers);
+  }
+
+  completeStoryAttempt(attemptId: number, answers: { [key: number]: string }): Observable<StoryAttempt> {
+    return this.http.put<StoryAttempt>(`${this.apiUrl}/story-quizzes/attempts/${attemptId}/complete`, answers);
+  }
+
+  getUserStoryAttempts(userId: number): Observable<StoryAttempt[]> {
+    return this.http.get<StoryAttempt[]>(`${this.apiUrl}/story-quizzes/attempts/user/${userId}`);
   }
 }

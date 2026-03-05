@@ -1,228 +1,315 @@
-<div class="min-h-screen flex bg-[#f0f4f8]">
-  <!-- Left Panel - Branding -->
-  <div class="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-[#f0f4f8]">
-    <div>
-      <!-- Logo -->
-      <div class="flex items-center gap-2 mb-12">
-        <div class="w-8 h-8 bg-[#38a9f3] rounded-lg flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" /></svg>
+<!-- Onboarding Overlay -->
+<app-onboarding 
+  [steps]="loginOnboardingSteps" 
+  storageKey="minolingo_login_onboarding">
+</app-onboarding>
+
+<div class="min-h-screen flex overflow-hidden login-page">
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- LEFT PANEL — Animated Branding + Mascot                        -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="hidden lg:flex lg:w-[52%] flex-col items-center justify-center relative overflow-hidden"
+       style="background: linear-gradient(135deg, #f0f9ff, #fef3f2 25%, #fefce8 50%, #ecfdf5 75%, #f0f9ff); background-attachment: fixed;">
+
+    <!-- Blurred blob decorations -->
+    <div class="absolute -top-20 -left-20 w-80 h-80 bg-blue-300/30 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/3 right-10 w-48 h-48 bg-amber-200/30 rounded-full blur-2xl pointer-events-none"></div>
+
+    <!-- Floating star decorations -->
+    <div class="absolute top-16 right-24 w-8 h-8 text-yellow-400 animate-bounce" style="animation-duration: 2s;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+    <div class="absolute top-32 left-16 w-5 h-5 text-yellow-300 animate-pulse" style="animation-delay: 0.5s;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+    <div class="absolute bottom-40 left-24 w-6 h-6 text-amber-400 animate-bounce" style="animation-duration: 2.5s; animation-delay: 0.3s;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+    <div class="absolute bottom-28 right-20 w-5 h-5 text-yellow-400 animate-pulse" style="animation-delay: 1s;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+
+    <!-- Floating stat bubbles -->
+    <div class="absolute top-[15%] left-[8%] animate-bounce" style="animation-duration: 3s;">
+      <div class="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2.5 shadow-lg border border-white/60">
+        <span class="text-orange-400 text-xl">🔥</span>
+        <div>
+          <p class="text-[12px] font-bold text-[#0f1419]">Day Streak</p>
+          <p class="text-[10px] text-[#536471]">Keep learning!</p>
         </div>
-        <span class="text-xl font-bold text-[#0f1419]">Minolingo</span>
       </div>
-
-      <!-- Tagline -->
-      <h1 class="text-[42px] font-extrabold text-[#0f1419] leading-tight mb-4">
-        Teach, Inspire,<br>and Grow.
-      </h1>
-      <p class="text-[16px] text-[#536471] max-w-[380px] leading-relaxed">
-        Join our community of tutors making language learning magical for kids worldwide.
-      </p>
-
-      <!-- Illustration -->
-      <div class="mt-10 w-[360px] h-[280px] bg-gradient-to-br from-[#e6f6ff] to-[#dbeafe] rounded-2xl flex items-center justify-center overflow-hidden">
-        <div class="text-center">
-          <div class="text-7xl mb-2">👩‍🏫📚</div>
-          <p class="text-sm text-[#536471] font-medium">Making learning fun!</p>
+    </div>
+    <div class="absolute top-[55%] right-[5%] animate-bounce" style="animation-duration: 3.5s; animation-delay: 0.5s;">
+      <div class="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2.5 shadow-lg border border-white/60">
+        <span class="text-sky-400 text-xl">💎</span>
+        <div>
+          <p class="text-[12px] font-bold text-[#0f1419]">1,200 XP</p>
+          <p class="text-[10px] text-[#536471]">Earned so far</p>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-[18%] left-[6%] animate-bounce" style="animation-duration: 4s; animation-delay: 1s;">
+      <div class="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2.5 shadow-lg border border-white/60">
+        <span class="text-green-500 text-xl">🏆</span>
+        <div>
+          <p class="text-[12px] font-bold text-[#0f1419]">Top Learner</p>
+          <p class="text-[10px] text-[#536471]">League #1</p>
         </div>
       </div>
     </div>
 
-    <!-- Footer badges -->
-    <div class="flex items-center gap-6 text-[13px] text-[#536471]">
-      <span class="flex items-center gap-1.5">
-        <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
-        Secure Platform
-      </span>
-      <span class="flex items-center gap-1.5">
-        <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg>
-        Global Community
-      </span>
+    <!-- Central content -->
+    <div class="flex flex-col items-center text-center px-10 relative z-10">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-3 mb-10">
+        <div class="w-14 h-14 bg-gradient-to-br from-[#38a9f3] to-[#6366f1] rounded-2xl flex items-center justify-center shadow-xl shadow-blue-300/40">
+          <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+          </svg>
+        </div>
+        <span class="text-3xl font-extrabold text-[#0f1419] tracking-tight">MinoLingo</span>
+      </div>
+
+      <!-- Mascot with floating animation -->
+      <div class="relative mb-10">
+        <div class="relative inline-block">
+          <!-- Pulse rings -->
+          <div class="absolute inset-[-16px] rounded-full border-[3px] border-[#38a9f3]/30 animate-ping" style="animation-duration: 2s;"></div>
+          <div class="absolute inset-[-8px] rounded-full border-[2px] border-[#38a9f3]/20"></div>
+          
+          <!-- Mascot container -->
+          <div class="w-56 h-56 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center shadow-2xl shadow-blue-200/50">
+            <img
+              src="/mino_images/nino.png"
+              alt="MinoLingo Mascot"
+              class="w-48 h-48 object-contain drop-shadow-xl animate-bounce"
+              style="animation-duration: 3s;"
+            />
+          </div>
+        </div>
+
+        <!-- Speech bubble -->
+        <div class="absolute -right-4 top-4 bg-white rounded-2xl px-4 py-2.5 shadow-xl border border-blue-100 animate-pulse" style="animation-duration: 2s;">
+          <p class="text-[13px] font-bold text-[#0f1419] whitespace-nowrap">Welcome back! 👋</p>
+          <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[8px] border-b-[8px] border-r-[10px] border-t-transparent border-b-transparent border-r-white"></div>
+        </div>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="text-[32px] font-extrabold text-[#0f1419] leading-tight mb-3">
+        Continue Your<br/>
+        <span class="bg-gradient-to-r from-[#38a9f3] to-[#6366f1] bg-clip-text text-transparent">Learning Journey</span>
+      </h1>
+      <p class="text-[15px] text-[#536471] max-w-[340px] leading-relaxed">
+        Thousands of kids are learning English right now. Sign in and keep your streak alive!
+      </p>
+
+      <!-- Feature pills -->
+      <div class="flex items-center gap-3 mt-8 flex-wrap justify-center">
+        <div class="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 text-[12px] font-semibold text-[#374151] shadow-sm border border-white/60">
+          <svg class="w-3.5 h-3.5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+          Safe & Secure
+        </div>
+        <div class="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 text-[12px] font-semibold text-[#374151] shadow-sm border border-white/60">
+          <svg class="w-3.5 h-3.5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3" /></svg>
+          Global Community
+        </div>
+        <div class="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 text-[12px] font-semibold text-[#374151] shadow-sm border border-white/60">
+          <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Fun Learning
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Right Panel - Form -->
+  <!-- Right Panel - Login Form -->
   <div class="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-white">
     <div class="w-full max-w-[420px]">
-      <!-- Header -->
-      <div class="text-center mb-8">
-        <h2 class="text-[28px] font-bold text-[#0f1419]">Welcome back</h2>
-        <p class="text-[14px] text-[#9ca3af] mt-1">Please enter your details to sign in.</p>
+
+      <!-- Mobile Logo -->
+      <div class="lg:hidden flex items-center justify-center gap-2 mb-8">
+        <div class="w-10 h-10 bg-[#38a9f3] rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347" />
+          </svg>
+        </div>
+        <span class="text-xl font-bold text-[#38a9f3]">MinoLingo</span>
       </div>
 
-      <!-- Error Message -->
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h2 class="text-[28px] font-bold text-[#0f1419]">Sign in</h2>
+        <p class="text-[14px] text-[#536471] mt-1">Enter your credentials to continue</p>
+      </div>
+
+      <!-- Error Message (regular login errors / remaining attempts / locked) -->
       @if (errorMessage) {
-        <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-[14px] px-4 py-3 rounded-xl mb-6">
-          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-          </svg>
-          <span>{{ errorMessage }}</span>
-        </div>
+      <div
+        class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-[14px] px-4 py-3 rounded-xl mb-6">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
       }
 
-      <!-- Ban Message -->
+      <!-- Banned Account Message -->
       @if (banInfo) {
-        <div class="bg-red-50 border border-red-300 rounded-xl px-5 py-4 mb-6">
-          <div class="flex items-center gap-2 mb-2">
-            <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
-            <span class="text-[15px] font-semibold text-red-700">Your account is banned.</span>
-          </div>
-          @if (banInfo.banReason) {
-            <p class="text-[13px] text-red-600 mb-1">
-              <strong>Reason:</strong> {{ banInfo.banReason }}
-            </p>
-          }
-          @if (banInfo.permanent) {
-            <p class="text-[13px] text-red-600 font-medium">
-              This is a <strong>permanent ban</strong>. Please contact support for assistance.
-            </p>
-          } @else if (banInfo.banExpiresAt) {
-            <p class="text-[13px] text-red-600">
-              <strong>You can log in again after:</strong> {{ banInfo.banExpiresAt | date:'dd MMMM yyyy, HH:mm' }}
-            </p>
-          }
+      <div class="bg-red-50 border border-red-300 text-red-800 text-[14px] px-4 py-4 rounded-xl mb-6">
+        <div class="flex items-center gap-3 mb-2">
+          <svg class="w-5 h-5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+          <span class="font-semibold">🚫 Account Banned</span>
         </div>
+        @if (banInfo.banReason) {
+        <p class="ml-8 text-[13px] mb-1"><strong>Reason:</strong> {{ banInfo.banReason }}</p>
+        }
+        @if (banInfo.permanent) {
+        <p class="ml-8 text-[13px] text-red-600 font-medium">Your account has been permanently banned.</p>
+        } @else if (formattedBanExpiry) {
+        <p class="ml-8 text-[13px] text-red-600">Account unbanned on: <strong>{{ formattedBanExpiry }}</strong></p>
+        }
+      </div>
       }
 
       <!-- Success Message -->
       @if (successMessage) {
-        <div class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 text-[14px] px-4 py-3 rounded-xl mb-6">
-          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{{ successMessage }}</span>
-        </div>
+      <div
+        class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 text-[14px] px-4 py-3 rounded-xl mb-6">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{{ successMessage }}</span>
+      </div>
       }
 
+      <!-- Login Form -->
       <form (ngSubmit)="onSubmit()" novalidate>
-        <!-- Email Field -->
+        <!-- Email -->
         <div class="mb-5">
-          <label for="email" class="block text-[14px] font-medium text-[#0f1419] mb-1.5">Email or username</label>
+          <label for="email" class="block text-[14px] font-medium text-[#0f1419] mb-1.5">Email address</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <svg class="w-5 h-5 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              <svg class="w-5 h-5 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
               </svg>
             </div>
-            <input
-              id="email"
-              type="email"
-              [(ngModel)]="email"
-              name="email"
-              (blur)="emailTouched = true"
-              placeholder="user@minolingo.com"
-              class="w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-[15px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
-              [class.border-red-400]="emailError"
-              [class.border-[#d1d9e0]]="!emailError"
-            />
+            <input id="email" type="email" [(ngModel)]="email" name="email" (blur)="emailTouched = true"
+              placeholder="you@example.com"
+              class="w-full pl-11 pr-4 py-3 bg-white border border-[#d1d9e0] rounded-xl text-[15px] text-[#0f1419] placeholder-[#9ca3af] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
+              [class.border-red-400]="emailError" />
           </div>
           @if (emailError) {
-            <p class="text-[12px] text-red-500 mt-1.5 ml-1">{{ emailError }}</p>
+          <p class="text-[12px] text-red-500 mt-1.5 ml-1">{{ emailError }}</p>
           }
         </div>
 
-        <!-- Password Field -->
-        <div class="mb-4">
+        <!-- Password -->
+        <div class="mb-5">
           <label for="password" class="block text-[14px] font-medium text-[#0f1419] mb-1.5">Password</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <svg class="w-5 h-5 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              <svg class="w-5 h-5 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
               </svg>
             </div>
-            <input
-              id="password"
-              [type]="showPassword ? 'text' : 'password'"
-              [(ngModel)]="password"
-              name="password"
-              (blur)="passwordTouched = true"
-              placeholder="Enter your password"
-              class="w-full pl-11 pr-12 py-3 bg-white border rounded-xl text-[15px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
-              [class.border-red-400]="passwordError"
-              [class.border-[#d1d9e0]]="!passwordError"
-            />
-            <button
-              type="button"
-              (click)="togglePassword()"
-              class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#9ca3af] hover:text-[#536471] transition-colors"
-            >
-              @if (showPassword) {
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                </svg>
+            <input id="password" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password"
+              (blur)="passwordTouched = true" placeholder="Enter your password"
+              class="w-full pl-11 pr-12 py-3 bg-white border border-[#d1d9e0] rounded-xl text-[15px] text-[#0f1419] placeholder-[#9ca3af] outline-none transition-all duration-200 focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20"
+              [class.border-red-400]="passwordError" />
+            <button type="button" (click)="togglePassword()"
+              class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#9ca3af] hover:text-[#536471] transition-colors">
+              @if (!showPassword) {
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
               } @else {
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+              </svg>
               }
             </button>
           </div>
           @if (passwordError) {
-            <p class="text-[12px] text-red-500 mt-1.5 ml-1">{{ passwordError }}</p>
+          <p class="text-[12px] text-red-500 mt-1.5 ml-1">{{ passwordError }}</p>
           }
         </div>
 
-        <!-- Remember me / Forgot password -->
-        <div class="flex items-center justify-between mb-5">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" class="w-4 h-4 rounded border-[#d1d9e0] text-[#38a9f3] focus:ring-[#38a9f3]/20" />
-            <span class="text-[13px] text-[#536471]">Remember me</span>
-          </label>
-          <a routerLink="/forgot-password" class="text-[13px] text-[#38a9f3] font-medium hover:underline">Forgot password?</a>
+        <!-- Forgot Password Link -->
+        <div class="flex justify-end mb-6">
+          <a routerLink="/forgot-password" class="text-[13px] text-[#38a9f3] font-medium hover:underline">
+            Forgot password?
+          </a>
         </div>
 
-        <!-- Image CAPTCHA -->
+        <!-- CAPTCHA Toggle -->
         <div class="mb-5">
-          <app-image-captcha
-            #captchaRef
-            (solved)="onCaptchaSolved($event)"
-            (cleared)="onCaptchaCleared()">
-          </app-image-captcha>
+          <button type="button" (click)="toggleCaptcha()"
+            class="flex items-center gap-2 text-[13px] font-medium text-[#536471] hover:text-[#38a9f3] transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+            </svg>
+            @if (!showCaptcha) { Show Security Check } @else { Hide Security Check }
+          </button>
         </div>
+
+        <!-- CAPTCHA Section -->
+        @if (showCaptcha) {
+        <div class="mb-6 p-4 bg-[#f7f9fa] rounded-xl border border-[#e8f4fe]">
+          <p class="text-[13px] text-[#536471] mb-3">Please complete the security check:</p>
+          <app-image-captcha (solved)="onCaptchaSolved($event)" (cleared)="onCaptchaCleared()"></app-image-captcha>
+          @if (captchaResult) {
+          <div class="mt-3 flex items-center gap-2 text-green-600 text-[13px]">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Verified successfully
+          </div>
+          }
+        </div>
+        }
 
         <!-- Submit Button -->
-        <button
-          type="submit"
-          [disabled]="isLoading || !isFormValid"
-          class="w-full py-3 rounded-xl text-[15px] font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          [class.bg-[#38a9f3]]="!isLoading && isFormValid"
-          [class.hover:bg-[#2196e3]]="!isLoading && isFormValid"
-          [class.text-white]="!isLoading"
-          [class.bg-[#c4c9cf]]="!isFormValid && !isLoading"
-          [class.bg-[#a8d8f8]]="isLoading"
-          [class.text-white/70]="isLoading"
-        >
+        <button type="submit" [disabled]="isLoading || !isFormValid"
+          class="w-full py-3 rounded-xl text-[15px] font-semibold transition-all duration-200 bg-[#38a9f3] hover:bg-[#2196e3] text-white disabled:bg-[#a8d8f8] disabled:cursor-not-allowed">
           @if (isLoading) {
-            <span class="inline-flex items-center gap-2">
-              <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Signing in...
-            </span>
+          <span class="inline-flex items-center gap-2">
+            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            Signing in...
+          </span>
           } @else {
-            Sign in
+          <span>Sign in</span>
           }
         </button>
       </form>
 
-      <!-- Divider -->
-      <div class="flex items-center gap-3 my-6">
-        <div class="flex-1 h-px bg-[#eef1f4]"></div>
-        <span class="text-[13px] text-[#9ca3af]">OR</span>
-        <div class="flex-1 h-px bg-[#eef1f4]"></div>
-      </div>
-
-      <!-- Google Button -->
-      <button class="w-full flex items-center justify-center gap-2.5 py-3 border border-[#d1d9e0] rounded-xl text-[14px] font-medium text-[#0f1419] hover:bg-[#f7f9fa] transition-colors">
-        <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        Continue with Google
-      </button>
-
-      <!-- Sign Up Link -->
+      <!-- Register Link -->
       <p class="text-center text-[14px] text-[#536471] mt-6">
         Don't have an account?
-        <a routerLink="/register" class="text-[#38a9f3] font-semibold hover:underline">Sign up</a>
+        <a routerLink="/register" class="text-[#38a9f3] font-semibold hover:underline">Create one</a>
       </p>
     </div>
   </div>

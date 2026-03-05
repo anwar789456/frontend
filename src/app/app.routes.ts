@@ -24,6 +24,23 @@ export const routes: Routes = [
     loadChildren: () => import('./tutor/tutor.routes').then(m => m.TUTOR_ROUTES)
   },
   {
+    path: 'verify-code',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./user/user/pages/register/verify-code.component').then(m => m.VerifyCodeComponent)
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./user/user/pages/forgetpassword/forgot-password.component')
+        .then(m => m.ForgotPasswordComponent)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./user/user/pages/forgetpassword/reset-password.component')
+        .then(m => m.ResetPasswordComponent)
+  },
+  {
     path: '',
     component: LayoutComponent,
     canActivate: [authGuard],
@@ -66,18 +83,6 @@ export const routes: Routes = [
         loadChildren: () => import('./user/subscription/subscription.routes').then(m => m.SUBSCRIPTION_ROUTES)
       }
     ]
-  },
-  {
-    path: 'forgot-password',
-    loadComponent: () =>
-      import('./user/user/pages/forgetpassword/forgot-password.component')
-        .then(m => m.ForgotPasswordComponent)
-  },
-  {
-    path: 'reset-password',
-    loadComponent: () =>
-      import('./user/user/pages/forgetpassword/reset-password.component')
-        .then(m => m.ResetPasswordComponent)
   },
 
   { path: '**', redirectTo: 'login' }

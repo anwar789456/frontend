@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { QuizService } from '../services/quiz.service';
@@ -11,6 +11,7 @@ import { MOCK_USER } from '../../../shared/constants/mock-data';
   standalone: true,
   imports: [CommonModule, DecimalPipe, ReactiveFormsModule],
   templateUrl: './quiz.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes popIn { 0% { opacity: 0; transform: scale(0.7); } 60% { transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
@@ -69,7 +70,7 @@ export class QuizComponent implements OnInit {
     private quizService: QuizService,
     private authService: AuthService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef  // <-- injected
+    private cdr: ChangeDetectorRef
   ) {}
 
   get isTutor(): boolean {
@@ -113,26 +114,33 @@ export class QuizComponent implements OnInit {
 
   addOption(): void {
     this.optionsArray.push(this.fb.control('', Validators.required));
+    this.cdr.markForCheck();
   }
 
   removeOption(index: number): void {
     if (this.optionsArray.length > 2) {
       this.optionsArray.removeAt(index);
+      this.cdr.markForCheck();
     }
   }
 
+  // ── Data loading ──
+
   loadQuizCards(): void {
+    this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.quizService.getAllQuizCards().subscribe({
       next: (data) => {
-        this.quizCards = data;
+        this.quizCards = [...data];
         this.isLoading = false;
-        this.cdr.detectChanges();  // <--
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Failed to load quiz cards:', err);
         this.errorMessage = 'Failed to load quizzes. Please try again later.';
         this.isLoading = false;
-        this.cdr.detectChanges();  // <--
+        this.cdr.markForCheck();
       }
     });
   }
@@ -140,8 +148,8 @@ export class QuizComponent implements OnInit {
   loadQuizCategories(): void {
     this.quizService.getAllQuizCategories().subscribe({
       next: (data) => {
-        this.categories = data;
-        this.cdr.detectChanges();  // <--
+        this.categories = [...data];
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Failed to load quiz categories:', err)
     });
@@ -150,8 +158,8 @@ export class QuizComponent implements OnInit {
   loadQuizzes(): void {
     this.quizService.getAllQuizzes().subscribe({
       next: (data) => {
-        this.quizzes = data;
-        this.cdr.detectChanges();  // <--
+        this.quizzes = [...data]; // new reference so OnPush detects the change
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Failed to load quizzes:', err)
     });
@@ -159,6 +167,7 @@ export class QuizComponent implements OnInit {
 
   toggleQuizDetail(quizId: number): void {
     this.expandedQuizId = this.expandedQuizId === quizId ? null : quizId;
+    this.cdr.markForCheck();
   }
 
   // ── Quiz CRUD ──
@@ -171,6 +180,7 @@ export class QuizComponent implements OnInit {
       courseId: null, xpReward: 0
     });
     this.showQuizForm = true;
+    this.cdr.markForCheck();
   }
 
   openEditQuiz(quiz: Quiz): void {
@@ -181,25 +191,34 @@ export class QuizComponent implements OnInit {
       courseId: quiz.courseId, xpReward: quiz.xpReward
     });
     this.showQuizForm = true;
+    this.cdr.markForCheck();
   }
 
   cancelQuizForm(): void {
     this.showQuizForm = false;
     this.editingQuiz = null;
+    this.cdr.markForCheck();
   }
 
   saveQuiz(): void {
     if (this.quizForm.invalid) return;
     const formVal = this.quizForm.value;
 
-    if (this.editingQuiz && this.editingQuiz.id) {
+    if (this.editingQuiz?.id) {
       this.quizService.updateQuiz(this.editingQuiz.id, formVal).subscribe({
-        next: () => { this.showQuizForm = false; this.editingQuiz = null; this.loadQuizzes(); },
+        next: () => {
+          this.showQuizForm = false;
+          this.editingQuiz = null;
+          this.loadQuizzes(); // markForCheck happens inside loadQuizzes
+        },
         error: (err) => console.error('Failed to update quiz:', err)
       });
     } else {
       this.quizService.createQuiz(formVal).subscribe({
-        next: () => { this.showQuizForm = false; this.loadQuizzes(); },
+        next: () => {
+          this.showQuizForm = false;
+          this.loadQuizzes(); // markForCheck happens inside loadQuizzes
+        },
         error: (err) => console.error('Failed to create quiz:', err)
       });
     }
@@ -224,6 +243,7 @@ export class QuizComponent implements OnInit {
     while (this.optionsArray.length < 2) this.optionsArray.push(this.fb.control('', Validators.required));
     this.optionsArray.controls.forEach(c => c.setValue(''));
     this.showQuestionForm = true;
+    this.cdr.markForCheck();
   }
 
   openEditQuestion(q: QuestionQuiz, quizId: number): void {
@@ -236,12 +256,14 @@ export class QuizComponent implements OnInit {
     while (this.optionsArray.length > 0) this.optionsArray.removeAt(0);
     q.options.forEach(opt => this.optionsArray.push(this.fb.control(opt, Validators.required)));
     this.showQuestionForm = true;
+    this.cdr.markForCheck();
   }
 
   cancelQuestionForm(): void {
     this.showQuestionForm = false;
     this.editingQuestion = null;
     this.questionParentQuizId = null;
+    this.cdr.markForCheck();
   }
 
   saveQuestion(): void {
@@ -249,14 +271,21 @@ export class QuizComponent implements OnInit {
     const formVal = this.questionForm.value;
     const payload: QuestionQuiz = { ...formVal, quiz: { id: this.questionParentQuizId } };
 
-    if (this.editingQuestion && this.editingQuestion.id) {
+    if (this.editingQuestion?.id) {
       this.quizService.updateQuestion(this.editingQuestion.id, payload).subscribe({
-        next: () => { this.showQuestionForm = false; this.editingQuestion = null; this.loadQuizzes(); },
+        next: () => {
+          this.showQuestionForm = false;
+          this.editingQuestion = null;
+          this.loadQuizzes(); // markForCheck happens inside loadQuizzes
+        },
         error: (err) => console.error('Failed to update question:', err)
       });
     } else {
       this.quizService.createQuestion(payload).subscribe({
-        next: () => { this.showQuestionForm = false; this.loadQuizzes(); },
+        next: () => {
+          this.showQuestionForm = false;
+          this.loadQuizzes(); // markForCheck happens inside loadQuizzes
+        },
         error: (err) => console.error('Failed to create question:', err)
       });
     }

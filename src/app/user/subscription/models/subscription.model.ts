@@ -25,4 +25,7 @@ export interface UserSubscription {
   subscribedAt: string;
   expiresAt: string;
   status: SubscriptionStatus;
+  autoRenew?: boolean;
+  reminderSent?: boolean;
+  stripeCustomerId?: string;
 }

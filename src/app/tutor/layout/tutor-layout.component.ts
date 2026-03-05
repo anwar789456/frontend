@@ -21,6 +21,7 @@ export class TutorLayoutComponent {
       items: [
         { label: 'Dashboard', icon: 'dashboard', route: '/tutor/dashboard' },
         { label: 'My Courses', icon: 'courses', route: '/tutor/courses' },
+        { label: 'Quizzes', icon: 'quiz', route: '/tutor/quiz' },
         // { label: 'Live Classes', icon: 'live', route: '/tutor/live-classes' }
       ]
     },

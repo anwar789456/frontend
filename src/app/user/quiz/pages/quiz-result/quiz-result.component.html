@@ -1,0 +1,124 @@
+<!-- ═════════════════════ Quiz Result ══════════════════════════════════════ -->
+<div class="min-h-screen relative overflow-hidden bg-[#fbfeff]">
+
+  <!-- Soft blurred background -->
+  <div class="absolute inset-0 z-0 overflow-hidden">
+    <div class="w-full h-full bg-gradient-to-br from-[#dbeafe] via-[#ede9fe] to-[#fef3c7] opacity-60"></div>
+    <div class="absolute top-10 left-1/4 w-40 h-40 bg-[#22c55e]/10 rounded-full blur-2xl"></div>
+    <div class="absolute bottom-20 right-1/4 w-36 h-36 bg-[#f59e0b]/10 rounded-full blur-2xl"></div>
+  </div>
+
+  <!-- Confetti -->
+  @if (!isLoading && percentage >= 60) {
+    @for (c of confettiItems; track $index) {
+      <div class="absolute top-0 rounded-full anim-confetti pointer-events-none z-20"
+        [style.left.%]="c.left"
+        [style.background-color]="c.color"
+        [style.width.px]="c.size"
+        [style.height.px]="c.size"
+        [style.animation-delay]="c.delay + 's'">
+      </div>
+    }
+  }
+
+  @if (isLoading) {
+    <div class="relative z-10 flex flex-col items-center justify-center py-20">
+      <div class="w-12 h-12 border-4 border-[#38a9f3] border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-[14px] font-semibold text-gray-500">Loading your results...</p>
+    </div>
+  }
+
+  @if (!isLoading && quiz && attempt) {
+    <div class="relative z-10 max-w-2xl mx-auto px-6 py-10">
+
+      <!-- Score Section -->
+      <div class="bg-white border-2 border-[#bfdbfe] rounded-3xl p-8 mb-6 shadow-lg text-center anim-fade-up">
+
+        <!-- Circular Progress Ring -->
+        <div class="relative w-40 h-40 mx-auto mb-5 anim-scale">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" stroke-width="10" />
+            <circle cx="60" cy="60" r="54" fill="none" [attr.stroke]="scoreColor" stroke-width="10"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="circumference"
+              [attr.stroke-dashoffset]="strokeDashoffset"
+              class="transition-all duration-1000" />
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span class="text-[32px] font-extrabold" [style.color]="scoreColor">{{ percentage }}%</span>
+          </div>
+        </div>
+
+        <!-- Star burst -->
+        <div class="text-6xl mb-4 anim-star">
+          @if (percentage >= 80) { 🌟 } @else if (percentage >= 50) { ⭐ } @else { 💪 }
+        </div>
+
+        <!-- XP Earned -->
+        <div class="anim-fade-up delay-2">
+          <div class="inline-flex items-center gap-2 bg-[#fefce8] border-2 border-[#fde68a] rounded-2xl px-6 py-3 mb-4">
+            <span class="text-2xl">⭐</span>
+            <span class="text-[28px] font-extrabold text-[#f59e0b]">{{ attempt.score }} XP</span>
+          </div>
+          <h1 class="text-[24px] font-extrabold text-[#111827] mb-1">{{ encouragement }}</h1>
+        </div>
+
+        <!-- Score Breakdown (game-style) -->
+        <div class="flex items-center justify-center gap-4 mt-6 anim-fade-up delay-3">
+          <div class="bg-[#f0fdf4] border-2 border-[#bbf7d0] rounded-2xl px-6 py-4 text-center">
+            <div class="text-xl mb-1">🎉</div>
+            <p class="text-[24px] font-extrabold text-[#22c55e]">{{ correctCount }}</p>
+            <p class="text-[11px] font-bold text-[#22c55e]/70 uppercase">Correct</p>
+          </div>
+          <div class="bg-[#fef2f2] border-2 border-[#fecaca] rounded-2xl px-6 py-4 text-center">
+            <div class="text-xl mb-1">😢</div>
+            <p class="text-[24px] font-extrabold text-[#ef4444]">{{ totalCount - correctCount }}</p>
+            <p class="text-[11px] font-bold text-[#ef4444]/70 uppercase">Wrong</p>
+          </div>
+          <div class="bg-[#eff6ff] border-2 border-[#bfdbfe] rounded-2xl px-6 py-4 text-center">
+            <div class="text-xl mb-1">📝</div>
+            <p class="text-[24px] font-extrabold text-[#3b82f6]">{{ totalCount }}</p>
+            <p class="text-[11px] font-bold text-[#3b82f6]/70 uppercase">Total</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answers Review -->
+      <div class="bg-white border-2 border-[#bfdbfe] rounded-3xl p-6 mb-6 shadow-lg anim-fade-up delay-4">
+        <h2 class="text-[16px] font-extrabold text-[#111827] mb-4 flex items-center gap-2 uppercase tracking-wide">
+          <span class="text-xl">📋</span> Answer Review
+        </h2>
+        <div class="flex flex-col gap-3">
+          @for (q of questions; track q.id; let i = $index) {
+            <div class="flex items-start gap-3 p-4 rounded-2xl border-2"
+              [class]="isAnswerCorrect(q) ? 'bg-[#f0fdf4] border-[#bbf7d0]' : 'bg-[#fef2f2] border-[#fecaca]'">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
+                [class]="isAnswerCorrect(q) ? 'bg-[#22c55e] text-white' : 'bg-[#ef4444] text-white'">
+                @if (isAnswerCorrect(q)) { 🎉 } @else { 😢 }
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-bold text-[#111827] mb-1">{{ q.question }}</p>
+                <div class="flex flex-wrap items-center gap-2 text-[12px]">
+                  <span class="font-bold px-2 py-0.5 rounded-full" [class]="isAnswerCorrect(q) ? 'bg-[#22c55e]/10 text-[#22c55e]' : 'bg-[#ef4444]/10 text-[#ef4444]'">
+                    Your answer: {{ getSubmittedAnswer(q) }}
+                  </span>
+                  @if (!isAnswerCorrect(q)) {
+                    <span class="text-[#22c55e] font-bold bg-[#22c55e]/10 px-2 py-0.5 rounded-full">Correct: {{ q.correctAnswer }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Action Button (arcade-button style) -->
+      <div class="anim-fade-up delay-5">
+        <a routerLink="/quiz"
+          class="w-full flex items-center justify-center gap-2 py-4 text-[15px] font-extrabold text-white bg-[#38a9f3] rounded-2xl hover:bg-[#2196e3] shadow-[0_5px_0_0_#1e88d0] hover:shadow-[0_2px_0_0_#1e88d0] hover:translate-y-[3px] transition-all text-center block uppercase tracking-wide">
+          <span>🏠</span> Back to Quiz Hub
+        </a>
+      </div>
+    </div>
+  }
+</div>

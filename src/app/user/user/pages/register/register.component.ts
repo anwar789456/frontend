@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User, Role } from '../../models/user.model';
+import { OnboardingComponent, OnboardingStep } from '../../../../shared/components/onboarding/onboarding.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, OnboardingComponent],
   templateUrl: './register.component.html'
 })
 export class RegisterComponent {
@@ -43,6 +44,45 @@ export class RegisterComponent {
   successMessage = '';
   isLoading = false;
 
+  // Onboarding steps for register page
+  registerOnboardingSteps: OnboardingStep[] = [
+    {
+      title: 'Create Your Account! 🌟',
+      description: 'Join thousands of learners on MinoLingo. Let\'s set up your profile in just a few steps!',
+      icon: '🎉',
+      mascotMessage: 'Welcome!',
+      highlightColor: '#22c55e'
+    },
+    {
+      title: 'Your Identity 👤',
+      description: 'Enter your name, username, and email. This is how other learners will know you!',
+      icon: '✨',
+      mascotMessage: 'Who are you?',
+      highlightColor: '#38a9f3'
+    },
+    {
+      title: 'Secure Password 🔒',
+      description: 'Create a strong password to keep your account safe. Use letters, numbers, and symbols!',
+      icon: '🛡️',
+      mascotMessage: 'Stay safe!',
+      highlightColor: '#6366f1'
+    },
+    {
+      title: 'Choose Your Role 🎭',
+      description: 'Are you a Student eager to learn, or a Tutor ready to teach? Pick your path!',
+      icon: '🎯',
+      mascotMessage: 'Your choice!',
+      highlightColor: '#f59e0b'
+    },
+    {
+      title: 'Ready to Start! 🚀',
+      description: 'Complete your registration and begin your amazing learning adventure with MinoLingo!',
+      icon: '🏆',
+      mascotMessage: 'Let\'s go!',
+      highlightColor: '#ec4899'
+    }
+  ];
+
   // Touched tracking
   nameTouched = false;
   usernameTouched = false;
@@ -58,7 +98,7 @@ export class RegisterComponent {
   constructor(
     private userService: UserService,
     private router: Router
-  ) {}
+  ) { }
 
   // --- Step 1 Validators ---
 
@@ -294,7 +334,7 @@ export class RegisterComponent {
         this.isLoading = false;
         // ✅ Redirect to verification code page instead of auto-login
         this.router.navigate(['/verify-code'], {
-          queryParams: { email: this.email.trim() }
+          queryParams: { email: this.email.trim(), role: this.role }
         });
       },
       error: (err: any) => {

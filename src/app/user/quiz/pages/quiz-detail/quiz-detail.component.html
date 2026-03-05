@@ -1,0 +1,122 @@
+<!-- ═════════════════════ Quiz Detail ══════════════════════════════════════ -->
+<div class="relative min-h-screen flex flex-col overflow-hidden bg-[#fbfeff]">
+
+  <!-- Soft blurred background -->
+  <div class="absolute inset-0 z-0 overflow-hidden">
+    <div class="w-full h-full bg-gradient-to-br from-[#dbeafe] via-[#ede9fe] to-[#fef3c7] opacity-60"></div>
+    <div class="absolute top-10 right-10 w-40 h-40 bg-[#38a9f3]/10 rounded-full blur-2xl anim-float"></div>
+    <div class="absolute bottom-20 left-10 w-36 h-36 bg-[#f59e0b]/10 rounded-full blur-2xl anim-float" style="animation-delay:1.5s"></div>
+  </div>
+
+  @if (isLoading) {
+    <div class="relative z-10 flex flex-col items-center justify-center py-20">
+      <div class="w-12 h-12 border-4 border-[#38a9f3] border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-[14px] font-semibold text-gray-500">Loading quiz...</p>
+    </div>
+  }
+
+  @if (!isLoading && quiz) {
+    <!-- Header -->
+    <div class="relative z-10 shrink-0 px-10 pt-6 pb-2">
+      <button routerLink="/quiz" class="flex items-center gap-2 bg-white border-2 border-[#bfdbfe] rounded-full px-5 py-3 shadow-[0_4px_0_0_#bfdbfe] hover:shadow-[0_2px_0_0_#bfdbfe] hover:translate-y-[2px] transition-all mb-5">
+        <svg class="w-4 h-4 text-[#3b82f6]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+        <span class="text-[14px] font-extrabold text-[#3b82f6] uppercase tracking-[0.5px]">Back to Quiz Hub</span>
+      </button>
+    </div>
+
+    <!-- Quiz Card -->
+    <div class="relative z-10 max-w-2xl mx-auto w-full px-6 pb-10">
+      <div class="bg-white border-2 border-[#bfdbfe] rounded-3xl overflow-hidden shadow-lg anim-fade-up">
+
+        <!-- Hero Banner -->
+        <div class="bg-gradient-to-r from-[#38a9f3] to-[#56c8ff] p-8 text-white relative overflow-hidden">
+          <!-- Decorative circles -->
+          <div class="absolute -top-6 -right-6 w-28 h-28 bg-white/10 rounded-full"></div>
+          <div class="absolute bottom-2 right-16 w-16 h-16 bg-white/10 rounded-full"></div>
+
+          <div class="relative z-10 flex items-center gap-5">
+            <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center text-4xl shrink-0 border-2 border-white/30 shadow-lg backdrop-blur-sm">
+              🧠
+            </div>
+            <div class="flex-1">
+              <span class="text-[11px] font-extrabold px-3 py-1 rounded-full bg-white/20 mb-2 inline-block uppercase tracking-wide">{{ quiz.level }}</span>
+              <h1 class="text-[22px] font-extrabold mb-1">{{ quiz.title }}</h1>
+              <p class="text-[13px] text-white/80 leading-relaxed">{{ quiz.description }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-7">
+          <!-- Stats (game-style cards) -->
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-[#eff6ff] border-2 border-[#bfdbfe] rounded-2xl p-4 text-center">
+              <div class="text-2xl mb-1">📝</div>
+              <p class="text-[22px] font-extrabold text-[#111827]">{{ questionCount }}</p>
+              <p class="text-[11px] font-bold text-[#6b7280] uppercase">Questions</p>
+            </div>
+            <div class="bg-[#fefce8] border-2 border-[#fde68a] rounded-2xl p-4 text-center">
+              <div class="text-2xl mb-1">⭐</div>
+              <p class="text-[22px] font-extrabold text-[#f59e0b]">{{ quiz.xpReward }}</p>
+              <p class="text-[11px] font-bold text-[#6b7280] uppercase">XP Reward</p>
+            </div>
+            <div class="bg-[#f0fdf4] border-2 border-[#bbf7d0] rounded-2xl p-4 text-center">
+              <div class="text-2xl mb-1">⏱️</div>
+              <p class="text-[22px] font-extrabold text-[#111827]">{{ estimatedTime }}</p>
+              <p class="text-[11px] font-bold text-[#6b7280] uppercase">Est. Time</p>
+            </div>
+          </div>
+
+          <!-- Progress (if in progress) -->
+          @if (quizStatus === 'in_progress') {
+            <div class="mb-6 p-5 bg-[#fefce8] border-2 border-[#fde68a] rounded-2xl">
+              <div class="flex items-center justify-between text-[13px] mb-2">
+                <span class="font-extrabold text-[#f59e0b] flex items-center gap-1.5"><span>🚀</span> Keep going!</span>
+                <span class="font-bold text-gray-500">{{ progress }}% done</span>
+              </div>
+              <div class="h-4 bg-white rounded-full overflow-hidden border border-[#fde68a]">
+                <div class="h-full bg-gradient-to-r from-[#f59e0b] to-[#fbbf24] rounded-full transition-all" [style.width.%]="progress"></div>
+              </div>
+            </div>
+          }
+
+          <!-- Completed Score -->
+          @if (quizStatus === 'completed' && attempt) {
+            <div class="mb-6 p-5 bg-[#f0fdf4] border-2 border-[#bbf7d0] rounded-2xl text-center">
+              <div class="text-3xl mb-2">🏅</div>
+              <p class="text-[13px] font-extrabold text-[#22c55e] mb-1 uppercase">Completed!</p>
+              <p class="text-[28px] font-extrabold text-[#22c55e]">{{ attempt.score }} XP earned</p>
+              <p class="text-[12px] text-[#22c55e]/70 font-semibold mt-1">{{ attempt.answeredQuestions }}/{{ attempt.totalQuestions }} questions answered</p>
+            </div>
+          }
+
+          <!-- CTA Buttons (arcade-button style) -->
+          <div class="flex items-center gap-3">
+            @switch (quizStatus) {
+              @case ('not_started') {
+                <button (click)="startQuiz()"
+                  class="flex-1 flex items-center justify-center gap-2 py-4 text-[15px] font-extrabold text-white bg-[#38a9f3] rounded-2xl hover:bg-[#2196e3] shadow-[0_5px_0_0_#1e88d0] hover:shadow-[0_2px_0_0_#1e88d0] hover:translate-y-[3px] transition-all uppercase tracking-wide">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                  Start Adventure!
+                </button>
+              }
+              @case ('in_progress') {
+                <a [routerLink]="['/quiz', quizId, 'play']"
+                  class="flex-1 flex items-center justify-center gap-2 py-4 text-[15px] font-extrabold text-white bg-[#f59e0b] rounded-2xl hover:bg-[#d97706] shadow-[0_5px_0_0_#b45309] hover:shadow-[0_2px_0_0_#b45309] hover:translate-y-[3px] transition-all text-center block uppercase tracking-wide">
+                  <span>🚀</span> Continue Adventure!
+                </a>
+              }
+              @case ('completed') {
+                @if (attempt) {
+                  <a [routerLink]="['/quiz', quizId, 'result', attempt.id]"
+                    class="flex-1 flex items-center justify-center gap-2 py-4 text-[15px] font-extrabold text-[#22c55e] bg-[#22c55e]/10 border-2 border-[#22c55e]/30 rounded-2xl hover:bg-[#22c55e]/20 transition-all text-center block uppercase tracking-wide">
+                    <span>🏅</span> View My Results
+                  </a>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

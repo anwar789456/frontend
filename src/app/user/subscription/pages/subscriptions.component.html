@@ -47,6 +47,48 @@
   </div>
   }
 
+  <!-- Active Subscription & Auto-Renew (Feature 4) -->
+  @if (currentSubscription) {
+  <div class="bg-white border border-gray-200 rounded-xl p-5 mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Current Subscription</h3>
+        <p class="text-lg font-bold text-[#0f1724]">
+          {{ currentSubscription.plan?.name }} Plan
+          <span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Active</span>
+        </p>
+        <p class="text-sm text-gray-500 mt-0.5">
+          Expires on {{ currentSubscription.expiresAt | date:'mediumDate' }}
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <p class="text-sm font-medium text-gray-700">Auto-renew</p>
+          <p class="text-xs text-gray-400">
+            @if (currentSubscription.autoRenew) {
+              Renews automatically on {{ currentSubscription.expiresAt | date:'mediumDate' }}
+            } @else {
+              Will not be renewed
+            }
+          </p>
+        </div>
+        <button
+          (click)="onAutoRenewToggle()"
+          [disabled]="isTogglingAutoRenew"
+          class="relative w-12 h-6 rounded-full transition-colors cursor-pointer disabled:opacity-50"
+          [class.bg-indigo-500]="currentSubscription.autoRenew"
+          [class.bg-gray-300]="!currentSubscription.autoRenew"
+        >
+          <span
+            class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+            [class.translate-x-6]="currentSubscription.autoRenew"
+          ></span>
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
   <!-- Pricing Cards -->
   <div class="grid grid-cols-3 gap-6 mb-8">
     @for (plan of plans; track plan.id) {
