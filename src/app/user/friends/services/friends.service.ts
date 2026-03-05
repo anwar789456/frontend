@@ -79,6 +79,14 @@ export class FriendsService {
     return this.http.delete<void>(`${this.apiUrl}/delete-message/${messageId}`);
   }
 
+  deleteMessageForUser(messageId: number, userId: number): Observable<ChatMessage> {
+    return this.http.put<ChatMessage>(`${this.apiUrl}/delete-message-for-user/${messageId}/${userId}`, {});
+  }
+
+  toggleReaction(messageId: number, userId: number, emoji: string): Observable<ChatMessage> {
+    return this.http.put<ChatMessage>(`${this.apiUrl}/toggle-reaction/${messageId}/${userId}?emoji=${encodeURIComponent(emoji)}`, {});
+  }
+
   // ── User Status ──
 
   sendHeartbeat(status: UserStatus): Observable<UserStatus> {

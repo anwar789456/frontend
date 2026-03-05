@@ -81,6 +81,14 @@ export class FriendsComponent implements OnInit, OnDestroy {
   // Right panel
   showFriendInfo = false;
 
+  // Message actions
+  activeMessageId: number | null = null;
+  showDeleteMenu: number | null = null;
+  showReactionPicker: number | null = null;
+  replyingTo: DisplayMessage | null = null;
+  messageReactionEmojis = ['❤️', '😂', '😮', '😢', '👍', '👎'];
+  quickReactions = ['👋', '❤️', '😂', '👍'];
+
   constructor(
     private friendsService: FriendsService,
     private authService: AuthService,
@@ -124,6 +132,11 @@ export class FriendsComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.emoji-picker-zone')) this.showEmojiPicker = false;
     if (!target.closest('.gif-picker-zone')) this.showGifPicker = false;
+    if (!target.closest('.msg-action-zone')) {
+      this.activeMessageId = null;
+      this.showDeleteMenu = null;
+      this.showReactionPicker = null;
+    }
   }
 
   // ── Data Loading ──
@@ -322,11 +335,10 @@ export class FriendsComponent implements OnInit, OnDestroy {
     if (!this.user) return;
     this.friendsService.getConversation(this.user.id, friend.id).subscribe({
       next: (msgs) => {
-        this.messages = msgs.map(m => this.mapToDisplayMessage(m));
+        this.messages = this.filterDeletedMessages(msgs).map(m => this.mapToDisplayMessage(m));
         this.chatLoading = false;
         friend.unreadCount = 0;
         this.scrollToBottom();
-        // Mark as read
         this.friendsService.markConversationRead(friend.id, this.user!.id).subscribe();
       },
       error: () => {
@@ -340,12 +352,22 @@ export class FriendsComponent implements OnInit, OnDestroy {
     if (!this.user || !this.selectedFriend) return;
     this.friendsService.getConversation(this.user.id, this.selectedFriend.id).subscribe({
       next: (msgs) => {
-        if (msgs.length !== this.messages.length) {
-          this.messages = msgs.map(m => this.mapToDisplayMessage(m));
+        const filtered = this.filterDeletedMessages(msgs);
+        if (filtered.length !== this.messages.length) {
+          this.messages = filtered.map(m => this.mapToDisplayMessage(m));
           this.scrollToBottom();
           this.friendsService.markConversationRead(this.selectedFriend!.id, this.user!.id).subscribe();
         }
       }
+    });
+  }
+
+  private filterDeletedMessages(msgs: ChatMessage[]): ChatMessage[] {
+    if (!this.user) return msgs;
+    const uid = this.user.id.toString();
+    return msgs.filter(m => {
+      if (!m.deletedForUsers) return true;
+      return !m.deletedForUsers.split(',').includes(uid);
     });
   }
 
@@ -358,6 +380,10 @@ export class FriendsComponent implements OnInit, OnDestroy {
       imageUrl: m.imageUrl,
       gifUrl: m.gifUrl,
       sharedPostId: m.sharedPostId,
+      replyToId: m.replyToId,
+      replyToContent: m.replyToContent,
+      replyToSenderName: m.replyToSenderName,
+      reactions: m.reactions,
       time: this.formatMessageTime(m.createdAt || ''),
       isMine: m.senderId === this.user!.id,
       senderAvatar: m.senderAvatar,
@@ -390,13 +416,20 @@ export class FriendsComponent implements OnInit, OnDestroy {
       isRead: false
     };
 
+    // Attach reply info if replying
+    if (this.replyingTo) {
+      msg.replyToId = this.replyingTo.id;
+      msg.replyToContent = this.replyingTo.content?.substring(0, 100) || '';
+      msg.replyToSenderName = this.replyingTo.senderName;
+    }
+
     this.friendsService.sendMessage(msg).subscribe({
       next: (saved) => {
         this.messages.push(this.mapToDisplayMessage(saved));
         this.messageText = '';
         this.imagePreview = null;
+        this.replyingTo = null;
         this.scrollToBottom();
-        // Update friend's last message
         this.selectedFriend!.lastMessage = this.getMessagePreview(saved);
         this.selectedFriend!.lastMessageTime = 'now';
       }
@@ -691,6 +724,114 @@ export class FriendsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ── Quick reactions (double tap emoji) ──
-  quickReactions = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+  // ── Message Actions ──
+
+  toggleMessageActions(msgId: number, event: Event): void {
+    event.stopPropagation();
+    this.activeMessageId = this.activeMessageId === msgId ? null : msgId;
+    this.showDeleteMenu = null;
+    this.showReactionPicker = null;
+  }
+
+  openDeleteMenu(msgId: number, event: Event): void {
+    event.stopPropagation();
+    this.showDeleteMenu = msgId;
+  }
+
+  deleteForMe(msg: DisplayMessage): void {
+    if (!this.user) return;
+    this.friendsService.deleteMessageForUser(msg.id, this.user.id).subscribe({
+      next: () => {
+        this.messages = this.messages.filter(m => m.id !== msg.id);
+        this.activeMessageId = null;
+        this.showDeleteMenu = null;
+        this.addToast('Message deleted for you', 'info');
+      },
+      error: () => this.addToast('Failed to delete message', 'warning')
+    });
+  }
+
+  deleteForEveryone(msg: DisplayMessage): void {
+    this.friendsService.deleteMessage(msg.id).subscribe({
+      next: () => {
+        this.messages = this.messages.filter(m => m.id !== msg.id);
+        this.activeMessageId = null;
+        this.showDeleteMenu = null;
+        this.addToast('Message deleted for everyone', 'info');
+      },
+      error: () => this.addToast('Failed to delete message', 'warning')
+    });
+  }
+
+  replyToMessage(msg: DisplayMessage): void {
+    this.replyingTo = msg;
+    this.activeMessageId = null;
+    this.messageInput?.nativeElement?.focus();
+  }
+
+  cancelReply(): void {
+    this.replyingTo = null;
+  }
+
+  translateMessage(msg: DisplayMessage): void {
+    if (msg.showTranslation && msg.translatedContent) {
+      msg.showTranslation = false;
+      this.activeMessageId = null;
+      return;
+    }
+    const text = msg.content;
+    if (!text) return;
+    this.http.get<any>(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|fr`).subscribe({
+      next: (res) => {
+        msg.translatedContent = res?.responseData?.translatedText || 'Translation unavailable';
+        msg.showTranslation = true;
+        this.activeMessageId = null;
+      },
+      error: () => {
+        this.addToast('Translation failed', 'warning');
+        this.activeMessageId = null;
+      }
+    });
+  }
+
+  openReactionPicker(msgId: number, event: Event): void {
+    event.stopPropagation();
+    this.showReactionPicker = this.showReactionPicker === msgId ? null : msgId;
+    this.showDeleteMenu = null;
+  }
+
+  reactToMessage(msg: DisplayMessage, emoji: string): void {
+    if (!this.user) return;
+    this.friendsService.toggleReaction(msg.id, this.user.id, emoji).subscribe({
+      next: (updated) => {
+        msg.reactions = updated.reactions || undefined;
+        this.showReactionPicker = null;
+        this.activeMessageId = null;
+      },
+      error: () => this.addToast('Failed to react', 'warning')
+    });
+  }
+
+  getReactionsList(reactions: string | undefined): { emoji: string; count: number; userReacted: boolean }[] {
+    if (!reactions || !this.user) return [];
+    const entries = reactions.split(',').filter(r => r.trim());
+    const emojiMap = new Map<string, { count: number; userReacted: boolean }>();
+    for (const entry of entries) {
+      const parts = entry.split(':');
+      if (parts.length !== 2) continue;
+      const [userId, emoji] = parts;
+      if (!emojiMap.has(emoji)) {
+        emojiMap.set(emoji, { count: 0, userReacted: false });
+      }
+      const data = emojiMap.get(emoji)!;
+      data.count++;
+      if (parseInt(userId) === this.user.id) data.userReacted = true;
+    }
+    return Array.from(emojiMap.entries()).map(([emoji, data]) => ({
+      emoji,
+      count: data.count,
+      userReacted: data.userReacted
+    }));
+  }
+
 }

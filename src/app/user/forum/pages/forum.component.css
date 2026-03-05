@@ -46,7 +46,7 @@
 /* Notifications */
 @keyframes badgePulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)} 50%{box-shadow:0 0 0 6px transparent} }
 .notif-badge { animation:badgePulse 1.5s infinite; }
-.notif-panel { border-radius:20px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,.12); border:1.5px solid #e0f2fe; }
+.notif-panel { border-radius:20px; box-shadow:0 12px 40px rgba(0,0,0,.12); border:1.5px solid #e0f2fe; min-height:200px; position:relative; z-index:50; }
 .notif-item { transition:all .2s; border-bottom:1px solid #f1f5f9; }
 .notif-item:hover { background:#f0f9ff; }
 .notif-item.unread { background:#eff6ff; border-left:3px solid #38a9f3; }
@@ -64,7 +64,7 @@
 /* Search & Sidebar */
 .search-input { border:2px solid #e2e8f0; border-radius:999px; transition:all .2s; background:#fff; }
 .search-input:focus { border-color:#38a9f3; box-shadow:0 0 0 3px rgba(56,169,243,.12); }
-.sidebar-section { background:#fff; border:1.5px solid #e8ecf1; border-radius:20px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.04); transition:all .2s; }
+.sidebar-section { background:#fff; border:1.5px solid #e8ecf1; border-radius:20px; box-shadow:0 2px 8px rgba(0,0,0,.04); transition:all .2s; }
 .sidebar-section:hover { border-color:#bae6fd; }
 
 /* Dark Mode */

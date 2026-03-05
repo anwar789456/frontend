@@ -47,6 +47,11 @@ export interface ChatMessage {
   imageUrl?: string;
   gifUrl?: string;
   sharedPostId?: number;
+  replyToId?: number;
+  replyToContent?: string;
+  replyToSenderName?: string;
+  reactions?: string;
+  deletedForUsers?: string;
   isRead?: boolean;
   createdAt?: string;
 }
@@ -60,6 +65,12 @@ export interface DisplayMessage {
   imageUrl?: string;
   gifUrl?: string;
   sharedPostId?: number;
+  replyToId?: number;
+  replyToContent?: string;
+  replyToSenderName?: string;
+  reactions?: string;
+  translatedContent?: string;
+  showTranslation?: boolean;
   time: string;
   isMine: boolean;
   senderAvatar: string;
