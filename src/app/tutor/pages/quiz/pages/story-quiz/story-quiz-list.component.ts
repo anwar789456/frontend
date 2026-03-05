@@ -37,7 +37,7 @@ export class TutorStoryQuizListComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  pageSize = 6;
+  pageSize = 3;
 
   constructor(
     private quizService: TutorQuizService,

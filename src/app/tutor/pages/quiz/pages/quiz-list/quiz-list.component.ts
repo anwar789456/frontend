@@ -38,7 +38,7 @@ export class TutorQuizListComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  pageSize = 6;
+  pageSize = 3;
 
   // Stats
   stats = [
