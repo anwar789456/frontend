@@ -99,6 +99,18 @@ export class TutorQuizService {
     return this.http.put<StoryQuiz>(`${this.apiUrl}/story-quizzes/unarchive/${id}`, {});
   }
 
+  // ── AI Generation ──
+
+  generateQuizDescription(title: string, level: string): Observable<{ description: string }> {
+    return this.http.post<{ description: string }>(`${this.apiUrl}/quizzes/generate-description`, { title, level });
+  }
+
+  generateQuizQuestions(title: string, level: string, count: number): Observable<{ questions: string }> {
+    return this.http.post<{ questions: string }>(`${this.apiUrl}/quizzes/generate-questions`, { title, level, count });
+  }
+
+  // ── Word Bank ──
+
   getWordBank(storyQuizId: number): Observable<StoryWordBank> {
     return this.http.get<StoryWordBank>(`${this.apiUrl}/story-quizzes/${storyQuizId}/word-bank`);
   }

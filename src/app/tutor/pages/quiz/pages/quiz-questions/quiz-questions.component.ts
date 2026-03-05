@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TutorQuizService } from '../../services/quiz.service';
 import { Quiz, QuestionQuiz, QuestionType } from '../../models/quiz.model';
@@ -8,7 +8,7 @@ import { Quiz, QuestionQuiz, QuestionType } from '../../models/quiz.model';
 @Component({
   selector: 'app-tutor-quiz-questions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './quiz-questions.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -23,6 +23,8 @@ export class TutorQuizQuestionsComponent implements OnInit {
   questionForm!: FormGroup;
   questionTypes = Object.values(QuestionType);
   isSaving = false;
+  isGeneratingQuestions = false;
+  aiQuestionCount = 3;
 
   constructor(
     private fb: FormBuilder,
@@ -200,6 +202,61 @@ export class TutorQuizQuestionsComponent implements OnInit {
         console.error('Failed to delete question:', err);
         this.cdr.markForCheck();
       }
+    });
+  }
+
+  // ── AI Generation ──
+
+  generateQuestionsWithAI(): void {
+    if (!this.quiz?.title || this.isGeneratingQuestions) return;
+    this.isGeneratingQuestions = true;
+    this.cdr.markForCheck();
+
+    const level = this.quiz.level?.toString() || 'BEGINNER';
+    this.quizService.generateQuizQuestions(this.quiz.title, level, this.aiQuestionCount).subscribe({
+      next: (res) => {
+        try {
+          const generated: any[] = JSON.parse(res.questions);
+          if (Array.isArray(generated) && generated.length > 0) {
+            this.saveGeneratedQuestions(generated, 0);
+          } else {
+            this.isGeneratingQuestions = false;
+            this.cdr.markForCheck();
+          }
+        } catch {
+          console.error('Failed to parse AI questions');
+          this.isGeneratingQuestions = false;
+          this.cdr.markForCheck();
+        }
+      },
+      error: (err) => {
+        console.error('AI generation failed:', err);
+        this.isGeneratingQuestions = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private saveGeneratedQuestions(questions: any[], index: number): void {
+    if (index >= questions.length) {
+      this.isGeneratingQuestions = false;
+      this.loadQuiz();
+      return;
+    }
+
+    const q = questions[index];
+    const payload: QuestionQuiz = {
+      question: q.question || '',
+      type: 'MCQ',
+      options: Array.isArray(q.options) ? q.options : [],
+      correctAnswer: q.correctAnswer || '',
+      explanation: q.explanation || '',
+      quiz: { id: this.quizId }
+    };
+
+    this.quizService.createQuestion(payload).subscribe({
+      next: () => this.saveGeneratedQuestions(questions, index + 1),
+      error: () => this.saveGeneratedQuestions(questions, index + 1)
     });
   }
 }
