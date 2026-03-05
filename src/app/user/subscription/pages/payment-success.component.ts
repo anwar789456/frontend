@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StripePaymentService, SendEmailRequest } from '../services/stripe-payment.service';
@@ -19,11 +19,14 @@ export class PaymentSuccessComponent implements OnInit {
   errorMessage = '';
   subscription: any = null;
   emailSent = false;
+  countdown = 3;
+  redirecting = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private stripeService: StripePaymentService
+    private stripeService: StripePaymentService,
+    private ngZone: NgZone
   ) { }
 
   ngOnInit(): void {
@@ -109,6 +112,9 @@ export class PaymentSuccessComponent implements OnInit {
           localStorage.removeItem('stripe_payment_userId');
           localStorage.removeItem('stripe_payment_planId');
           localStorage.removeItem('stripe_payment_email');
+
+          // Start countdown and auto-redirect
+          this.startRedirectCountdown();
         } else {
           console.error('Payment confirmation returned unsuccessful');
           console.error('Response message:', response.message);
@@ -167,6 +173,30 @@ export class PaymentSuccessComponent implements OnInit {
         // Don't show error to user — email failure is non-critical
       }
     });
+  }
+
+  /**
+   * Start countdown timer and redirect to courses page
+   */
+  private startRedirectCountdown(): void {
+    this.ngZone.run(() => {
+      const timer = setInterval(() => {
+        this.countdown--;
+        if (this.countdown <= 0) {
+          clearInterval(timer);
+          this.redirecting = true;
+          this.router.navigate(['/user/course']);
+        }
+      }, 1000);
+    });
+  }
+
+  /**
+   * Manual redirect to courses page (skip countdown)
+   */
+  goToCourses(): void {
+    this.redirecting = true;
+    this.router.navigate(['/user/course']);
   }
 
   goToSubscriptions(): void {
