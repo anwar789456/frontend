@@ -49,6 +49,18 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   eventStatuses: EventStatus[] = ['DRAFT', 'UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED'];
   targetLevels: TargetLevel[] = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'ALL_LEVELS'];
 
+  // Mock users for host dropdown
+  mockHosts = [
+    { name: 'Alex Johnson', email: 'alex.johnson@example.com' },
+    { name: 'Priya Patel', email: 'priya.patel@example.com' },
+    { name: 'Alex Chen', email: 'alex.chen@example.com' },
+    { name: 'Maria Garcia', email: 'maria.garcia@example.com' },
+    { name: 'David Okafor', email: 'david.okafor@example.com' },
+    { name: 'Hassan M.', email: 'hassan.m@example.com' },
+    { name: 'Yuki S.', email: 'yuki.s@example.com' },
+    { name: 'Mahmoud Salhi', email: 'mahmoud.salhi@esprit.tn' }
+  ];
+
   // QR Check-in state
   showCheckInModal = false;
   checkInCode = '';
@@ -580,5 +592,14 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  onHostChange(hostName: string): void {
+    const host = this.mockHosts.find(h => h.name === hostName);
+    if (host) {
+      this.formData.contactEmail = host.email;
+    } else {
+      this.formData.contactEmail = '';
+    }
   }
 }
