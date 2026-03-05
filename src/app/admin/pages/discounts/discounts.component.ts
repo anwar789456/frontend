@@ -31,8 +31,10 @@ export class DiscountsComponent implements OnInit {
     code: '',
     discountPercentage: 20,
     maxUses: null as number | null,
-    expiresAt: null as Date | null
+    expiresAt: null as string | null  // HTML datetime-local input returns string
   };
+
+  private readonly apiUrl = 'https://minolingo.online/api/abonnements';
 
   constructor(private http: HttpClient) {}
 
@@ -44,7 +46,7 @@ export class DiscountsComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
     
-    this.http.get<DiscountCode[]>('/api/abonnements/discounts')
+    this.http.get<DiscountCode[]>(this.apiUrl + '/discounts')
       .subscribe({
         next: (data) => {
           this.discounts = data;
@@ -75,7 +77,7 @@ export class DiscountsComponent implements OnInit {
       expiresAt: this.newCode.expiresAt ? new Date(this.newCode.expiresAt).toISOString() : null
     };
 
-    this.http.post<DiscountCode>('/api/abonnements/discounts', payload)
+    this.http.post<DiscountCode>(this.apiUrl + '/discounts', payload)
       .subscribe({
         next: () => {
           this.successMessage = `Discount code "${this.newCode.code}" created successfully!`;
@@ -95,7 +97,7 @@ export class DiscountsComponent implements OnInit {
       return;
     }
 
-    this.http.delete(`/api/abonnements/discounts/${id}`)
+    this.http.delete(this.apiUrl + `/discounts/${id}`)
       .subscribe({
         next: () => {
           this.successMessage = `Discount code "${code}" deactivated successfully!`;
