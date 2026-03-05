@@ -207,12 +207,14 @@ export class FriendsComponent implements OnInit, OnDestroy {
           userId: f.userId,
           createdAt: f.createdAt || ''
         }));
+        this.cdr.detectChanges();
       }
     });
     // Also load sent requests
     this.friendsService.getSentRequests(this.user.id).subscribe({
       next: (sent) => {
         this.sentRequests = sent.map(s => s.friendId);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -225,6 +227,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
           name: u.name,
           avatar: (u as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.name
         }));
+        this.cdr.detectChanges();
       }
     });
   }
@@ -258,6 +261,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
             friend.lastSeen = s.lastSeen;
           }
         }
+        this.cdr.detectChanges();
       }
     });
   }
@@ -279,6 +283,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
       next: () => {
         this.sentRequests.push(targetUser.id);
         this.addToast('Friend request sent!', 'success');
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Friend request error:', err);
@@ -294,6 +299,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         this.friendRequests = this.friendRequests.filter(r => r.friendshipId !== req.friendshipId);
         this.loadFriends();
         this.addToast(`You and ${req.name} are now friends!`, 'success');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -303,6 +309,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
       next: () => {
         this.friendRequests = this.friendRequests.filter(r => r.friendshipId !== req.friendshipId);
         this.addToast('Request declined', 'info');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -316,6 +323,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
           this.messages = [];
         }
         this.addToast(`${friend.name} removed from friends`, 'info');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -340,10 +348,12 @@ export class FriendsComponent implements OnInit, OnDestroy {
         friend.unreadCount = 0;
         this.scrollToBottom();
         this.friendsService.markConversationRead(friend.id, this.user!.id).subscribe();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.chatLoading = false;
         this.messages = [];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -357,6 +367,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
           this.messages = filtered.map(m => this.mapToDisplayMessage(m));
           this.scrollToBottom();
           this.friendsService.markConversationRead(this.selectedFriend!.id, this.user!.id).subscribe();
+          this.cdr.detectChanges();
         }
       }
     });
@@ -432,6 +443,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         this.scrollToBottom();
         this.selectedFriend!.lastMessage = this.getMessagePreview(saved);
         this.selectedFriend!.lastMessageTime = 'now';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -455,6 +467,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         this.scrollToBottom();
         this.selectedFriend!.lastMessage = emoji;
         this.selectedFriend!.lastMessageTime = 'now';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -480,6 +493,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         this.scrollToBottom();
         this.selectedFriend!.lastMessage = 'GIF';
         this.selectedFriend!.lastMessageTime = 'now';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -503,6 +517,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         this.scrollToBottom();
         this.selectedFriend!.lastMessage = '📋 Shared a post';
         this.selectedFriend!.lastMessageTime = 'now';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -746,6 +761,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         this.activeMessageId = null;
         this.showDeleteMenu = null;
         this.addToast('Message deleted for you', 'info');
+        this.cdr.detectChanges();
       },
       error: () => this.addToast('Failed to delete message', 'warning')
     });
@@ -758,6 +774,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         this.activeMessageId = null;
         this.showDeleteMenu = null;
         this.addToast('Message deleted for everyone', 'info');
+        this.cdr.detectChanges();
       },
       error: () => this.addToast('Failed to delete message', 'warning')
     });
@@ -777,6 +794,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
     if (msg.showTranslation && msg.translatedContent) {
       msg.showTranslation = false;
       this.activeMessageId = null;
+      this.cdr.detectChanges();
       return;
     }
     const text = msg.content;
@@ -786,6 +804,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         msg.translatedContent = res?.responseData?.translatedText || 'Translation unavailable';
         msg.showTranslation = true;
         this.activeMessageId = null;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.addToast('Translation failed', 'warning');
@@ -807,6 +826,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
         msg.reactions = updated.reactions || undefined;
         this.showReactionPicker = null;
         this.activeMessageId = null;
+        this.cdr.detectChanges();
       },
       error: () => this.addToast('Failed to react', 'warning')
     });

@@ -311,6 +311,7 @@ export class ForumComponent implements OnInit, OnDestroy {
     this.forumService.getAllTopics().subscribe({
       next: (topics) => {
         this.trendingTopics = topics || [];
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -701,6 +702,7 @@ export class ForumComponent implements OnInit, OnDestroy {
           this.posts[idx] = updated;
         }
         this.applyFilter();
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -716,6 +718,7 @@ export class ForumComponent implements OnInit, OnDestroy {
           this.posts[idx] = updated;
         }
         this.applyFilter();
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -1208,6 +1211,7 @@ export class ForumComponent implements OnInit, OnDestroy {
       next: (notifs) => {
         this.tagNotifications = notifs || [];
         this.unreadNotifCount = this.tagNotifications.filter((n: any) => !n.isRead).length;
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -1222,6 +1226,7 @@ export class ForumComponent implements OnInit, OnDestroy {
           this.loadTagNotifications();
         }
         this.unreadNotifCount = newCount;
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -1239,6 +1244,7 @@ export class ForumComponent implements OnInit, OnDestroy {
       next: () => {
         notif.isRead = true;
         this.unreadNotifCount = Math.max(0, this.unreadNotifCount - 1);
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -1249,6 +1255,7 @@ export class ForumComponent implements OnInit, OnDestroy {
       next: () => {
         this.tagNotifications.forEach((n: any) => n.isRead = true);
         this.unreadNotifCount = 0;
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -1474,6 +1481,7 @@ export class ForumComponent implements OnInit, OnDestroy {
           }
         }
         this.unreadNotifCount = this.tagNotifications.filter((n: any) => !n.isRead).length;
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -1557,6 +1565,7 @@ export class ForumComponent implements OnInit, OnDestroy {
         this.tagNotifications = this.tagNotifications.filter((n: any) => !(n.type === 'FRIEND_REQUEST' && n.friendshipId === req.friendshipId));
         this.unreadNotifCount = this.tagNotifications.filter((n: any) => !n.isRead).length;
         this.friendStatuses.set(req.userId, 'friend');
+        this.cdRef.detectChanges();
       },
       error: () => { this.addNotification('Failed to accept request', 'warning'); }
     });
@@ -1570,6 +1579,7 @@ export class ForumComponent implements OnInit, OnDestroy {
         this.pendingFriendRequests = this.pendingFriendRequests.filter(r => r.id !== req.id);
         this.tagNotifications = this.tagNotifications.filter((n: any) => !(n.type === 'FRIEND_REQUEST' && n.friendshipId === req.friendshipId));
         this.unreadNotifCount = this.tagNotifications.filter((n: any) => !n.isRead).length;
+        this.cdRef.detectChanges();
       },
       error: () => { this.addNotification('Failed to decline request', 'warning'); }
     });
