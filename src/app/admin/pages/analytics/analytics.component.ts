@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AnalyticsService, AnalyticsDashboard } from './services/analytics.service';
 import Chart from 'chart.js/auto';
@@ -22,7 +22,10 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   private dataLoaded = false;
   private viewReady = false;
 
-  constructor(private analyticsService: AnalyticsService) {}
+  constructor(
+    private analyticsService: AnalyticsService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadDashboard();
@@ -42,6 +45,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         this.dashboard = data;
         this.isLoading = false;
         this.dataLoaded = true;
+        // Force change detection to update view immediately
+        this.cdr.detectChanges();
         if (this.viewReady) {
           setTimeout(() => this.renderCharts(), 0);
         }
