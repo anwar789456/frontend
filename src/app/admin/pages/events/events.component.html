@@ -200,6 +200,11 @@
       <button (click)="openEditModal(selectedEvent)"
         class="flex-1 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3]">Edit
         Event</button>
+      <button (click)="openCheckInModal()"
+        class="py-2.5 px-3 text-sm font-semibold text-[#7c3aed] border border-[#ddd6fe] rounded-xl hover:bg-[#f5f3ff]"
+        title="Scan QR Check-in">
+        📷
+      </button>
       <button (click)="confirmDelete()"
         class="py-2.5 px-3 text-sm font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -476,6 +481,48 @@
         {{ isDeleting ? 'Deleting...' : 'Delete' }}
       </button>
     </div>
+  </div>
+</div>
+}
+
+<!-- QR Check-in Modal -->
+@if (showCheckInModal) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="closeCheckInModal()">
+  <div class="bg-white rounded-2xl shadow-xl w-[420px] p-6" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-[15px] font-bold text-[#0f1419]">📷 QR Check-in</h3>
+        <p class="text-[11px] text-[#9ca3af]">Paste the attendee's check-in code</p>
+      </div>
+      <button (click)="closeCheckInModal()" class="text-[#9ca3af] hover:text-[#0f1419]">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Input -->
+    <div class="flex gap-2 mb-4">
+      <input type="text" [(ngModel)]="checkInCode" (keydown.enter)="processCheckIn()"
+        class="flex-1 px-3 py-2.5 border border-[#eef1f4] rounded-xl text-sm outline-none focus:border-[#7c3aed] font-mono"
+        placeholder="Paste check-in code here..." [disabled]="checkInLoading" />
+      <button (click)="processCheckIn()" [disabled]="checkInLoading || !checkInCode.trim()"
+        class="px-4 py-2.5 text-sm font-semibold text-white bg-[#7c3aed] rounded-xl hover:bg-[#6d28d9] disabled:opacity-50">
+        @if (checkInLoading) {
+        <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+        } @else {
+        Check In
+        }
+      </button>
+    </div>
+
+    <!-- Result -->
+    @if (checkInResult) {
+    <div class="rounded-xl px-4 py-3 text-sm font-medium"
+      [class]="checkInResult.success ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'">
+      {{ checkInResult.message }}
+    </div>
+    }
   </div>
 </div>
 }

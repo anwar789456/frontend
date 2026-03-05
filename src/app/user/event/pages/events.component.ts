@@ -33,11 +33,24 @@ export class EventsComponent implements OnInit {
     { value: 'attendees', label: '👥 Most Attendees', icon: '↓' }
   ];
 
+  // Pagination
+  currentPage: { [tab: string]: number } = { Explore: 1, Going: 1, Past: 1 };
+  pageSize = 5;
+
   // Registration state
   userRegistrations: EventRegistration[] = [];
   registrationLoading: Set<number> = new Set(); // eventIds currently being processed
-  readonly MOCK_USER_ID = 1; // hardcoded until auth is implemented
-  // Constructor
+  readonly MOCK_USER_ID = 2; // hardcoded until auth is implemented
+
+  // Phone number for SMS reminders
+  showPhoneModal = false;
+  phoneNumber = '';
+  pendingRegistrationEvent: Event | null = null;
+
+  // Star rating
+  hoverRating: { [eventId: number]: number } = {};
+  ratingLoading: Set<number> = new Set();
+
   constructor(
     private eventService: EventService,
     private registrationService: EventRegistrationService,
@@ -84,13 +97,26 @@ export class EventsComponent implements OnInit {
   registerForEvent(event: Event): void {
     if (this.isRegistered(event.id) || this.isWaitlisted(event.id) || this.registrationLoading.has(event.id)) return;
 
+    // Show phone modal first
+    this.pendingRegistrationEvent = event;
+    this.phoneNumber = '';
+    this.showPhoneModal = true;
+    this.cdr.markForCheck();
+  }
+
+  confirmRegistration(): void {
+    const event = this.pendingRegistrationEvent;
+    if (!event) return;
+
+    this.showPhoneModal = false;
     this.registrationLoading.add(event.id);
     this.cdr.markForCheck();
 
     const registration: Partial<EventRegistration> = {
       userId: this.MOCK_USER_ID,
       userName: this.user.name || 'User',
-      userEmail: 'mahmoud.salhi@esprit.tn'
+      userEmail: 'mahmoud.salhi@esprit.tn',
+      phoneNumber: this.phoneNumber.trim() || undefined
     };
 
     this.registrationService.register(event.id, registration).subscribe({
@@ -214,16 +240,24 @@ export class EventsComponent implements OnInit {
   // --- Tab-based event lists ---
 
   get goingEvents(): Event[] {
+    const now = new Date();
     const registeredEventIds = new Set(
       this.userRegistrations.map(r => this.getEventIdFromRegistration(r))
     );
     return this.filteredEvents
-      .filter(e => registeredEventIds.has(e.id) && e.status !== 'COMPLETED');
+      .filter(e => {
+        const endDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
+        return registeredEventIds.has(e.id) && endDate >= now;
+      });
   }
 
   get pastEvents(): Event[] {
+    const now = new Date();
     return this.filteredEvents
-      .filter(e => e.status === 'COMPLETED');
+      .filter(e => {
+        const endDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
+        return e.status === 'COMPLETED' || endDate < now;
+      });
   }
 
   /** Schedule: only shows ongoing/upcoming events the user is registered for */
@@ -310,8 +344,49 @@ export class EventsComponent implements OnInit {
 
   get upcomingEvents() {
     const featured = this.featuredEvent;
+    const now = new Date();
     return this.filteredEvents
-      .filter(e => e.status === 'UPCOMING' && (!featured || e.id !== featured.id));
+      .filter(e => {
+        const endDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
+        const isUpcoming = e.status === 'UPCOMING' || (e.status !== 'COMPLETED' && e.status !== 'CANCELLED' && new Date(e.startDate) > now);
+        const notPast = endDate >= now;
+        return isUpcoming && notPast && (!featured || e.id !== featured.id);
+      });
+  }
+
+  get paginatedUpcomingEvents() {
+    const start = (this.currentPage['Explore'] - 1) * this.pageSize;
+    return this.upcomingEvents.slice(start, start + this.pageSize);
+  }
+
+  get paginatedGoingEvents() {
+    const start = (this.currentPage['Going'] - 1) * this.pageSize;
+    return this.goingEvents.slice(start, start + this.pageSize);
+  }
+
+  get paginatedPastEvents() {
+    const start = (this.currentPage['Past'] - 1) * this.pageSize;
+    return this.pastEvents.slice(start, start + this.pageSize);
+  }
+
+  getTotalPages(tab: string): number {
+    let total = 0;
+    if (tab === 'Explore') total = this.upcomingEvents.length;
+    else if (tab === 'Going') total = this.goingEvents.length;
+    else if (tab === 'Past') total = this.pastEvents.length;
+    return Math.ceil(total / this.pageSize) || 1;
+  }
+
+  getPageNumbers(tab: string): number[] {
+    const total = this.getTotalPages(tab);
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  goToPage(tab: string, page: number): void {
+    const total = this.getTotalPages(tab);
+    if (page >= 1 && page <= total) {
+      this.currentPage[tab] = page;
+    }
   }
 
   get completedEvents() {
@@ -337,5 +412,58 @@ export class EventsComponent implements OnInit {
 
   getDayOfWeek(dateStr: string): string {
     try { return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase(); } catch { return ''; }
+  }
+
+  // --- QR Code Modal ---
+
+  activeQrRegistration: EventRegistration | null = null;
+
+  showQrCode(eventId: number): void {
+    const reg = this.getRegistration(eventId);
+    if (reg?.checkInCode) {
+      this.activeQrRegistration = reg;
+      this.cdr.markForCheck();
+    }
+  }
+
+  closeQrCode(): void {
+    this.activeQrRegistration = null;
+    this.cdr.markForCheck();
+  }
+
+  getQrCodeUrl(code: string): string {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(code)}`;
+  }
+
+  getRegistrationForEvent(eventId: number): EventRegistration | undefined {
+    return this.userRegistrations.find(r => r.eventId === eventId);
+  }
+
+  getRatingForEvent(eventId: number): number {
+    const reg = this.getRegistrationForEvent(eventId);
+    return reg?.rating || 0;
+  }
+
+  rateEvent(eventId: number, rating: number): void {
+    const reg = this.getRegistrationForEvent(eventId);
+    if (!reg || this.ratingLoading.has(eventId)) return;
+
+    this.ratingLoading.add(eventId);
+    this.cdr.markForCheck();
+
+    this.registrationService.rateEvent(reg.id!, rating).subscribe({
+      next: (updated) => {
+        // Update the local registration
+        const idx = this.userRegistrations.findIndex(r => r.id === reg.id);
+        if (idx >= 0) this.userRegistrations[idx] = updated;
+        this.ratingLoading.delete(eventId);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to rate event:', err);
+        this.ratingLoading.delete(eventId);
+        this.cdr.markForCheck();
+      }
+    });
   }
 }
