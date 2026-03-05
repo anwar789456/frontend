@@ -441,6 +441,22 @@ export class TutorCoursesComponent implements OnInit {
     });
   }
 
+  archiveCourse(course: Cours): void {
+    if (!course.id) return;
+    this.courseService.archiveCours(course.id).subscribe({
+      next: () => this.loadCourses(),
+      error: (err) => console.error('Failed to archive course:', err)
+    });
+  }
+
+  unarchiveCourse(course: Cours): void {
+    if (!course.id) return;
+    this.courseService.unarchiveCours(course.id).subscribe({
+      next: () => this.loadCourses(),
+      error: (err) => console.error('Failed to unarchive course:', err)
+    });
+  }
+
   // ── Contenu CRUD (existing courses) ──
 
   openAddContenu(coursId: number): void {
@@ -524,11 +540,11 @@ export class TutorCoursesComponent implements OnInit {
       );
     }
 
-    // Filter by content type presence
-    if (this.activeFilter !== 'all') {
-      courses = courses.filter(c =>
-        c.contenus?.some(ct => ct.contentType === this.activeFilter)
-      );
+    // Filter by archive status
+    if (this.activeFilter === 'archived') {
+      courses = courses.filter(c => c.archived);
+    } else {
+      courses = courses.filter(c => !c.archived);
     }
 
     // Sort

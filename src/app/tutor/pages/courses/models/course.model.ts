@@ -21,6 +21,7 @@ export interface Cours {
   title: string;
   description: string;
   content: string;
+  archived?: boolean;
   image?: ContentFile;
   contenus?: ContenuPedagogique[];
 }

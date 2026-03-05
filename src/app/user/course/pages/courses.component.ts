@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CourseService } from '../services/course.service';
 import { Cours, ContenuPedagogique } from '../models/course.model';
 import { AuthService } from '../../../shared/services/auth.service';
@@ -49,6 +50,9 @@ export class CoursesComponent implements OnInit {
   // View state: null = adventure map, Cours = detail view
   selectedCourse: Cours | null = null;
 
+  // Content viewer state: null = lesson list, ContenuPedagogique = content viewer
+  selectedContenu: ContenuPedagogique | null = null;
+
   // CRUD state
   showCourseForm = false;
   editingCourse: Cours | null = null;
@@ -88,7 +92,8 @@ export class CoursesComponent implements OnInit {
     private courseService: CourseService,
     private authService: AuthService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private sanitizer: DomSanitizer
   ) {}
 
   get isTutor(): boolean {
@@ -121,7 +126,7 @@ export class CoursesComponent implements OnInit {
     this.isLoading = true;
     this.courseService.getAllCours().subscribe({
       next: (data) => {
-        this.courses = data;
+        this.courses = data.filter(c => !c.archived);
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -148,8 +153,54 @@ export class CoursesComponent implements OnInit {
   }
 
   backToMap(): void {
+    if (this.selectedContenu) {
+      this.selectedContenu = null;
+      return;
+    }
     this.selectedCourse = null;
     this.currentContenuPage = 0;
+  }
+
+  openContenu(contenu: ContenuPedagogique): void {
+    this.selectedContenu = contenu;
+    this.cdr.detectChanges();
+  }
+
+  closeContenu(): void {
+    this.selectedContenu = null;
+  }
+
+  getContenuFileUrl(contenu: ContenuPedagogique): SafeResourceUrl | null {
+    if (!contenu.files || contenu.files.length === 0) return null;
+    const url = contenu.files[0].fileUrl;
+    if (!url) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  getRawFileUrl(contenu: ContenuPedagogique): string | null {
+    if (!contenu.files || contenu.files.length === 0) return null;
+    return contenu.files[0].fileUrl ?? null;
+  }
+
+  isVideoType(contenu: ContenuPedagogique): boolean {
+    return contenu.contentType?.toUpperCase() === 'VIDEO';
+  }
+
+  isPdfType(contenu: ContenuPedagogique): boolean {
+    return contenu.contentType?.toUpperCase() === 'PDF';
+  }
+
+  isTextType(contenu: ContenuPedagogique): boolean {
+    return contenu.contentType?.toUpperCase() === 'TEXT';
+  }
+
+  getTextContent(contenu: ContenuPedagogique): string {
+    // For TEXT type, content can come from the first file's URL (if it's raw text stored as a file)
+    // or we display the course content section. Files may also contain a .txt URL.
+    if (contenu.files && contenu.files.length > 0) {
+      return contenu.files[0].fileUrl ?? '';
+    }
+    return '';
   }
 
   getCourseColor(index: number): { bg: string; icon: string } {

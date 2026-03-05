@@ -46,6 +46,14 @@ export class CourseService {
     return this.http.delete<void>(`${this.apiUrl}/cours/delete-cours/${id}`);
   }
 
+  archiveCours(id: number): Observable<Cours> {
+    return this.http.put<Cours>(`${this.apiUrl}/cours/archive/${id}`, {});
+  }
+
+  unarchiveCours(id: number): Observable<Cours> {
+    return this.http.put<Cours>(`${this.apiUrl}/cours/unarchive/${id}`, {});
+  }
+
   generateDescription(title: string): Observable<{ description: string }> {
     return this.http.post<{ description: string }>(this.apiUrl + '/generate-description', { title });
   }

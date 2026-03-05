@@ -33,6 +33,14 @@ export class TutorQuizService {
     return this.http.delete<void>(`${this.apiUrl}/quizzes/delete-quiz/${id}`);
   }
 
+  archiveQuiz(id: number): Observable<Quiz> {
+    return this.http.put<Quiz>(`${this.apiUrl}/quizzes/archive/${id}`, {});
+  }
+
+  unarchiveQuiz(id: number): Observable<Quiz> {
+    return this.http.put<Quiz>(`${this.apiUrl}/quizzes/unarchive/${id}`, {});
+  }
+
   // ── Questions ──
 
   getQuestionsByQuizId(quizId: number): Observable<QuestionQuiz[]> {
@@ -81,6 +89,14 @@ export class TutorQuizService {
 
   deleteStoryQuiz(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/story-quizzes/delete/${id}`);
+  }
+
+  archiveStoryQuiz(id: number): Observable<StoryQuiz> {
+    return this.http.put<StoryQuiz>(`${this.apiUrl}/story-quizzes/archive/${id}`, {});
+  }
+
+  unarchiveStoryQuiz(id: number): Observable<StoryQuiz> {
+    return this.http.put<StoryQuiz>(`${this.apiUrl}/story-quizzes/unarchive/${id}`, {});
   }
 
   getWordBank(storyQuizId: number): Observable<StoryWordBank> {
