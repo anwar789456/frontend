@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 
@@ -8,4 +9,10 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   imports: [RouterOutlet, SidebarComponent],
   templateUrl: './layout.component.html'
 })
-export class LayoutComponent {}
+export class LayoutComponent {
+  constructor(private router: Router) {}
+
+  get isForumsPage(): boolean {
+    return this.router.url.startsWith('/forums');
+  }
+}
