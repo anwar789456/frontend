@@ -1,527 +1,690 @@
 <!-- Onboarding Overlay -->
-<app-onboarding 
-  [steps]="profileOnboardingSteps" 
+<app-onboarding
+  [steps]="profileOnboardingSteps"
   storageKey="minolingo_profile_onboarding">
 </app-onboarding>
 
-<div class="min-h-screen bg-gradient-to-br from-[#fef9f3] via-[#fdf6ed] to-[#fef9f3]">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap');
 
-  <!-- Loading -->
+  .profile-wrap        { font-family: 'Nunito', sans-serif; }
+  .fredoka             { font-family: 'Fredoka One', cursive; letter-spacing: 0.3px; }
+
+  /* Animated gradient background */
+  .kids-bg {
+    background: linear-gradient(135deg, #dbeafe 0%, #fef9c3 20%, #fce7f3 40%, #dcfce7 60%, #ede9fe 80%, #dbeafe 100%);
+    background-size: 300% 300%;
+    animation: bgMove 14s ease infinite;
+  }
+  @keyframes bgMove {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Floating clouds */
+  .cloud-float { animation: cloudDrift 8s ease-in-out infinite; }
+  .cloud-float-2 { animation: cloudDrift 11s ease-in-out infinite; animation-delay: -4s; }
+  @keyframes cloudDrift { 0%,100%{transform:translateY(0) translateX(0);} 50%{transform:translateY(-10px) translateX(6px);} }
+
+  /* Stars twinkle */
+  .twinkle { animation: twinkleAnim 2.5s ease-in-out infinite; }
+  @keyframes twinkleAnim { 0%,100%{opacity:1;transform:scale(1) rotate(0deg);} 50%{opacity:0.3;transform:scale(0.6) rotate(20deg);} }
+
+  /* XP bar animated shimmer */
+  .xp-shimmer {
+    background: linear-gradient(90deg, #f59e0b 0%, #fde68a 40%, #f59e0b 60%, #fbbf24 100%);
+    background-size: 250% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -250% 0; } }
+
+  /* Card pop on hover */
+  .kid-card { transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s; }
+  .kid-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 12px 36px -8px rgba(56,169,243,0.18); }
+
+  /* Stat tile */
+  .stat-tile { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+  .stat-tile:hover { transform: scale(1.07) rotate(-1deg); }
+
+  /* Badge pop */
+  .badge-pop { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; }
+  .badge-pop:hover { transform: scale(1.18) rotate(-6deg); }
+
+  /* Section reveal */
+  .reveal { animation: revealUp 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .d1{animation-delay:0.05s} .d2{animation-delay:0.12s} .d3{animation-delay:0.19s}
+  .d4{animation-delay:0.26s} .d5{animation-delay:0.33s} .d6{animation-delay:0.40s}
+  @keyframes revealUp { from{opacity:0;transform:translateY(22px) scale(0.96);} to{opacity:1;transform:none;} }
+
+  /* Avatar spinning rainbow ring */
+  .rainbow-ring {
+    background: conic-gradient(#38a9f3,#818cf8,#ec4899,#f59e0b,#34d399,#38a9f3);
+    animation: ringRotate 5s linear infinite;
+  }
+  @keyframes ringRotate { to { transform: rotate(360deg); } }
+
+  /* Button bounce */
+  .btn-bounce { transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s; }
+  .btn-bounce:hover:not(:disabled) { transform: translateY(-3px) scale(1.04); }
+  .btn-bounce:active:not(:disabled) { transform: scale(0.97); }
+</style>
+
+<div class="profile-wrap kids-bg min-h-screen relative overflow-x-hidden pb-16">
+
+  <!-- ═══════════ BACKGROUND DECORATIONS ═══════════ -->
+  <!-- Clouds -->
+  <div class="cloud-float absolute top-6 left-6 opacity-50 pointer-events-none select-none">
+    <svg width="130" height="65" viewBox="0 0 130 65" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="65" cy="44" rx="60" ry="23"/><ellipse cx="38" cy="34" rx="30" ry="22"/><ellipse cx="88" cy="30" rx="35" ry="24"/>
+    </svg>
+  </div>
+  <div class="cloud-float-2 absolute top-24 right-10 opacity-35 pointer-events-none select-none">
+    <svg width="100" height="50" viewBox="0 0 100 50" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="34" rx="44" ry="17"/><ellipse cx="28" cy="26" rx="22" ry="17"/><ellipse cx="68" cy="22" rx="26" ry="19"/>
+    </svg>
+  </div>
+  <!-- Twinkling stars -->
+  <span class="twinkle absolute top-10 right-1/3 text-2xl pointer-events-none select-none" style="animation-delay:0s">⭐</span>
+  <span class="twinkle absolute top-36 left-1/4 text-lg pointer-events-none select-none" style="animation-delay:0.8s">✨</span>
+  <span class="twinkle absolute bottom-48 right-1/4 text-xl pointer-events-none select-none" style="animation-delay:1.5s">⭐</span>
+  <span class="twinkle absolute top-60 right-16 text-base pointer-events-none select-none" style="animation-delay:0.4s">🌟</span>
+  <span class="twinkle absolute bottom-64 left-10 text-lg pointer-events-none select-none" style="animation-delay:1.1s">✨</span>
+  <!-- Confetti dots -->
+  <div class="absolute top-44 right-8 w-4 h-4 rounded-full bg-pink-300/50 pointer-events-none"></div>
+  <div class="absolute top-72 left-8 w-5 h-5 rounded-full bg-sky-300/50 pointer-events-none"></div>
+  <div class="absolute bottom-40 right-1/3 w-4 h-4 rounded-full bg-green-300/50 pointer-events-none"></div>
+
+  <!-- ═══════════ LOADING ═══════════ -->
   @if (isLoading) {
-  <div class="flex flex-col items-center justify-center h-screen gap-4">
-    <div class="w-14 h-14 rounded-full border-4 border-[#38a9f3]/20 border-t-[#38a9f3] animate-spin"></div>
-    <p class="text-[#536471] text-[15px] font-medium">Loading your profile...</p>
-  </div>
-
-  } @else if (user) {
-
-  <!-- Toast messages -->
-  @if (successMessage) {
-  <div class="fixed top-5 right-5 z-50 flex items-center gap-3 bg-white border border-green-200 text-green-700 text-[14px] px-5 py-3.5 rounded-2xl shadow-lg">
-    <svg class="w-5 h-5 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    <span class="font-medium">{{ successMessage }}</span>
-  </div>
-  }
-  @if (passwordSuccessMessage) {
-  <div class="fixed top-5 right-5 z-50 flex items-center gap-3 bg-white border border-green-200 text-green-700 text-[14px] px-5 py-3.5 rounded-2xl shadow-lg">
-    <svg class="w-5 h-5 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    <span class="font-medium">{{ passwordSuccessMessage }}</span>
-  </div>
-  }
-  @if (errorMessage) {
-  <div class="fixed top-5 right-5 z-50 flex items-center gap-3 bg-white border border-red-200 text-red-600 text-[14px] px-5 py-3.5 rounded-2xl shadow-lg">
-    <svg class="w-5 h-5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-    <span class="font-medium">{{ errorMessage }}</span>
-  </div>
+    <div class="flex flex-col items-center justify-center min-h-screen gap-5">
+      <div class="w-24 h-24 rounded-3xl bg-white shadow-xl flex items-center justify-center" style="animation: cloudDrift 1.5s ease-in-out infinite;">
+        <img src="/mino_images/nino.png" alt="Loading" class="w-16 h-16 object-contain" onerror="this.style.display='none'" />
+        <span class="text-5xl" style="display:none">🦉</span>
+      </div>
+      <p class="fredoka text-2xl text-[#38a9f3]">Loading your adventure...</p>
+      <div class="flex gap-2">
+        <div class="w-3 h-3 rounded-full bg-[#38a9f3] animate-bounce" style="animation-delay:0s"></div>
+        <div class="w-3 h-3 rounded-full bg-pink-400 animate-bounce" style="animation-delay:0.15s"></div>
+        <div class="w-3 h-3 rounded-full bg-amber-400 animate-bounce" style="animation-delay:0.3s"></div>
+      </div>
+    </div>
   }
 
-  <!-- Hero Banner -->
-  <div class="relative overflow-hidden bg-gradient-to-br from-[#38a9f3] via-[#2196e3] to-[#1565c0]">
-    <!-- Animated blob decorations -->
-    <div class="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/5 animate-pulse"></div>
-    <div class="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-white/5 animate-pulse" style="animation-delay: 0.5s;"></div>
-    <div class="absolute top-1/2 right-1/4 w-32 h-32 rounded-full bg-white/5 animate-pulse" style="animation-delay: 1s;"></div>
-    
-    <!-- Floating stars -->
-    <div class="absolute top-8 right-[15%] w-6 h-6 text-yellow-300/60 animate-bounce" style="animation-duration: 2s;">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-    </div>
-    <div class="absolute bottom-12 right-[10%] w-4 h-4 text-yellow-200/50 animate-pulse" style="animation-delay: 0.3s;">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-    </div>
-    <div class="absolute top-16 left-[20%] w-5 h-5 text-yellow-300/40 animate-bounce" style="animation-duration: 2.5s; animation-delay: 0.7s;">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-    </div>
+  @if (!isLoading && user) {
 
-    <!-- Mascot (hidden on small screens) -->
-    <div class="hidden lg:block absolute right-8 bottom-4 w-28 h-28 animate-bounce" style="animation-duration: 3s;">
-      <img src="/mino_images/nino.png" alt="MinoLingo Mascot" class="w-full h-full object-contain drop-shadow-lg opacity-90" />
-    </div>
-
-    <div class="relative max-w-5xl mx-auto px-6 py-10">
-      <div class="flex flex-col sm:flex-row items-center sm:items-end gap-6">
-        <!-- Avatar -->
-        <div class="relative shrink-0">
-          <div class="w-28 h-28 rounded-2xl border-4 border-white/40 overflow-hidden shadow-xl bg-white/20">
-            <img [src]="displayAvatar" [alt]="user.name" class="w-full h-full object-cover" (error)="onAvatarError($event)" />
-          </div>
-          <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 border-2 border-white rounded-full shadow"></span>
-        </div>
-
-        <!-- Identity -->
-        <div class="flex-1 text-center sm:text-left">
-          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-            <h1 class="text-[26px] font-extrabold text-white leading-tight">{{ user.name }}</h1>
-            @if (user.role === 'ADMIN') {
-            <span class="inline-flex items-center gap-1 bg-yellow-400/20 border border-yellow-300/40 text-yellow-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-              Admin
-            </span>
-            }
-            @if (user.role === 'TUTEUR') {
-            <span class="inline-flex items-center gap-1 bg-purple-400/20 border border-purple-300/40 text-purple-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-              Tutor
-            </span>
-            }
-            @if (user.role === 'ETUDIANT') {
-            <span class="inline-flex items-center gap-1 bg-cyan-400/20 border border-cyan-300/40 text-cyan-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347"/></svg>
-              Student
-            </span>
-            }
-          </div>
-          <p class="text-white/75 text-[14px]">&#64;{{ user.username }}</p>
-          <p class="text-white/60 text-[13px] mt-0.5">{{ user.email }}</p>
-          @if (user.joinDate) {
-          <p class="text-white/50 text-[12px] mt-1.5 flex items-center gap-1 justify-center sm:justify-start">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5"/></svg>
-            Joined {{ user.joinDate }}
-          </p>
-          }
-        </div>
-
-        <!-- Edit button -->
-        @if (isStudent) {
-        <button (click)="toggleEdit()"
-          class="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-[14px] transition-all duration-200"
-          [class.bg-white]="!isEditing" [class.text-[#38a9f3]]="!isEditing" [class.hover:bg-gray-50]="!isEditing" [class.shadow-lg]="!isEditing"
-          [class.bg-white/20]="isEditing" [class.text-white]="isEditing" [class.border]="isEditing" [class.border-white/30]="isEditing">
-          @if (!isEditing) {
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-          Edit Profile
-          } @else {
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          Close
-          }
-        </button>
-        }
+    <!-- ═══════════ TOAST MESSAGES ═══════════ -->
+    @if (successMessage) {
+      <div class="fixed top-5 right-5 z-50 flex items-center gap-3 bg-white border-2 border-green-200 text-green-700 text-[14px] px-5 py-3.5 rounded-2xl shadow-xl">
+        <span class="text-xl">🎉</span><span class="font-bold">{{ successMessage }}</span>
       </div>
-
-      <!-- Student stats bar -->
-      @if (user.xp != null || user.streak != null || user.coins != null) {
-      <div class="mt-8 grid grid-cols-3 gap-3 sm:gap-4 max-w-sm sm:max-w-none">
-        <div class="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 text-center border border-white/15">
-          <p class="text-[22px] font-extrabold text-white">{{ user.xp || 0 }}</p>
-          <p class="text-[11px] text-white/60 font-medium uppercase tracking-wide mt-0.5">Total XP</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 text-center border border-white/15">
-          <p class="text-[22px] font-extrabold text-white">{{ user.streak || 0 }}</p>
-          <p class="text-[11px] text-white/60 font-medium uppercase tracking-wide mt-0.5">Day Streak</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 text-center border border-white/15">
-          <p class="text-[22px] font-extrabold text-white">{{ user.coins || 0 }}</p>
-          <p class="text-[11px] text-white/60 font-medium uppercase tracking-wide mt-0.5">Coins</p>
-        </div>
+    }
+    @if (passwordSuccessMessage) {
+      <div class="fixed top-5 right-5 z-50 flex items-center gap-3 bg-white border-2 border-green-200 text-green-700 text-[14px] px-5 py-3.5 rounded-2xl shadow-xl">
+        <span class="text-xl">🔐</span><span class="font-bold">{{ passwordSuccessMessage }}</span>
       </div>
-      }
-    </div>
-  </div>
-
-  <!-- Edit Profile Panel -->
-  @if (isEditing && isStudent) {
-  <div class="max-w-5xl mx-auto px-6 -mt-1">
-    <div class="bg-white rounded-2xl shadow-lg shadow-[#38a9f3]/10 border border-[#e8f4fe] p-6 mb-6">
-      <h3 class="text-[17px] font-bold text-[#0f1419] mb-6 flex items-center gap-2">
-        <div class="w-7 h-7 bg-[#e8f4fe] rounded-lg flex items-center justify-center">
-          <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-        </div>
-        Edit Your Profile
-      </h3>
-
-      <div class="flex flex-col sm:flex-row items-start gap-8">
-        <!-- Avatar Upload -->
-        <div class="flex flex-col items-center gap-3 mx-auto sm:mx-0">
-          <div class="relative group cursor-pointer" (click)="avatarInput.click()">
-            <div class="w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#d1d9e0] bg-[#f0f4f8]">
-              <img [src]="avatarPreview || displayAvatar" alt="Avatar preview" class="w-full h-full object-cover" />
-            </div>
-            <div class="absolute inset-0 rounded-2xl bg-[#38a9f3]/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
-            </div>
-          </div>
-          <input #avatarInput type="file" accept="image/*" class="hidden" (change)="onAvatarSelected($event)" />
-          <span class="text-[12px] text-[#9ca3af] font-medium">Click to change photo</span>
-        </div>
-
-        <!-- Fields -->
-        <div class="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-[13px] font-semibold text-[#0f1419] mb-1.5">Full Name</label>
-            <input type="text" [(ngModel)]="editName" placeholder="Enter your full name"
-              class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#d1d9e0] rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20 focus:bg-white" />
-          </div>
-          <div>
-            <label class="block text-[13px] font-semibold text-[#0f1419] mb-1.5">Username</label>
-            <input type="text" [(ngModel)]="editUsername" placeholder="your_username"
-              class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#d1d9e0] rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20 focus:bg-white" />
-          </div>
-        </div>
+    }
+    @if (errorMessage) {
+      <div class="fixed top-5 right-5 z-50 flex items-center gap-3 bg-white border-2 border-red-200 text-red-600 text-[14px] px-5 py-3.5 rounded-2xl shadow-xl">
+        <span class="text-xl">😬</span><span class="font-bold">{{ errorMessage }}</span>
       </div>
+    }
 
-      <!-- Change Password Section -->
-      <div class="mt-6 pt-5 border-t border-[#eef1f4]">
-        <button (click)="togglePasswordSection()" type="button"
-          class="flex items-center gap-2 text-[14px] font-semibold transition-colors"
-          [class.text-[#38a9f3]]="!showPasswordSection" [class.text-[#0f1419]]="showPasswordSection">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-          @if (!showPasswordSection) { Change Password } @else { Hide Password Section }
-        </button>
+    <div class="max-w-2xl mx-auto px-4 pt-8 relative z-10">
 
-        @if (showPasswordSection) {
-        <div class="mt-4 space-y-4">
-          @if (passwordErrorMessage) {
-          <div class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-[13px] px-4 py-2.5 rounded-xl">
-            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-            {{ passwordErrorMessage }}
-          </div>
-          }
+      <!-- ═══════════════════════════════════ -->
+      <!-- HERO CARD                           -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="reveal d1 bg-white/85 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-white p-6 mb-5 relative overflow-hidden">
+        <!-- Rainbow top stripe -->
+        <div class="absolute top-0 left-0 right-0 h-2 rounded-t-3xl bg-gradient-to-r from-[#38a9f3] via-[#818cf8] via-[#ec4899] via-[#f59e0b] to-[#34d399]"></div>
 
-          <div>
-            <label class="block text-[13px] font-semibold text-[#0f1419] mb-1.5">Current Password</label>
-            <div class="relative">
-              <input [type]="showCurrentPassword ? 'text' : 'password'" [(ngModel)]="currentPassword"
-                (blur)="currentPasswordTouched = true" placeholder="Enter current password"
-                class="w-full px-4 py-2.5 bg-[#f7f9fa] border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20 focus:bg-white"
-                [class.border-red-400]="currentPasswordError" [class.border-[#d1d9e0]]="!currentPasswordError" />
-              <button type="button" (click)="showCurrentPassword = !showCurrentPassword"
-                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#9ca3af] hover:text-[#536471]">
-                @if (showCurrentPassword) {
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
-                } @else {
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                }
-              </button>
-            </div>
-            @if (currentPasswordError) { <p class="text-red-500 text-[12px] mt-1">{{ currentPasswordError }}</p> }
-          </div>
+        <!-- Mascot watermark -->
+        <div class="absolute right-4 bottom-0 w-24 h-24 opacity-10 pointer-events-none select-none">
+          <img src="/mino_images/nino.png" alt="" class="w-full h-full object-contain" />
+        </div>
 
-          <div>
-            <label class="block text-[13px] font-semibold text-[#0f1419] mb-1.5">New Password</label>
-            <div class="relative">
-              <input [type]="showNewPassword ? 'text' : 'password'" [(ngModel)]="newPassword"
-                (blur)="newPasswordTouched = true" placeholder="Enter new password (min 6 chars)"
-                class="w-full px-4 py-2.5 bg-[#f7f9fa] border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20 focus:bg-white"
-                [class.border-red-400]="newPasswordError" [class.border-[#d1d9e0]]="!newPasswordError" />
-              <button type="button" (click)="showNewPassword = !showNewPassword"
-                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#9ca3af] hover:text-[#536471]">
-                @if (showNewPassword) {
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
-                } @else {
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                }
-              </button>
-            </div>
-            @if (newPasswordError) { <p class="text-red-500 text-[12px] mt-1">{{ newPasswordError }}</p> }
-            @if (newPassword) {
-            <div class="mt-2">
-              <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-300" [ngClass]="newPasswordStrength.color" [style.width.%]="newPasswordStrength.percent"></div>
+        <div class="flex items-center gap-5 mt-1">
+
+          <!-- Avatar with rotating rainbow ring -->
+          <div class="relative shrink-0">
+            <div class="rainbow-ring w-[88px] h-[88px] rounded-full p-[3px] shrink-0">
+              <div class="w-full h-full rounded-full bg-white p-[3px]">
+                <img [src]="displayAvatar" [alt]="user.name"
+                  (error)="onAvatarError($event)"
+                  class="w-full h-full rounded-full object-cover" />
               </div>
-              <p class="text-[11px] mt-1 font-medium" [class.text-red-500]="newPasswordStrength.label === 'Weak'" [class.text-orange-400]="newPasswordStrength.label === 'Medium'" [class.text-green-500]="newPasswordStrength.label === 'Strong'">{{ newPasswordStrength.label }}</p>
             </div>
+            <!-- Online dot -->
+            <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full shadow-sm"></div>
+          </div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-0.5">
+              <h1 class="fredoka text-[24px] text-[#1e293b] leading-tight">{{ user.name }}</h1>
+              <!-- Role badge -->
+              @if (user.role === 'ETUDIANT') {
+                <span class="inline-flex items-center gap-1 text-[11px] font-black px-3 py-1 rounded-full bg-gradient-to-r from-[#38a9f3] to-[#818cf8] text-white shadow-sm shadow-blue-200">
+                  🎓 Student
+                </span>
+              }
+              @if (user.role === 'TUTEUR') {
+                <span class="inline-flex items-center gap-1 text-[11px] font-black px-3 py-1 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 text-white shadow-sm">
+                  📚 Tutor
+                </span>
+              }
+              @if (user.role === 'ADMIN') {
+                <span class="inline-flex items-center gap-1 text-[11px] font-black px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-sm">
+                  ⭐ Admin
+                </span>
+              }
+            </div>
+            <p class="text-[13px] font-semibold text-[#64748b]">&#64;{{ user.username }}</p>
+
+            <!-- XP progress bar (students) -->
+            @if (isStudent && user.xp != null) {
+              <div class="mt-2.5">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[11px] font-bold text-[#64748b]">⚡ Level Progress</span>
+                  <span class="text-[11px] font-black text-amber-500">{{ user.xp || 0 }} XP</span>
+                </div>
+                <div class="w-full h-3.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200 shadow-inner">
+                  <div class="xp-shimmer h-full rounded-full transition-all duration-1000"
+                    [style.width]="((user.xp || 0) % 500) / 5 + '%'">
+                  </div>
+                </div>
+              </div>
             }
           </div>
 
-          <div>
-            <label class="block text-[13px] font-semibold text-[#0f1419] mb-1.5">Confirm New Password</label>
-            <div class="relative">
-              <input [type]="showConfirmNewPassword ? 'text' : 'password'" [(ngModel)]="confirmNewPassword"
-                (blur)="confirmNewPasswordTouched = true" placeholder="Re-enter new password"
-                class="w-full px-4 py-2.5 bg-[#f7f9fa] border rounded-xl text-[14px] text-[#0f1419] placeholder-[#c4c9cf] outline-none transition-all focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/20 focus:bg-white"
-                [class.border-red-400]="confirmNewPasswordError" [class.border-[#d1d9e0]]="!confirmNewPasswordError" />
-              <button type="button" (click)="showConfirmNewPassword = !showConfirmNewPassword"
-                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#9ca3af] hover:text-[#536471]">
-                @if (showConfirmNewPassword) {
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
-                } @else {
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                }
+          <!-- Edit button (students only) -->
+          @if (isStudent) {
+            <button (click)="toggleEdit()"
+              class="btn-bounce shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-md transition-all duration-200"
+              [class.bg-gradient-to-br]="!isEditing"
+              [class.from-[#38a9f3]]="!isEditing"
+              [class.to-[#818cf8]]="!isEditing"
+              [class.text-white]="!isEditing"
+              [class.shadow-blue-200]="!isEditing"
+              [class.bg-red-100]="isEditing"
+              [class.text-red-500]="isEditing">
+              @if (!isEditing) {
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+              } @else {
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- STATS TILES (Students)              -->
+      <!-- ═══════════════════════════════════ -->
+      @if (isStudent) {
+        <div class="reveal d2 grid grid-cols-4 gap-3 mb-5">
+          <!-- XP -->
+          <div class="stat-tile bg-white/85 backdrop-blur-sm rounded-2xl p-4 text-center border-2 border-white shadow-md">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mx-auto mb-2">
+              <span class="text-xl">⚡</span>
+            </div>
+            <p class="fredoka text-[22px] text-[#f59e0b] leading-none">{{ user.xp || 0 }}</p>
+            <p class="text-[11px] font-bold text-[#94a3b8] mt-1">Total XP</p>
+          </div>
+          <!-- Streak -->
+          <div class="stat-tile bg-white/85 backdrop-blur-sm rounded-2xl p-4 text-center border-2 border-white shadow-md">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center mx-auto mb-2">
+              <span class="text-xl">🔥</span>
+            </div>
+            <p class="fredoka text-[22px] text-orange-500 leading-none">{{ user.streak || 0 }}</p>
+            <p class="text-[11px] font-bold text-[#94a3b8] mt-1">Day Streak</p>
+          </div>
+          <!-- Coins -->
+          <div class="stat-tile bg-white/85 backdrop-blur-sm rounded-2xl p-4 text-center border-2 border-white shadow-md">
+            <div class="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center mx-auto mb-2">
+              <span class="text-xl">🪙</span>
+            </div>
+            <p class="fredoka text-[22px] text-yellow-500 leading-none">{{ user.coins || 0 }}</p>
+            <p class="text-[11px] font-bold text-[#94a3b8] mt-1">Coins</p>
+          </div>
+          <!-- Level -->
+          <div class="stat-tile bg-white/85 backdrop-blur-sm rounded-2xl p-4 text-center border-2 border-white shadow-md">
+            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-2">
+              <span class="text-xl">🌟</span>
+            </div>
+            <p class="fredoka text-[16px] text-green-500 leading-none truncate">{{ user.level || 'Beginner' }}</p>
+            <p class="text-[11px] font-bold text-[#94a3b8] mt-1">Level</p>
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- EDIT PROFILE PANEL                  -->
+      <!-- ═══════════════════════════════════ -->
+      @if (isEditing && isStudent) {
+        <div class="reveal d2 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-[#38a9f3]/25 p-6 mb-5">
+          <h2 class="fredoka text-[20px] text-[#1e293b] mb-5 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#38a9f3] to-[#818cf8] flex items-center justify-center shadow-md">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+            </span>
+            Edit Your Profile
+          </h2>
+
+          <!-- Avatar upload row -->
+          <div class="flex items-center gap-5 mb-5 p-4 bg-[#f0f9ff] rounded-2xl border-2 border-dashed border-[#bae6fd]">
+            <div class="relative group cursor-pointer" (click)="avatarInput.click()">
+              <div class="w-20 h-20 rounded-2xl overflow-hidden border-3 border-[#38a9f3]/40 shadow-md">
+                <img [src]="avatarPreview || displayAvatar" alt="Avatar preview" class="w-full h-full object-cover" />
+              </div>
+              <div class="absolute inset-0 rounded-2xl bg-[#38a9f3]/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span class="text-2xl">📸</span>
+              </div>
+            </div>
+            <input #avatarInput type="file" accept="image/*" class="hidden" (change)="onAvatarSelected($event)" />
+            <div>
+              <p class="text-[13px] font-bold text-[#1e293b]">Profile Photo</p>
+              <p class="text-[12px] text-[#94a3b8] mb-2">Click to change your photo</p>
+              <button type="button" (click)="avatarInput.click()"
+                class="btn-bounce inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#38a9f3] text-white text-[12px] font-bold rounded-xl shadow-sm shadow-blue-200">
+                📷 Choose Photo
               </button>
             </div>
-            @if (confirmNewPasswordError) { <p class="text-red-500 text-[12px] mt-1">{{ confirmNewPasswordError }}</p> }
           </div>
 
-          <div class="flex justify-end">
-            <button (click)="changePassword()" [disabled]="isChangingPassword || !isPasswordFormValid" type="button"
-              class="px-5 py-2.5 rounded-xl bg-orange-500 text-white text-[14px] font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center gap-2 shadow-md shadow-orange-500/30">
-              @if (isChangingPassword) {
-              <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              Changing...
+          <!-- Name & Username -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            <div>
+              <label class="block text-[13px] font-bold text-[#475569] mb-1.5">👤 Full Name</label>
+              <input type="text" [(ngModel)]="editName" placeholder="Your name"
+                class="w-full px-4 py-3 bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-2xl text-[14px] font-semibold text-[#1e293b] placeholder-[#cbd5e1] outline-none transition-all focus:border-[#38a9f3] focus:bg-white focus:ring-4 focus:ring-[#38a9f3]/10" />
+            </div>
+            <div>
+              <label class="block text-[13px] font-bold text-[#475569] mb-1.5">🏷️ Username</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8] font-bold">@</span>
+                <input type="text" [(ngModel)]="editUsername" placeholder="username"
+                  class="w-full pl-8 pr-4 py-3 bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-2xl text-[14px] font-semibold text-[#1e293b] placeholder-[#cbd5e1] outline-none transition-all focus:border-[#38a9f3] focus:bg-white focus:ring-4 focus:ring-[#38a9f3]/10" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Password section -->
+          <div class="border-t-2 border-dashed border-[#e2e8f0] pt-4">
+            <button (click)="togglePasswordSection()" type="button"
+              class="btn-bounce w-full flex items-center justify-between px-4 py-3 rounded-2xl border-2 text-[13px] font-bold transition-all"
+              [class.border-[#38a9f3]]="showPasswordSection" [class.bg-[#eff6ff]]="showPasswordSection" [class.text-[#38a9f3]]="showPasswordSection"
+              [class.border-dashed]="!showPasswordSection" [class.border-[#e2e8f0]]="!showPasswordSection" [class.text-[#94a3b8]]="!showPasswordSection">
+              <span class="flex items-center gap-2">🔒 Change Password</span>
+              <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showPasswordSection" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
+
+            @if (showPasswordSection) {
+              <div class="mt-4 space-y-4 p-4 bg-[#f8fafc] rounded-2xl border-2 border-[#e2e8f0]">
+                @if (passwordErrorMessage) {
+                  <div class="flex items-center gap-2 bg-red-50 border-2 border-red-200 text-red-600 text-[13px] px-4 py-2.5 rounded-xl font-semibold">
+                    <span>😬</span> {{ passwordErrorMessage }}
+                  </div>
+                }
+                <!-- Current password -->
+                <div>
+                  <label class="block text-[13px] font-bold text-[#475569] mb-1.5">Current Password</label>
+                  <div class="relative">
+                    <input [type]="showCurrentPassword ? 'text' : 'password'" [(ngModel)]="currentPassword"
+                      (blur)="currentPasswordTouched = true" placeholder="Enter current password"
+                      class="w-full px-4 py-2.5 bg-white border-2 rounded-xl text-[14px] text-[#1e293b] placeholder-[#cbd5e1] outline-none transition-all focus:border-[#38a9f3] focus:ring-4 focus:ring-[#38a9f3]/10"
+                      [class.border-red-300]="currentPasswordError" [class.border-[#e2e8f0]]="!currentPasswordError" />
+                    <button type="button" (click)="showCurrentPassword = !showCurrentPassword"
+                      class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#94a3b8]">
+                      @if (showCurrentPassword) {
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                      } @else {
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      }
+                    </button>
+                  </div>
+                  @if (currentPasswordError) { <p class="text-red-500 text-[12px] mt-1 font-semibold">{{ currentPasswordError }}</p> }
+                </div>
+                <!-- New password -->
+                <div>
+                  <label class="block text-[13px] font-bold text-[#475569] mb-1.5">New Password</label>
+                  <div class="relative">
+                    <input [type]="showNewPassword ? 'text' : 'password'" [(ngModel)]="newPassword"
+                      (blur)="newPasswordTouched = true" placeholder="At least 6 characters"
+                      class="w-full px-4 py-2.5 bg-white border-2 rounded-xl text-[14px] text-[#1e293b] placeholder-[#cbd5e1] outline-none transition-all focus:border-[#38a9f3] focus:ring-4 focus:ring-[#38a9f3]/10"
+                      [class.border-red-300]="newPasswordError" [class.border-[#e2e8f0]]="!newPasswordError" />
+                    <button type="button" (click)="showNewPassword = !showNewPassword"
+                      class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#94a3b8]">
+                      @if (showNewPassword) {
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                      } @else {
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      }
+                    </button>
+                  </div>
+                  @if (newPasswordError) { <p class="text-red-500 text-[12px] mt-1 font-semibold">{{ newPasswordError }}</p> }
+                  @if (newPassword) {
+                    <div class="mt-2">
+                      <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-300" [ngClass]="newPasswordStrength.color" [style.width.%]="newPasswordStrength.percent"></div>
+                      </div>
+                      <p class="text-[11px] mt-1 font-bold"
+                        [class.text-red-500]="newPasswordStrength.label==='Weak'"
+                        [class.text-orange-400]="newPasswordStrength.label==='Medium'"
+                        [class.text-green-500]="newPasswordStrength.label==='Strong'">
+                        {{ newPasswordStrength.label }}
+                      </p>
+                    </div>
+                  }
+                </div>
+                <!-- Confirm password -->
+                <div>
+                  <label class="block text-[13px] font-bold text-[#475569] mb-1.5">Confirm New Password</label>
+                  <div class="relative">
+                    <input [type]="showConfirmNewPassword ? 'text' : 'password'" [(ngModel)]="confirmNewPassword"
+                      (blur)="confirmNewPasswordTouched = true" placeholder="Re-enter new password"
+                      class="w-full px-4 py-2.5 bg-white border-2 rounded-xl text-[14px] text-[#1e293b] placeholder-[#cbd5e1] outline-none transition-all focus:border-[#38a9f3] focus:ring-4 focus:ring-[#38a9f3]/10"
+                      [class.border-red-300]="confirmNewPasswordError" [class.border-[#e2e8f0]]="!confirmNewPasswordError" />
+                    <button type="button" (click)="showConfirmNewPassword = !showConfirmNewPassword"
+                      class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#94a3b8]">
+                      @if (showConfirmNewPassword) {
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                      } @else {
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      }
+                    </button>
+                  </div>
+                  @if (confirmNewPasswordError) { <p class="text-red-500 text-[12px] mt-1 font-semibold">{{ confirmNewPasswordError }}</p> }
+                </div>
+                <div class="flex justify-end">
+                  <button (click)="changePassword()" [disabled]="isChangingPassword || !isPasswordFormValid" type="button"
+                    class="btn-bounce px-5 py-2.5 rounded-2xl bg-gradient-to-r from-orange-400 to-pink-400 text-white text-[13px] font-black disabled:opacity-50 flex items-center gap-2 shadow-md shadow-orange-200">
+                    @if (isChangingPassword) {
+                      <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                      Changing...
+                    } @else {
+                      🔐 Change Password
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Save/Cancel buttons -->
+          <div class="flex justify-end gap-3 mt-5 pt-4 border-t-2 border-dashed border-[#e2e8f0]">
+            <button (click)="cancelEdit()" [disabled]="isSaving"
+              class="btn-bounce px-5 py-2.5 rounded-2xl border-2 border-[#e2e8f0] text-[#64748b] text-[14px] font-bold hover:bg-[#f1f5f9] transition-colors disabled:opacity-50">
+              Cancel
+            </button>
+            <button (click)="saveProfile()" [disabled]="isSaving"
+              class="btn-bounce px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[#38a9f3] to-[#818cf8] text-white text-[14px] font-black disabled:opacity-60 flex items-center gap-2 shadow-lg shadow-blue-200">
+              @if (isSaving) {
+                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                Saving...
               } @else {
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-              Change Password
+                ✨ Save Changes
               }
             </button>
           </div>
         </div>
-        }
-      </div>
+      }
 
-      <!-- Action Buttons -->
-      <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-[#eef1f4]">
-        <button (click)="cancelEdit()" [disabled]="isSaving" class="px-5 py-2.5 rounded-xl border border-[#d1d9e0] text-[#536471] text-[14px] font-semibold hover:bg-[#f7f9fa] transition-colors disabled:opacity-50">Cancel</button>
-        <button (click)="saveProfile()" [disabled]="isSaving" class="px-6 py-2.5 rounded-xl bg-[#38a9f3] text-white text-[14px] font-semibold hover:bg-[#2196e3] transition-colors disabled:opacity-60 flex items-center gap-2 shadow-md shadow-[#38a9f3]/30">
-          @if (isSaving) {
-          <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-          Saving...
-          } @else {
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          Save Changes
-          }
-        </button>
-      </div>
-    </div>
-  </div>
-  }
-
-  <!-- Content Grid -->
-  <div class="max-w-5xl mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- LEFT COLUMN -->
-    <div class="lg:col-span-2 space-y-5">
-      <!-- Personal Information -->
-      <div class="bg-white rounded-2xl border border-[#eef1f4] shadow-sm p-6">
-        <h2 class="text-[15px] font-bold text-[#0f1419] mb-5 flex items-center gap-2">
-          <div class="w-7 h-7 bg-[#e8f4fe] rounded-lg flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+      <!-- ═══════════════════════════════════ -->
+      <!-- BADGES & ACHIEVEMENTS (Students)    -->
+      <!-- ═══════════════════════════════════ -->
+      @if (isStudent) {
+        <div class="reveal d3 bg-white/85 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white p-6 mb-5">
+          <h2 class="fredoka text-[20px] text-[#1e293b] mb-5 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center text-white shadow-md shadow-amber-200">🏆</span>
+            Badges &amp; Achievements
+          </h2>
+          <div class="flex gap-4 flex-wrap">
+            <!-- Badge: First Login -->
+            <div class="badge-pop flex flex-col items-center gap-1.5">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center shadow-lg shadow-sky-200 text-3xl">🚀</div>
+              <span class="text-[11px] font-bold text-[#64748b] text-center">First Login</span>
+            </div>
+            <!-- Badge: Streak 7 days -->
+            <div class="badge-pop flex flex-col items-center gap-1.5">
+              @if ((user.streak || 0) >= 7) {
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg shadow-orange-200 text-3xl">🔥</div>
+              } @else {
+                <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl opacity-40 border-2 border-dashed border-gray-300">🔥</div>
+              }
+              <span class="text-[11px] font-bold text-center" [class.text-[#64748b]]="(user.streak||0)>=7" [class.text-[#cbd5e1]]="(user.streak||0)<7">Week Streak</span>
+            </div>
+            <!-- Badge: 100 XP -->
+            <div class="badge-pop flex flex-col items-center gap-1.5">
+              @if ((user.xp || 0) >= 100) {
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-200 text-3xl">⭐</div>
+              } @else {
+                <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl opacity-40 border-2 border-dashed border-gray-300">⭐</div>
+              }
+              <span class="text-[11px] font-bold text-center" [class.text-[#64748b]]="(user.xp||0)>=100" [class.text-[#cbd5e1]]="(user.xp||0)<100">100 XP Club</span>
+            </div>
+            <!-- Badge: Coin Collector -->
+            <div class="badge-pop flex flex-col items-center gap-1.5">
+              @if ((user.coins || 0) >= 50) {
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-200 text-3xl">🪙</div>
+              } @else {
+                <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl opacity-40 border-2 border-dashed border-gray-300">🪙</div>
+              }
+              <span class="text-[11px] font-bold text-center" [class.text-[#64748b]]="(user.coins||0)>=50" [class.text-[#cbd5e1]]="(user.coins||0)<50">Coin Collector</span>
+            </div>
+            <!-- Badge: Scholar -->
+            <div class="badge-pop flex flex-col items-center gap-1.5">
+              <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl opacity-40 border-2 border-dashed border-gray-300">📚</div>
+              <span class="text-[11px] font-bold text-[#cbd5e1] text-center">Scholar</span>
+            </div>
           </div>
-          Personal Information
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- LEARNING SUMMARY (Students)         -->
+      <!-- ═══════════════════════════════════ -->
+      @if (isStudent && user.language) {
+        <div class="reveal d4 bg-gradient-to-br from-[#38a9f3] to-[#818cf8] rounded-3xl shadow-xl p-6 mb-5 relative overflow-hidden">
+          <!-- Decorative circles -->
+          <div class="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10 pointer-events-none"></div>
+          <div class="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/10 pointer-events-none"></div>
+
+          <h2 class="fredoka text-[20px] text-white mb-4 flex items-center gap-2 relative">
+            <span>📖</span> Learning Summary
+          </h2>
+          <div class="grid grid-cols-3 gap-3 relative">
+            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/30">
+              <p class="text-[10px] font-bold text-white/70 uppercase tracking-wide mb-1">Language</p>
+              <p class="fredoka text-[18px] text-white">{{ user.language }}</p>
+            </div>
+            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/30">
+              <p class="text-[10px] font-bold text-white/70 uppercase tracking-wide mb-1">Daily Goal</p>
+              <p class="fredoka text-[18px] text-amber-300">80%</p>
+            </div>
+            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/30">
+              <p class="text-[10px] font-bold text-white/70 uppercase tracking-wide mb-1">Level</p>
+              <p class="fredoka text-[15px] text-white truncate">{{ user.level || 'Beginner' }}</p>
+            </div>
+          </div>
+          <!-- XP Progress -->
+          <div class="mt-4 relative">
+            <div class="flex justify-between text-[11px] text-white/70 font-bold mb-1.5">
+              <span>⚡ XP Progress</span>
+              <span>{{ (user.xp || 0) % 500 }} / 500 XP</span>
+            </div>
+            <div class="h-3 bg-white/25 rounded-full overflow-hidden">
+              <div class="h-full bg-white rounded-full transition-all duration-1000" [style.width]="((user.xp || 0) % 500) / 5 + '%'"></div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PERSONAL INFORMATION                -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="reveal d4 bg-white/85 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white p-6 mb-5">
+        <h2 class="fredoka text-[20px] text-[#1e293b] mb-5 flex items-center gap-2">
+          <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#38a9f3] to-sky-400 flex items-center justify-center text-white shadow-md shadow-sky-200">👤</span>
+          Personal Info
         </h2>
-        <div class="divide-y divide-[#f3f5f7]">
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Full Name</span>
-            <span class="text-[14px] font-semibold text-[#0f1419]">{{ user.name }}</span>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl hover:bg-[#eff6ff] transition-colors">
+            <span class="text-[13px] font-bold text-[#64748b]">Full Name</span>
+            <span class="text-[14px] font-black text-[#1e293b]">{{ user.name }}</span>
           </div>
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Username</span>
-            <span class="text-[14px] font-semibold text-[#38a9f3]">&#64;{{ user.username }}</span>
+          <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl hover:bg-[#eff6ff] transition-colors">
+            <span class="text-[13px] font-bold text-[#64748b]">Username</span>
+            <span class="text-[14px] font-black text-[#38a9f3]">&#64;{{ user.username }}</span>
           </div>
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Email</span>
-            <span class="text-[14px] font-medium text-[#0f1419]">{{ user.email }}</span>
+          <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl hover:bg-[#eff6ff] transition-colors">
+            <span class="text-[13px] font-bold text-[#64748b]">Email</span>
+            <span class="text-[14px] font-semibold text-[#1e293b]">{{ user.email }}</span>
           </div>
           @if (user.numTel) {
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Phone</span>
-            <span class="text-[14px] font-medium text-[#0f1419]">{{ user.numTel }}</span>
-          </div>
+            <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl hover:bg-[#eff6ff] transition-colors">
+              <span class="text-[13px] font-bold text-[#64748b]">Phone</span>
+              <span class="text-[14px] font-semibold text-[#1e293b]">{{ user.numTel }}</span>
+            </div>
           }
           @if (user.dateNaiss) {
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Date of Birth</span>
-            <span class="text-[14px] font-medium text-[#0f1419]">{{ user.dateNaiss }}</span>
-          </div>
+            <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl hover:bg-[#eff6ff] transition-colors">
+              <span class="text-[13px] font-bold text-[#64748b]">Date of Birth</span>
+              <span class="text-[14px] font-semibold text-[#1e293b]">{{ user.dateNaiss }}</span>
+            </div>
           }
-        </div>
-      </div>
-
-      <!-- Bio -->
-      @if (user.bio) {
-      <div class="bg-white rounded-2xl border border-[#eef1f4] shadow-sm p-6">
-        <h2 class="text-[15px] font-bold text-[#0f1419] mb-4 flex items-center gap-2">
-          <div class="w-7 h-7 bg-[#fef3c7] rounded-lg flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4 text-[#f59e0b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
-          </div>
-          About Me
-        </h2>
-        <p class="text-[14px] text-[#536471] leading-relaxed">{{ user.bio }}</p>
-      </div>
-      }
-
-      <!-- Tutor Info -->
-      @if (user.role === 'TUTEUR') {
-      <div class="bg-white rounded-2xl border border-[#eef1f4] shadow-sm p-6">
-        <h2 class="text-[15px] font-bold text-[#0f1419] mb-5 flex items-center gap-2">
-          <div class="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-          </div>
-          Tutor Information
-        </h2>
-        <div class="divide-y divide-[#f3f5f7]">
-          @if (user.specialization) {
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Specialization</span>
-            <span class="bg-purple-50 text-purple-600 text-[13px] font-semibold px-3 py-1 rounded-full">{{ user.specialization }}</span>
-          </div>
-          }
-          @if (user.yearsOfExperience != null) {
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Experience</span>
-            <span class="text-[14px] font-semibold text-[#0f1419]">{{ user.yearsOfExperience }} years</span>
-          </div>
-          }
-          @if (user.CIN) {
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">CIN</span>
-            <span class="text-[14px] font-medium text-[#0f1419] font-mono">{{ user.CIN }}</span>
-          </div>
-          }
-        </div>
-      </div>
-      }
-
-      <!-- Admin Info -->
-      @if (user.role === 'ADMIN') {
-      <div class="bg-white rounded-2xl border border-[#eef1f4] shadow-sm p-6">
-        <h2 class="text-[15px] font-bold text-[#0f1419] mb-5 flex items-center gap-2">
-          <div class="w-7 h-7 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
-          </div>
-          Admin Information
-        </h2>
-        <div class="divide-y divide-[#f3f5f7]">
-          @if (user.departement) {
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Department</span>
-            <span class="bg-yellow-50 text-yellow-700 text-[13px] font-semibold px-3 py-1 rounded-full">{{ user.departement }}</span>
-          </div>
-          }
-          @if (user.adminCIN) {
-          <div class="flex justify-between items-center py-3">
-            <span class="text-[13px] text-[#536471]">Admin CIN</span>
-            <span class="text-[14px] font-medium text-[#0f1419] font-mono">{{ user.adminCIN }}</span>
-          </div>
-          }
-        </div>
-      </div>
-      }
-    </div>
-
-    <!-- RIGHT COLUMN -->
-    <div class="space-y-5">
-      <!-- Account Status Card -->
-      <div class="bg-white rounded-2xl border border-[#eef1f4] shadow-sm p-5">
-        <h2 class="text-[15px] font-bold text-[#0f1419] mb-4 flex items-center gap-2">
-          <div class="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
-          </div>
-          Account Status
-        </h2>
-        <div class="space-y-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-[13px] text-[#536471]">Email Verified</span>
+          <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl hover:bg-[#eff6ff] transition-colors">
+            <span class="text-[13px] font-bold text-[#64748b]">Email Verified</span>
             @if (user.emailVerified) {
-            <span class="inline-flex items-center gap-1 bg-green-50 text-green-600 text-[12px] font-semibold px-2.5 py-0.5 rounded-full">
-              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-              Verified
-            </span>
+              <span class="inline-flex items-center gap-1.5 bg-green-100 text-green-600 text-[12px] font-black px-3 py-1 rounded-full">✅ Verified</span>
             } @else {
-            <span class="inline-flex items-center gap-1 bg-orange-50 text-orange-500 text-[12px] font-semibold px-2.5 py-0.5 rounded-full">
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-              Pending
-            </span>
-            }
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-[13px] text-[#536471]">Forum Access</span>
-            @if (user.posterForum) {
-            <span class="bg-[#e8f4fe] text-[#38a9f3] text-[12px] font-semibold px-2.5 py-0.5 rounded-full">Active</span>
-            } @else {
-            <span class="bg-gray-100 text-gray-400 text-[12px] font-semibold px-2.5 py-0.5 rounded-full">Inactive</span>
+              <span class="inline-flex items-center gap-1.5 bg-orange-100 text-orange-500 text-[12px] font-black px-3 py-1 rounded-full">⏳ Pending</span>
             }
           </div>
         </div>
       </div>
 
-      <!-- Learning Card (students) -->
-      @if (user.language) {
-      <div class="bg-gradient-to-br from-[#38a9f3] to-[#2196e3] rounded-2xl p-5 text-white shadow-lg shadow-[#38a9f3]/25">
-        <h2 class="text-[14px] font-bold mb-4 opacity-90 flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347"/></svg>
-          Currently Learning
-        </h2>
-        <div class="flex items-center gap-3 bg-white/15 rounded-xl p-3">
-          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3"/></svg>
-          </div>
-          <div>
-            <p class="font-bold text-[16px]">{{ user.language }}</p>
-            <p class="text-white/70 text-[12px]">{{ user.level || 'Beginner' }} · {{ user.xp || 0 }} XP earned</p>
+      <!-- ═══════════════════════════════════ -->
+      <!-- TUTOR INFO                          -->
+      <!-- ═══════════════════════════════════ -->
+      @if (user.role === 'TUTEUR') {
+        <div class="reveal d5 bg-white/85 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white p-6 mb-5">
+          <h2 class="fredoka text-[20px] text-[#1e293b] mb-5 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white shadow-md shadow-purple-200">📚</span>
+            Tutor Info
+          </h2>
+          <div class="space-y-3">
+            @if (user.specialization) {
+              <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl">
+                <span class="text-[13px] font-bold text-[#64748b]">Specialization</span>
+                <span class="bg-purple-100 text-purple-600 text-[13px] font-black px-3 py-1 rounded-full">{{ user.specialization }}</span>
+              </div>
+            }
+            @if (user.yearsOfExperience != null) {
+              <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl">
+                <span class="text-[13px] font-bold text-[#64748b]">Experience</span>
+                <span class="text-[14px] font-black text-[#1e293b]">{{ user.yearsOfExperience }} years 🎓</span>
+              </div>
+            }
+            @if (user.CIN) {
+              <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl">
+                <span class="text-[13px] font-bold text-[#64748b]">CIN</span>
+                <span class="text-[14px] font-semibold font-mono text-[#1e293b]">{{ user.CIN }}</span>
+              </div>
+            }
           </div>
         </div>
-        <div class="mt-4">
-          <div class="flex justify-between text-[11px] text-white/60 mb-1.5">
-            <span>Progress to next level</span>
-            <span>{{ (user.xp || 0) % 100 }}/100 XP</span>
-          </div>
-          <div class="h-2 bg-white/20 rounded-full overflow-hidden">
-            <div class="h-full bg-white rounded-full transition-all duration-500" [style.width.%]="(user.xp || 0) % 100"></div>
-          </div>
-        </div>
-      </div>
       }
 
-      <!-- Onboarding checklist -->
+      <!-- ═══════════════════════════════════ -->
+      <!-- ADMIN INFO                          -->
+      <!-- ═══════════════════════════════════ -->
+      @if (user.role === 'ADMIN') {
+        <div class="reveal d5 bg-white/85 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white p-6 mb-5">
+          <h2 class="fredoka text-[20px] text-[#1e293b] mb-5 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center text-white shadow-md shadow-amber-200">⭐</span>
+            Admin Info
+          </h2>
+          <div class="space-y-3">
+            @if (user.departement) {
+              <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl">
+                <span class="text-[13px] font-bold text-[#64748b]">Department</span>
+                <span class="bg-amber-100 text-amber-700 text-[13px] font-black px-3 py-1 rounded-full">{{ user.departement }}</span>
+              </div>
+            }
+            @if (user.adminCIN) {
+              <div class="flex items-center justify-between py-2.5 px-4 bg-[#f8fafc] rounded-2xl">
+                <span class="text-[13px] font-bold text-[#64748b]">Admin CIN</span>
+                <span class="text-[14px] font-semibold font-mono text-[#1e293b]">{{ user.adminCIN }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- BIO                                 -->
+      <!-- ═══════════════════════════════════ -->
+      @if (user.bio) {
+        <div class="reveal d5 bg-white/85 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white p-6 mb-5">
+          <h2 class="fredoka text-[20px] text-[#1e293b] mb-4 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center text-white shadow-md shadow-pink-200">💬</span>
+            About Me
+          </h2>
+          <p class="text-[14px] text-[#475569] leading-relaxed font-semibold bg-[#fdf4ff] rounded-2xl px-4 py-3 border border-pink-100">{{ user.bio }}</p>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- ONBOARDING CHECKLIST (new students) -->
+      <!-- ═══════════════════════════════════ -->
       @if (isStudent && (user.xp || 0) === 0) {
-      <div class="bg-white rounded-2xl border border-[#eef1f4] shadow-sm p-5">
-        <h2 class="text-[15px] font-bold text-[#0f1419] mb-1 flex items-center gap-2">
-          <svg class="w-5 h-5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
-          Get Started
-        </h2>
-        <p class="text-[12px] text-[#9ca3af] mb-4">Complete these steps to unlock your learning journey</p>
-        <ul class="space-y-3">
-          <li class="flex items-center gap-3">
-            <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-              <svg class="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <div class="reveal d6 bg-white/85 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white p-6 mb-5">
+          <h2 class="fredoka text-[20px] text-[#1e293b] mb-2 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-green-400 to-teal-400 flex items-center justify-center text-white shadow-md shadow-green-200">🚀</span>
+            Your Journey Starts Here!
+          </h2>
+          <p class="text-[12px] font-semibold text-[#94a3b8] mb-5">Complete these steps to begin your adventure ✨</p>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 py-2.5 px-4 bg-green-50 rounded-2xl border-2 border-green-200">
+              <div class="w-8 h-8 rounded-xl bg-green-400 flex items-center justify-center shrink-0 text-white font-black">✓</div>
+              <span class="text-[13px] font-bold text-[#64748b] line-through">Create your account</span>
+              <span class="ml-auto text-green-500 font-black text-[12px]">Done! 🎉</span>
             </div>
-            <span class="text-[13px] text-[#536471] line-through">Create your account</span>
-          </li>
-          <li class="flex items-center gap-3">
-            <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-              <svg class="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <div class="flex items-center gap-3 py-2.5 px-4 bg-green-50 rounded-2xl border-2 border-green-200">
+              <div class="w-8 h-8 rounded-xl bg-green-400 flex items-center justify-center shrink-0 text-white font-black">✓</div>
+              <span class="text-[13px] font-bold text-[#64748b] line-through">Verify your email</span>
+              <span class="ml-auto text-green-500 font-black text-[12px]">Done! 🎉</span>
             </div>
-            <span class="text-[13px] text-[#536471] line-through">Verify your email</span>
-          </li>
-          <li class="flex items-center gap-3">
-            <div class="w-6 h-6 rounded-full bg-[#e8f4fe] flex items-center justify-center shrink-0">
-              <span class="text-[10px] font-bold text-[#38a9f3]">3</span>
+            <div class="flex items-center gap-3 py-2.5 px-4 bg-blue-50 rounded-2xl border-2 border-[#38a9f3]/40">
+              <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#38a9f3] to-[#818cf8] flex items-center justify-center shrink-0 text-white font-black text-[13px]">3</div>
+              <span class="text-[13px] font-black text-[#1e293b]">Explore a course 📚</span>
+              <span class="ml-auto text-[#38a9f3] font-black text-[12px] animate-pulse">→ Next!</span>
             </div>
-            <span class="text-[13px] text-[#0f1419] font-medium">Explore a course</span>
-          </li>
-          <li class="flex items-center gap-3">
-            <div class="w-6 h-6 rounded-full bg-[#f0f4f8] flex items-center justify-center shrink-0">
-              <span class="text-[10px] font-bold text-[#9ca3af]">4</span>
+            <div class="flex items-center gap-3 py-2.5 px-4 bg-[#f8fafc] rounded-2xl border-2 border-dashed border-[#e2e8f0] opacity-60">
+              <div class="w-8 h-8 rounded-xl bg-gray-200 flex items-center justify-center shrink-0 text-[#94a3b8] font-black text-[13px]">4</div>
+              <span class="text-[13px] font-semibold text-[#94a3b8]">Complete your first quiz 🎯</span>
             </div>
-            <span class="text-[13px] text-[#9ca3af]">Complete your first quiz</span>
-          </li>
-        </ul>
-      </div>
+          </div>
+        </div>
       }
-    </div>
-  </div>
 
-  } @else {
-  <!-- No session -->
-  <div class="flex flex-col items-center justify-center min-h-screen gap-4 px-6">
-    <div class="w-20 h-20 rounded-2xl bg-[#e8f4fe] flex items-center justify-center mb-2">
-      <svg class="w-10 h-10 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+    </div><!-- /max-w-2xl -->
+  }
+
+  <!-- ═══════════ NO SESSION ═══════════ -->
+  @if (!isLoading && !user) {
+    <div class="flex flex-col items-center justify-center min-h-screen gap-5 px-6">
+      <div class="w-24 h-24 rounded-3xl bg-white shadow-xl flex items-center justify-center text-5xl animate-bounce">😴</div>
+      <h2 class="fredoka text-[28px] text-[#1e293b]">Oops! No session found</h2>
+      <p class="text-[14px] font-semibold text-[#64748b] text-center max-w-xs">Please log in to see your awesome profile!</p>
+      <a routerLink="/login"
+        class="btn-bounce mt-2 px-8 py-3 bg-gradient-to-r from-[#38a9f3] to-[#818cf8] text-white font-black text-[15px] rounded-2xl shadow-lg shadow-blue-200 inline-block">
+        🚀 Go to Login
+      </a>
     </div>
-    <h2 class="text-[22px] font-bold text-[#0f1419]">No session found</h2>
-    <p class="text-[14px] text-[#536471] text-center max-w-xs">Please log in to view your profile and track your learning progress.</p>
-    <a routerLink="/login" class="mt-2 px-6 py-2.5 bg-[#38a9f3] text-white font-semibold text-[14px] rounded-xl hover:bg-[#2196e3] transition-colors shadow-md shadow-[#38a9f3]/30">
-      Go to Login
-    </a>
-  </div>
   }
 
 </div>

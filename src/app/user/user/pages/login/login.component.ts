@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -10,7 +10,8 @@ import { OnboardingComponent, OnboardingStep } from '../../../../shared/componen
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, ImageCaptchaComponent, OnboardingComponent],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class LoginComponent {
   @ViewChild('captchaRef') captchaRef!: ImageCaptchaComponent;
@@ -63,7 +64,8 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   get emailError(): string {
@@ -138,6 +140,7 @@ export class LoginComponent {
       next: (user) => {
         this.isLoading = false;
         this.successMessage = 'Login successful! Redirecting...';
+        this.cdr.markForCheck();
         const redirectUrl = this.authService.getRedirectUrlForRole(user.role);
         setTimeout(() => {
           this.router.navigate([redirectUrl]);
@@ -156,6 +159,7 @@ export class LoginComponent {
           this.banInfo = null;
           this.errorMessage = typeof err === 'string' ? err : (err?.message || 'An unexpected error occurred.');
         }
+        this.cdr.markForCheck();
       }
     });
   }
