@@ -1,0 +1,151 @@
+<div class="discounts-container">
+  <h1>🎫 Discount Codes Management</h1>
+  <p class="subtitle">Create and manage promotional discount codes for subscriptions</p>
+
+  <!-- Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+    <button class="close-btn" (click)="clearMessages()">×</button>
+  </div>
+  
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+    <button class="close-btn" (click)="clearMessages()">×</button>
+  </div>
+
+  <!-- Create New Code Section -->
+  <div class="create-section">
+    <h2>Create New Discount Code</h2>
+    <form (ngSubmit)="createDiscount()" (keydown.enter)="$event.preventDefault()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="code">Discount Code *</label>
+          <input 
+            type="text" 
+            id="code"
+            [(ngModel)]="newCode.code" 
+            name="code" 
+            placeholder="e.g., WELCOME20"
+            required
+            maxlength="50"
+            (input)="newCode.code = newCode.code.toUpperCase()"
+          >
+          <small>Code will be converted to uppercase</small>
+        </div>
+
+        <div class="form-group">
+          <label for="discountPercentage">Discount Percentage * (%)</label>
+          <input 
+            type="number" 
+            id="discountPercentage"
+            [(ngModel)]="newCode.discountPercentage" 
+            name="discountPercentage" 
+            placeholder="20"
+            required
+            min="1"
+            max="100"
+          >
+          <small>Enter value between 1 and 100</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="maxUses">Maximum Uses (Optional)</label>
+          <input 
+            type="number" 
+            id="maxUses"
+            [(ngModel)]="newCode.maxUses" 
+            name="maxUses" 
+            placeholder="Leave empty for unlimited"
+            min="1"
+          >
+          <small>Leave empty for unlimited uses</small>
+        </div>
+
+        <div class="form-group">
+          <label for="expiresAt">Expiry Date (Optional)</label>
+          <input 
+            type="datetime-local" 
+            id="expiresAt"
+            [(ngModel)]="newCode.expiresAt" 
+            name="expiresAt"
+          >
+          <small>Leave empty for no expiry</small>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="isLoading" class="btn-primary">
+          <span *ngIf="!isLoading">Create Discount Code</span>
+          <span *ngIf="isLoading">Creating...</span>
+        </button>
+        <button type="button" (click)="resetForm()" class="btn-secondary">Reset</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- List Codes Section -->
+  <div class="list-section">
+    <h2>Active Discount Codes</h2>
+    
+    <div *ngIf="isLoading" class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading discount codes...</p>
+    </div>
+
+    <div *ngIf="!isLoading && discounts.length === 0" class="empty-state">
+      <p>📭 No discount codes created yet. Create one above!</p>
+    </div>
+
+    <div *ngIf="!isLoading && discounts.length > 0" class="codes-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Discount</th>
+            <th>Usage</th>
+            <th>Expires</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let discount of discounts">
+            <td class="code-cell">
+              <span class="code-badge">{{ discount.code }}</span>
+            </td>
+            <td class="discount-cell">
+              <span class="discount-percentage">{{ discount.discountPercentage }}%</span>
+              <small>off</small>
+            </td>
+            <td class="usage-cell">
+              <span class="used-count">{{ discount.usesCount }}</span>
+              <small>/ {{ discount.maxUses || '∞' }}</small>
+              <div [class]="'usage-indicator ' + getUsageClass(discount)" class="progress-bar">
+                <div [style.width]="getUsagePercentage(discount) + '%'"></div>
+              </div>
+            </td>
+            <td class="expires-cell">
+              <span [class]="'status-badge ' + (isExpiringSoon(discount.expiresAt) ? 'warning' : 'ok')">
+                {{ formatDate(discount.expiresAt) }}
+              </span>
+            </td>
+            <td class="created-cell">
+              {{ formatDate(discount.createdAt) }}
+            </td>
+            <td class="actions-cell">
+              <button 
+                (click)="deactivateCode(discount.id, discount.code)" 
+                class="btn-danger"
+                title="Deactivate this code"
+              >
+                Deactivate
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
