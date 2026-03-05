@@ -72,7 +72,7 @@ export class DiscountsComponent implements OnInit {
       code: this.newCode.code.toUpperCase(),
       discountPercentage: this.newCode.discountPercentage,
       maxUses: this.newCode.maxUses || null,
-      expiresAt: this.newCode.expiresAt ? this.newCode.expiresAt.toISOString() : null
+      expiresAt: this.newCode.expiresAt ? new Date(this.newCode.expiresAt).toISOString() : null
     };
 
     this.http.post<DiscountCode>('/api/abonnements/discounts', payload)
