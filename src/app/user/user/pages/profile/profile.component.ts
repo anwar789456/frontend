@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -11,7 +11,8 @@ import { OnboardingComponent, OnboardingStep } from '../../../../shared/componen
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, OnboardingComponent],
-  templateUrl: './profile.component.html'
+  templateUrl: './profile.component.html',
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class ProfileComponent implements OnInit {
   user: User | null = null;
@@ -132,7 +133,11 @@ export class ProfileComponent implements OnInit {
     );
   }
 
-  constructor(private userService: UserService, private authService: AuthService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadUser();
@@ -147,10 +152,12 @@ export class ProfileComponent implements OnInit {
           this.user = { ...u };
           localStorage.setItem('auth_user', JSON.stringify(u));
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.user = authUser as unknown as User;
           this.isLoading = false;
+          this.cdr.markForCheck();
         }
       });
     } else {
@@ -209,6 +216,7 @@ export class ProfileComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = (e) => {
         this.avatarPreview = e.target?.result as string;
+        this.cdr.markForCheck();
       };
       reader.readAsDataURL(file);
     }
@@ -237,7 +245,8 @@ export class ProfileComponent implements OnInit {
           this.isEditing = false;
           this.isSaving = false;
           this.successMessage = 'Profile updated successfully.';
-          setTimeout(() => this.successMessage = '', 4000);
+          this.cdr.markForCheck();
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 4000);
         },
         error: (err: any) => {
           this.isSaving = false;
@@ -287,16 +296,18 @@ export class ProfileComponent implements OnInit {
       next: () => {
         this.isChangingPassword = false;
         this.passwordSuccessMessage = 'Password changed successfully! ';
+        this.cdr.markForCheck();
         // Reload user data so this.user.pwd reflects the new password
         this.userService.getUserById(this.user!.id).subscribe({
           next: (u) => {
             this.user = { ...u };
             localStorage.setItem('auth_user', JSON.stringify(u));
+            this.cdr.markForCheck();
           }
         });
         this.resetPasswordForm();
         this.showPasswordSection = false;
-        setTimeout(() => this.passwordSuccessMessage = '', 4000);
+        setTimeout(() => { this.passwordSuccessMessage = ''; this.cdr.markForCheck(); }, 4000);
       },
       error: (err: any) => {
         this.isChangingPassword = false;
