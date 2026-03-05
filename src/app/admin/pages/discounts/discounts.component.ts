@@ -9,7 +9,6 @@ export interface DiscountCode {
   discountPercentage: number;
   maxUses: number | null;
   usesCount: number;
-  expiresAt: string | null;
   isActive: boolean;
   createdAt: string;
 }
@@ -30,8 +29,7 @@ export class DiscountsComponent implements OnInit {
   newCode = {
     code: '',
     discountPercentage: 20,
-    maxUses: null as number | null,
-    expiresAt: null as string | null  // HTML datetime-local input returns string
+    maxUses: null as number | null
   };
 
   private readonly apiUrl = 'https://minolingo.online/api/abonnements';
@@ -73,8 +71,7 @@ export class DiscountsComponent implements OnInit {
     const payload = {
       code: this.newCode.code.toUpperCase(),
       discountPercentage: this.newCode.discountPercentage,
-      maxUses: this.newCode.maxUses || null,
-      expiresAt: this.newCode.expiresAt ? new Date(this.newCode.expiresAt).toISOString() : null
+      maxUses: this.newCode.maxUses || null
     };
 
     this.http.post<DiscountCode>(this.apiUrl + '/discounts', payload)
@@ -114,8 +111,7 @@ export class DiscountsComponent implements OnInit {
     this.newCode = {
       code: '',
       discountPercentage: 20,
-      maxUses: null,
-      expiresAt: null
+      maxUses: null
     };
     this.isLoading = false;
   }
@@ -142,13 +138,5 @@ export class DiscountsComponent implements OnInit {
     if (percentage >= 100) return 'full';
     if (percentage >= 80) return 'warning';
     return 'ok';
-  }
-
-  isExpiringSoon(expiresAt: string | null): boolean {
-    if (!expiresAt) return false;
-    const expiryDate = new Date(expiresAt);
-    const now = new Date();
-    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return daysUntilExpiry <= 7;
   }
 }

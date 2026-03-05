@@ -62,17 +62,6 @@
           >
           <small>Leave empty for unlimited uses</small>
         </div>
-
-        <div class="form-group">
-          <label for="expiresAt">Expiry Date (Optional)</label>
-          <input 
-            type="datetime-local" 
-            id="expiresAt"
-            [(ngModel)]="newCode.expiresAt" 
-            name="expiresAt"
-          >
-          <small>Leave empty for no expiry</small>
-        </div>
       </div>
 
       <div class="form-actions">
@@ -105,7 +94,6 @@
             <th>Code</th>
             <th>Discount</th>
             <th>Usage</th>
-            <th>Expires</th>
             <th>Created</th>
             <th>Actions</th>
           </tr>
@@ -125,11 +113,6 @@
               <div [class]="'usage-indicator ' + getUsageClass(discount)" class="progress-bar">
                 <div [style.width]="getUsagePercentage(discount) + '%'"></div>
               </div>
-            </td>
-            <td class="expires-cell">
-              <span [class]="'status-badge ' + (isExpiringSoon(discount.expiresAt) ? 'warning' : 'ok')">
-                {{ formatDate(discount.expiresAt) }}
-              </span>
             </td>
             <td class="created-cell">
               {{ formatDate(discount.createdAt) }}
