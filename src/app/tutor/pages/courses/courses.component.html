@@ -444,7 +444,7 @@
               <!-- Card Body -->
               <div class="flex flex-col flex-1 p-5">
                 <p class="text-[11px] font-extrabold text-[#38a9f3] tracking-widest uppercase mb-2">
-                  {{ getUniqueContentTypes(course)[0] ?? 'COURSE' }}
+                  {{ getUniqueContentTypes(course)[0] || 'COURSE' }}
                 </p>
                 <h3 class="text-[15px] font-bold text-[#0f1419] leading-snug mb-2 line-clamp-2">{{ course.title }}</h3>
                 <p class="text-[13px] text-[#6b7280] leading-relaxed line-clamp-2 mb-4 flex-1">{{ course.description }}</p>
