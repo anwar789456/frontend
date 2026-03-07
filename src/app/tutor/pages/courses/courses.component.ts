@@ -58,7 +58,7 @@ export class TutorCoursesComponent implements OnInit {
   contenuFileUrls: ContentFile[] = [];
   isUploading = false;
 
-  contentTypes = ['VIDEO', 'PDF', 'TEXT', 'GAME', 'PRESENTATION'];
+  contentTypes = ['VIDEO', 'PDF', 'TEXT', 'PRESENTATION'];
 
   // Stats
   stats = [
@@ -624,10 +624,19 @@ export class TutorCoursesComponent implements OnInit {
       VIDEO: 'Video',
       PDF: 'PDF Document',
       TEXT: 'Text / Instructions',
-      GAME: 'Game',
       PRESENTATION: 'Presentation'
     };
     return labels[type] ?? type;
+  }
+
+  getFileAccept(type: string): string {
+    switch (type) {
+      case 'VIDEO':        return 'video/*';
+      case 'PDF':          return 'application/pdf';
+      case 'TEXT':         return '.txt,text/plain';
+      case 'PRESENTATION': return 'image/*';
+      default:             return '*/*';
+    }
   }
 
   formatFileSize(bytes: number): string {
