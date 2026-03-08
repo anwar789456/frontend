@@ -20,13 +20,6 @@
       </button>
     </div>
 
-    <!-- Top Bar: Language, Streak, Coins -->
-    <div class="flex items-center gap-6 mb-3 text-[15px] font-semibold">
-      <div class="flex items-center gap-2 text-[#0f1724]"><span class="text-base">🏴</span><span>EN</span></div>
-      <div class="flex items-center gap-2 text-[#0f1724]"><span class="text-orange-400 text-base">🔥</span><span>{{ user.streak }}</span></div>
-      <div class="flex items-center gap-2 text-[#0f1724]"><span class="text-[#0ea5e9] text-base">💎</span><span>{{ user.xp }}</span></div>
-    </div>
-
     <!-- Friendly Banner -->
     <div class="bg-[#f0f9ff] border border-[#bfdbfe] rounded-2xl p-4 pr-3 flex items-center justify-between mb-3">
       <div>
@@ -232,26 +225,26 @@
 
     <!-- RIGHT SIDEBAR -->
     <div class="w-[280px] shrink-0 flex flex-col gap-3 overflow-y-auto" style="scrollbar-width: thin; scrollbar-color: #e5e7eb transparent;">
-      <!-- Daily Goal -->
+      <!-- Your XP -->
       <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-5">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-[15px] font-bold text-[#111827]">Daily Goal</h3>
-          <span class="text-[#3b82f6] text-[12px] font-extrabold tracking-[0.5px] uppercase cursor-pointer">Edit</span>
+          <h3 class="text-[15px] font-bold text-[#111827]">Your XP</h3>
+          <span class="text-[#f59e0b] text-[12px] font-extrabold tracking-[0.5px] uppercase">💎 Total</span>
         </div>
         <div class="flex justify-center mb-2">
           <div class="relative w-20 h-20">
             <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="40" stroke="#e5e7eb" stroke-width="8" fill="none" />
               <circle cx="50" cy="50" r="40" stroke="#f59e0b" stroke-width="8" fill="none"
-                stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" />
+                stroke-dasharray="251.2" [attr.stroke-dashoffset]="251.2 - (251.2 * ((user.xp % 100) / 100))" stroke-linecap="round" />
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <span class="text-[24px] font-bold text-[#f59e0b] leading-none">24</span>
+              <span class="text-[24px] font-bold text-[#f59e0b] leading-none">{{ user.xp }}</span>
               <span class="text-[10px] text-[#f59e0b] font-semibold">XP</span>
             </div>
           </div>
         </div>
-        <p class="text-center text-[13px] text-[#6b7280]">You're <span class="text-[#f59e0b] font-semibold">26 XP</span> away from your daily goal!</p>
+        <p class="text-center text-[13px] text-[#6b7280]">🔥 <span class="text-[#f59e0b] font-semibold">{{ user.streak }}</span> day streak! Keep learning!</p>
       </div>
 
       <!-- Leaderboard -->
