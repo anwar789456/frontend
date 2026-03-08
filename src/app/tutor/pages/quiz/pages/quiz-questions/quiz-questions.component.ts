@@ -238,28 +238,23 @@ export class TutorQuizQuestionsComponent implements OnInit {
 
     this.quizService.generateSingleQuestion(this.quiz.title, level, qNum).subscribe({
       next: (res) => {
-        try {
-          const q = JSON.parse(res.question);
-          if (q?.question && Array.isArray(q.options) && q.options.length >= 2) {
-            const payload: QuestionQuiz = {
-              question: q.question,
-              type: 'MCQ',
-              options: q.options.slice(0, 4),
-              correctAnswer: q.correctAnswer || q.options[0] || '',
-              explanation: q.explanation || '',
-              quiz: { id: this.quizId }
-            };
-            this.quizService.createQuestion(payload).subscribe({
-              next: () => { this.isGeneratingQuestions = false; this.loadQuiz(); },
-              error: () => { this.isGeneratingQuestions = false; this.cdr.markForCheck(); }
-            });
-          } else {
-            console.error('AI returned invalid question structure');
-            this.isGeneratingQuestions = false;
-            this.cdr.markForCheck();
-          }
-        } catch {
-          console.error('Failed to parse AI question');
+        console.log('AI raw response:', res.question);
+        const q = this.tryParseAiQuestion(res.question);
+        if (q) {
+          const payload: QuestionQuiz = {
+            question: q.question,
+            type: 'MCQ',
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation || '',
+            quiz: { id: this.quizId }
+          };
+          this.quizService.createQuestion(payload).subscribe({
+            next: () => { this.isGeneratingQuestions = false; this.loadQuiz(); },
+            error: () => { this.isGeneratingQuestions = false; this.cdr.markForCheck(); }
+          });
+        } else {
+          console.error('Failed to parse AI question. Raw:', res.question);
           this.isGeneratingQuestions = false;
           this.cdr.markForCheck();
         }
@@ -270,5 +265,43 @@ export class TutorQuizQuestionsComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  private tryParseAiQuestion(raw: string): { question: string; options: string[]; correctAnswer: string; explanation: string } | null {
+    if (!raw || raw === '{}') return null;
+
+    // Try direct parse first
+    try {
+      const q = JSON.parse(raw);
+      if (q?.question && Array.isArray(q.options) && q.options.length >= 2) {
+        return {
+          question: q.question,
+          options: q.options.slice(0, 4),
+          correctAnswer: q.correctAnswer || q.options[0] || '',
+          explanation: q.explanation || ''
+        };
+      }
+    } catch { /* not valid JSON directly */ }
+
+    // Try to extract JSON object from messy output
+    try {
+      const start = raw.indexOf('{');
+      const end = raw.lastIndexOf('}');
+      if (start >= 0 && end > start) {
+        let jsonStr = raw.substring(start, end + 1);
+        jsonStr = jsonStr.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+        const q = JSON.parse(jsonStr);
+        if (q?.question && Array.isArray(q.options) && q.options.length >= 2) {
+          return {
+            question: q.question,
+            options: q.options.slice(0, 4),
+            correctAnswer: q.correctAnswer || q.options[0] || '',
+            explanation: q.explanation || ''
+          };
+        }
+      }
+    } catch { /* still not parseable */ }
+
+    return null;
   }
 }
