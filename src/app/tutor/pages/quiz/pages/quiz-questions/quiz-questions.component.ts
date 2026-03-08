@@ -302,6 +302,61 @@ export class TutorQuizQuestionsComponent implements OnInit {
       }
     } catch { /* still not parseable */ }
 
-    return null;
+    // Fallback: parse non-JSON formats like "Question: ... A) ... B) ... C) ... D) ..."
+    return this.parseLooseFormat(raw);
+  }
+
+  private parseLooseFormat(raw: string): { question: string; options: string[]; correctAnswer: string; explanation: string } | null {
+    // Extract question - look for "question": "..." or "Question:" pattern
+    let question = '';
+    const jsonQuestionMatch = raw.match(/"question"\s*:\s*"([^"]+)/i);
+    if (jsonQuestionMatch) {
+      question = jsonQuestionMatch[1];
+    } else {
+      const looseQuestionMatch = raw.match(/Question\s*:\s*(.+?)(?=\n[A-D]\)|$)/is);
+      if (looseQuestionMatch) {
+        question = looseQuestionMatch[1].trim();
+      }
+    }
+
+    if (!question) return null;
+
+    // Extract options - look for A) B) C) D) pattern or "options": [...]
+    let options: string[] = [];
+    const jsonOptionsMatch = raw.match(/"options"\s*:\s*\[([^\]]+)\]/i);
+    if (jsonOptionsMatch) {
+      const optStr = jsonOptionsMatch[1];
+      options = optStr.split(',').map(o => o.replace(/["\s]/g, '').trim()).filter(o => o);
+    }
+    
+    if (options.length < 2) {
+      // Try A) B) C) D) format
+      const abcdMatch = raw.match(/A\)\s*(.+?)\s*B\)\s*(.+?)\s*C\)\s*(.+?)\s*D\)\s*(.+?)(?=\n|CorrectAnswer|correctAnswer|$)/is);
+      if (abcdMatch) {
+        options = [abcdMatch[1].trim(), abcdMatch[2].trim(), abcdMatch[3].trim(), abcdMatch[4].trim()];
+      }
+    }
+
+    if (options.length < 2) return null;
+
+    // Extract correct answer
+    let correctAnswer = '';
+    const correctMatch = raw.match(/(?:correctAnswer|CorrectAnswer)\s*[:\s]*["']?([A-Da-d]|[^"'\n,}]+)/i);
+    if (correctMatch) {
+      const ans = correctMatch[1].trim().toUpperCase();
+      if (ans === 'A' && options[0]) correctAnswer = options[0];
+      else if (ans === 'B' && options[1]) correctAnswer = options[1];
+      else if (ans === 'C' && options[2]) correctAnswer = options[2];
+      else if (ans === 'D' && options[3]) correctAnswer = options[3];
+      else correctAnswer = ans;
+    }
+    if (!correctAnswer) correctAnswer = options[0] || '';
+
+    // Extract explanation
+    let explanation = '';
+    const explMatch = raw.match(/explanation\s*[:\s]*["']?([^"'\n}]+)/i);
+    if (explMatch) explanation = explMatch[1].trim();
+
+    return { question, options: options.slice(0, 4), correctAnswer, explanation };
   }
 }
