@@ -105,8 +105,8 @@ export class TutorQuizService {
     return this.http.post<{ description: string }>(`${this.apiUrl}/quizzes/generate-description`, { title, level });
   }
 
-  generateQuizQuestions(title: string, level: string, count: number): Observable<{ questions: string }> {
-    return this.http.post<{ questions: string }>(`${this.apiUrl}/quizzes/generate-questions`, { title, level, count });
+  generateSingleQuestion(title: string, level: string, questionNumber: number): Observable<{ question: string }> {
+    return this.http.post<{ question: string }>(`${this.apiUrl}/quizzes/generate-single-question`, { title, level, questionNumber });
   }
 
   // ── Word Bank ──
