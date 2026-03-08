@@ -319,7 +319,7 @@
     <div class="bg-gradient-to-r from-[#dbeafe] to-[#eff6ff] border-2 border-[#bfdbfe] rounded-2xl p-6 flex items-center gap-6">
       <div class="flex-1">
         <h1 class="text-[24px] font-extrabold text-[#111827] mb-2">{{ selectedCourse.title }}</h1>
-        <p class="text-[14px] text-[#374151] mb-3 leading-relaxed line-clamp-2">{{ selectedCourse.description }}. {{ selectedCourse.content }}</p>
+        <p class="text-[14px] text-[#374151] mb-3 leading-relaxed line-clamp-2">{{ selectedCourse.description }}.</p>
         <div class="inline-flex items-center gap-2 bg-white border border-[#e5e7eb] rounded-full px-4 py-2">
           <span class="text-base">📖</span>
           <span class="text-[14px] font-bold text-[#111827]">{{ getContentCount(selectedCourse) }} Lessons</span>
@@ -348,6 +348,8 @@
           <div class="flex-1 min-w-0">
             <h2 class="text-[20px] font-extrabold text-[#111827]">{{ selectedContenu.titleC }}</h2>
             <div class="flex items-center gap-2 mt-0.5 text-[13px] text-[#6b7280]">
+              <span class="font-semibold uppercase">{{ selectedContenu.contentType }}</span>
+              <span class="mx-1">·</span>
               <span>{{ selectedContenu.duration }}m</span>
               @if (selectedContenu.files && selectedContenu.files.length > 0) {
                 <span class="mx-1">·</span>
@@ -580,6 +582,7 @@
 
     <!-- RIGHT PANEL -->
     <div class="w-[320px] shrink-0 flex flex-col gap-5 overflow-y-auto" style="scrollbar-width: thin; scrollbar-color: #e5e7eb transparent;">
+
       <!-- Lesson Info Panel (shown when viewing content) -->
       @if (selectedContenu) {
         <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-6">
@@ -613,9 +616,9 @@
             👩‍🏫
           </div>
           <div class="flex-1">
-            <p class="text-[15px] font-semibold text-[#111827] mb-2">Teacher says:</p>
+            <p class="text-[15px] font-semibold text-[#111827] mb-2">Ms. Clara says:</p>
             <div class="bg-[#f9fafb] border border-[#e5e7eb] rounded-xl p-3.5">
-              <p class="text-[13px] text-[#374151] leading-relaxed italic">"{{ selectedContenu?.contentType }}"</p>
+              <p class="text-[13px] text-[#374151] leading-relaxed italic">"{{ selectedCourse.content }}"</p>
             </div>
           </div>
         </div>
