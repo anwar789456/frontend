@@ -348,8 +348,6 @@
           <div class="flex-1 min-w-0">
             <h2 class="text-[20px] font-extrabold text-[#111827]">{{ selectedContenu.titleC }}</h2>
             <div class="flex items-center gap-2 mt-0.5 text-[13px] text-[#6b7280]">
-              <span class="font-semibold uppercase">{{ selectedContenu.contentType }}</span>
-              <span class="mx-1">·</span>
               <span>{{ selectedContenu.duration }}m</span>
               @if (selectedContenu.files && selectedContenu.files.length > 0) {
                 <span class="mx-1">·</span>
@@ -582,18 +580,6 @@
 
     <!-- RIGHT PANEL -->
     <div class="w-[320px] shrink-0 flex flex-col gap-5 overflow-y-auto" style="scrollbar-width: thin; scrollbar-color: #e5e7eb transparent;">
-      <!-- Progress Panel -->
-      <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-6">
-        <h3 class="text-[15px] font-semibold text-[#111827] mb-4">Your Progress</h3>
-        <div class="text-center mb-4">
-          <span class="text-[36px] font-bold text-[#3b82f6]">{{ getProgressPercent(selectedCourse) }}%</span>
-        </div>
-        <p class="text-center text-[14px] text-[#6b7280] mb-4">{{ getCompletedCount(selectedCourse) }} of {{ getContentCount(selectedCourse) }} lessons completed</p>
-        <div class="h-4 bg-[#e5e7eb] rounded-full overflow-hidden">
-          <div class="h-full bg-[#3b82f6] rounded-full transition-all" [style.width.%]="getProgressPercent(selectedCourse)"></div>
-        </div>
-      </div>
-
       <!-- Lesson Info Panel (shown when viewing content) -->
       @if (selectedContenu) {
         <div class="bg-white border border-[rgba(0,0,0,0.08)] rounded-xl p-6">
@@ -627,9 +613,9 @@
             👩‍🏫
           </div>
           <div class="flex-1">
-            <p class="text-[15px] font-semibold text-[#111827] mb-2">Ms. Clara says:</p>
+            <p class="text-[15px] font-semibold text-[#111827] mb-2">Teacher says:</p>
             <div class="bg-[#f9fafb] border border-[#e5e7eb] rounded-xl p-3.5">
-              <p class="text-[13px] text-[#374151] leading-relaxed italic">"Make sure to practice your numbers out loud! It helps you remember them better at the market."</p>
+              <p class="text-[13px] text-[#374151] leading-relaxed italic">"{{ selectedContenu?.contentType }}"</p>
             </div>
           </div>
         </div>
