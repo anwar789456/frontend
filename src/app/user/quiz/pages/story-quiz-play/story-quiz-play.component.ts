@@ -270,15 +270,23 @@ export class StoryQuizPlayComponent implements OnInit {
           this.cdr.markForCheck();
 
           if (this.attempt?.id) {
+            const xpToAward = this.storyQuiz?.xpReward ?? 0;
             this.quizService.completeStoryAttempt(this.attempt.id, this.filledBlanks).subscribe({
               next: (completed) => {
                 this.attempt = completed;
                 this.cdr.markForCheck();
-                // Add XP to user profile
-                this.addXpToUser(completed.score || this.storyQuiz?.xpReward || 0);
+                // Add XP to user profile — use xpReward directly since allCorrect is guaranteed here
+                const earnedXp = (completed.score != null && completed.score > 0) ? completed.score : xpToAward;
+                this.addXpToUser(earnedXp);
               },
-              error: () => {}
+              error: () => {
+                // Even if the complete call fails, still try to add XP since answers were all correct
+                this.addXpToUser(xpToAward);
+              }
             });
+          } else {
+            // No attempt ID but all correct — still award XP
+            this.addXpToUser(this.storyQuiz?.xpReward ?? 0);
           }
         }
       },
