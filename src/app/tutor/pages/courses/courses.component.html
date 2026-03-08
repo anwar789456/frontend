@@ -517,7 +517,7 @@
                           <button (click)="openEditContenu(contenu, course.id!)" class="p-1.5 text-[#9ca3af] hover:text-purple-500 rounded-lg hover:bg-purple-50 transition-colors">
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
                           </button>
-                          <button (click)="deleteContenu(contenu)" class="p-1.5 text-[#9ca3af] hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors">
+                          <button (click)="confirmDeleteContenu(contenu)" class="p-1.5 text-[#9ca3af] hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors">
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                           </button>
                         </div>
@@ -573,5 +573,43 @@
 
     </div>
   </div>
+
+  <!-- Delete Course Modal -->
+  @if (showDeleteCourseModal) {
+    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+        <div class="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-center text-[#0f1419] mb-2">Delete Course?</h3>
+        <p class="text-sm text-[#6b7280] text-center mb-6">Are you sure you want to delete "<strong>{{ courseToDelete?.title }}</strong>"? This will also delete all its contenus.</p>
+        <div class="flex items-center gap-3">
+          <button (click)="cancelDeleteCourse()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-[#374151] border border-[#e5e7eb] rounded-xl hover:bg-[#f9fafb] transition-colors">Cancel</button>
+          <button (click)="executeDeleteCourse()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Contenu Modal -->
+  @if (showDeleteContenuModal) {
+    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+        <div class="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-center text-[#0f1419] mb-2">Delete Contenu?</h3>
+        <p class="text-sm text-[#6b7280] text-center mb-6">Are you sure you want to delete "<strong>{{ contenuToDelete?.titleC }}</strong>"?</p>
+        <div class="flex items-center gap-3">
+          <button (click)="cancelDeleteContenu()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-[#374151] border border-[#e5e7eb] rounded-xl hover:bg-[#f9fafb] transition-colors">Cancel</button>
+          <button (click)="executeDeleteContenu()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
 
 }

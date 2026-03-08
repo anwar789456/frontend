@@ -25,6 +25,10 @@ export class TutorQuizQuestionsComponent implements OnInit {
   isSaving = false;
   isGeneratingQuestions = false;
 
+  // Delete confirmation modal
+  showDeleteModal = false;
+  questionToDelete: QuestionQuiz | null = null;
+
   constructor(
     private fb: FormBuilder,
     private quizService: TutorQuizService,
@@ -193,12 +197,30 @@ export class TutorQuizQuestionsComponent implements OnInit {
     });
   }
 
-  deleteQuestion(q: QuestionQuiz): void {
-    if (!q.id || !confirm('Delete this question?')) return;
-    this.quizService.deleteQuestion(q.id).subscribe({
-      next: () => this.loadQuiz(),
+  confirmDeleteQuestion(q: QuestionQuiz): void {
+    this.questionToDelete = q;
+    this.showDeleteModal = true;
+    this.cdr.markForCheck();
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+    this.questionToDelete = null;
+    this.cdr.markForCheck();
+  }
+
+  executeDelete(): void {
+    if (!this.questionToDelete?.id) return;
+    this.quizService.deleteQuestion(this.questionToDelete.id).subscribe({
+      next: () => {
+        this.showDeleteModal = false;
+        this.questionToDelete = null;
+        this.loadQuiz();
+      },
       error: (err) => {
         console.error('Failed to delete question:', err);
+        this.showDeleteModal = false;
+        this.questionToDelete = null;
         this.cdr.markForCheck();
       }
     });

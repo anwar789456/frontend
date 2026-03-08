@@ -88,6 +88,12 @@ export class TutorCoursesComponent implements OnInit {
   // Expanded detail
   expandedCourseId: number | null = null;
 
+  // Delete confirmation modals
+  showDeleteCourseModal = false;
+  courseToDelete: Cours | null = null;
+  showDeleteContenuModal = false;
+  contenuToDelete: ContenuPedagogique | null = null;
+
   // Search & Filter
   searchTerm = '';
   activeFilter: string = 'all';
@@ -400,10 +406,8 @@ export class TutorCoursesComponent implements OnInit {
         ...(imagePayload ? { image: imagePayload } : {}),
         contenus: this.inlineContenus.length > 0 ? this.inlineContenus : []
       };
-      console.log('[DEBUG] updateCours payload:', JSON.stringify(payload));
       this.courseService.updateCours(this.editingCourse.id, payload).subscribe({
-        next: (updated) => {
-          console.log('[DEBUG] updateCours response:', JSON.stringify(updated));
+        next: () => {
           this.showCourseForm = false;
           this.editingCourse = null;
           this.inlineContenus = [];
@@ -417,10 +421,8 @@ export class TutorCoursesComponent implements OnInit {
         ...(imagePayload ? { image: imagePayload } : {}),
         contenus: this.inlineContenus.length > 0 ? this.inlineContenus : undefined
       };
-      console.log('[DEBUG] createCours payload:', JSON.stringify(payload));
       this.courseService.createCours(payload).subscribe({
-        next: (created) => {
-          console.log('[DEBUG] createCours response:', JSON.stringify(created));
+        next: () => {
           this.showCourseForm = false;
           this.inlineContenus = [];
           this.courseImageUrl = '';
@@ -432,12 +434,31 @@ export class TutorCoursesComponent implements OnInit {
     }
   }
 
-  deleteCourse(course: Cours): void {
-    if (!course.id) return;
-    if (!confirm(`Delete course "${course.title}"? This will also delete all its contenus.`)) return;
-    this.courseService.deleteCours(course.id).subscribe({
-      next: () => this.loadCourses(),
-      error: (err) => console.error('Failed to delete course:', err)
+  confirmDeleteCourse(course: Cours): void {
+    this.courseToDelete = course;
+    this.showDeleteCourseModal = true;
+    this.cdr.detectChanges();
+  }
+
+  cancelDeleteCourse(): void {
+    this.showDeleteCourseModal = false;
+    this.courseToDelete = null;
+    this.cdr.detectChanges();
+  }
+
+  executeDeleteCourse(): void {
+    if (!this.courseToDelete?.id) return;
+    this.courseService.deleteCours(this.courseToDelete.id).subscribe({
+      next: () => {
+        this.showDeleteCourseModal = false;
+        this.courseToDelete = null;
+        this.loadCourses();
+      },
+      error: () => {
+        this.showDeleteCourseModal = false;
+        this.courseToDelete = null;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -513,12 +534,31 @@ export class TutorCoursesComponent implements OnInit {
     }
   }
 
-  deleteContenu(contenu: ContenuPedagogique): void {
-    if (!contenu.idContent) return;
-    if (!confirm(`Delete contenu "${contenu.titleC}"?`)) return;
-    this.courseService.deleteContenu(contenu.idContent).subscribe({
-      next: () => this.loadCourses(),
-      error: (err) => console.error('Failed to delete contenu:', err)
+  confirmDeleteContenu(contenu: ContenuPedagogique): void {
+    this.contenuToDelete = contenu;
+    this.showDeleteContenuModal = true;
+    this.cdr.detectChanges();
+  }
+
+  cancelDeleteContenu(): void {
+    this.showDeleteContenuModal = false;
+    this.contenuToDelete = null;
+    this.cdr.detectChanges();
+  }
+
+  executeDeleteContenu(): void {
+    if (!this.contenuToDelete?.idContent) return;
+    this.courseService.deleteContenu(this.contenuToDelete.idContent).subscribe({
+      next: () => {
+        this.showDeleteContenuModal = false;
+        this.contenuToDelete = null;
+        this.loadCourses();
+      },
+      error: () => {
+        this.showDeleteContenuModal = false;
+        this.contenuToDelete = null;
+        this.cdr.detectChanges();
+      }
     });
   }
 
