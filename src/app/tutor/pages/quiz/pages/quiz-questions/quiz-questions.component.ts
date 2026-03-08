@@ -24,8 +24,6 @@ export class TutorQuizQuestionsComponent implements OnInit {
   questionTypes = Object.values(QuestionType);
   isSaving = false;
   isGeneratingQuestions = false;
-  aiQuestionCount = 3;
-  aiGeneratedCount = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -206,56 +204,48 @@ export class TutorQuizQuestionsComponent implements OnInit {
     });
   }
 
-  // ── AI Generation (one question at a time) ──
+  // ── AI: Generate a single question (no loop, tutor clicks once per question) ──
 
-  generateQuestionsWithAI(): void {
-    if (!this.quiz?.title || this.isGeneratingQuestions) return;
+  generateOneQuestion(): void {
+    if (!this.quiz?.title || this.isGeneratingQuestions || this.questions.length >= 5) return;
     this.isGeneratingQuestions = true;
-    this.aiGeneratedCount = 0;
     this.cdr.markForCheck();
-    this.generateNextQuestion(1);
-  }
 
-  private generateNextQuestion(questionNumber: number): void {
-    if (questionNumber > this.aiQuestionCount) {
-      this.isGeneratingQuestions = false;
-      this.loadQuiz();
-      return;
-    }
+    const level = this.quiz.level?.toString() || 'BEGINNER';
+    const qNum = this.questions.length + 1;
 
-    const level = this.quiz!.level?.toString() || 'BEGINNER';
-    this.quizService.generateSingleQuestion(this.quiz!.title, level, questionNumber).subscribe({
+    this.quizService.generateSingleQuestion(this.quiz.title, level, qNum).subscribe({
       next: (res) => {
         try {
           const q = JSON.parse(res.question);
-          if (q && q.question && q.options) {
+          if (q?.question && Array.isArray(q.options) && q.options.length >= 2) {
             const payload: QuestionQuiz = {
               question: q.question,
               type: 'MCQ',
-              options: Array.isArray(q.options) ? q.options.slice(0, 4) : [],
-              correctAnswer: q.correctAnswer || q.options?.[0] || '',
+              options: q.options.slice(0, 4),
+              correctAnswer: q.correctAnswer || q.options[0] || '',
               explanation: q.explanation || '',
               quiz: { id: this.quizId }
             };
             this.quizService.createQuestion(payload).subscribe({
-              next: () => {
-                this.aiGeneratedCount++;
-                this.cdr.markForCheck();
-                this.generateNextQuestion(questionNumber + 1);
-              },
-              error: () => this.generateNextQuestion(questionNumber + 1)
+              next: () => { this.isGeneratingQuestions = false; this.loadQuiz(); },
+              error: () => { this.isGeneratingQuestions = false; this.cdr.markForCheck(); }
             });
           } else {
-            this.generateNextQuestion(questionNumber + 1);
+            console.error('AI returned invalid question structure');
+            this.isGeneratingQuestions = false;
+            this.cdr.markForCheck();
           }
         } catch {
-          console.error('Failed to parse AI question #' + questionNumber);
-          this.generateNextQuestion(questionNumber + 1);
+          console.error('Failed to parse AI question');
+          this.isGeneratingQuestions = false;
+          this.cdr.markForCheck();
         }
       },
       error: (err) => {
-        console.error('AI generation failed for question #' + questionNumber, err);
-        this.generateNextQuestion(questionNumber + 1);
+        console.error('AI generation failed:', err);
+        this.isGeneratingQuestions = false;
+        this.cdr.markForCheck();
       }
     });
   }
