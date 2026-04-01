@@ -1,13 +1,13 @@
-<div class="forum-container flex gap-3 px-3 py-3 min-h-screen transition-all w-full" style="max-width:100%; overflow-x:hidden;" [class.forum-dark]="darkMode">
+<div class="forum-container flex gap-3 px-3 py-3 min-h-screen transition-all w-full" style="overflow-x:hidden;" [class.forum-dark]="darkMode">
   <!-- Hidden file input -->
   <input type="file" #fileInput class="hidden" accept="image/*,video/*" (change)="onFileSelected($event)" />
 
   <!-- Notification Toasts -->
-  <div class="fixed top-4 right-4 z-[999] flex flex-col gap-2 w-80">
+  <div class="fixed top-4 right-4 z-[999] flex flex-col gap-3 w-80">
     @for (n of notifications; track n.id) {
-      <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm" [class]="n.exiting ? 'toast-exit' : 'toast-enter'" [class.bg-green-50]="n.type === 'success' && !darkMode" [class.border-green-200]="n.type === 'success' && !darkMode" [class.bg-green-900/90]="n.type === 'success' && darkMode" [class.border-green-700]="n.type === 'success' && darkMode" [class.bg-blue-50]="n.type === 'info' && !darkMode" [class.border-blue-200]="n.type === 'info' && !darkMode" [class.bg-blue-900/90]="n.type === 'info' && darkMode" [class.border-blue-700]="n.type === 'info' && darkMode" [class.bg-orange-50]="n.type === 'warning' && !darkMode" [class.border-orange-200]="n.type === 'warning' && !darkMode" [class.bg-orange-900/90]="n.type === 'warning' && darkMode" [class.border-orange-700]="n.type === 'warning' && darkMode">
-        <span class="text-lg">{{ getNotifIcon(n.type) }}</span>
-        <p class="text-sm flex-1 dm-text" [class.text-gray-700]="!darkMode">{{ n.message }}</p>
+      <div class="flex items-center gap-3 px-5 py-3.5 rounded-2xl border-2 shadow-lg" [class]="n.exiting ? 'toast-exit' : 'toast-enter'" [class.bg-[#EDE9FE]]="n.type === 'success' && !darkMode" [class.border-[#7C3AED]]="n.type === 'success' && !darkMode" [class.bg-green-900/90]="n.type === 'success' && darkMode" [class.border-green-700]="n.type === 'success' && darkMode" [class.bg-[#E0E7FF]]="n.type === 'info' && !darkMode" [class.border-[#6366F1]]="n.type === 'info' && !darkMode" [class.bg-blue-900/90]="n.type === 'info' && darkMode" [class.border-blue-700]="n.type === 'info' && darkMode" [class.bg-[#FEF3C7]]="n.type === 'warning' && !darkMode" [class.border-[#F59E0B]]="n.type === 'warning' && !darkMode" [class.bg-orange-900/90]="n.type === 'warning' && darkMode" [class.border-orange-700]="n.type === 'warning' && darkMode">
+        <span class="text-xl">{{ getNotifIcon(n.type) }}</span>
+        <p class="text-sm font-bold flex-1 dm-text" [class.text-[#1E293B]]="!darkMode">{{ n.message }}</p>
         <button (click)="dismissNotification(n.id)" class="text-gray-400 hover:text-gray-600 shrink-0">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
@@ -16,101 +16,120 @@
   </div>
 
   <!-- ═══ LEFT SIDEBAR (sticky) ═══ -->
-  <div class="w-56 shrink-0 hidden lg:block">
+  <div class="w-56 shrink-0 hidden lg:flex lg:flex-col">
     <div class="sticky top-6 flex flex-col gap-4 max-h-[calc(100vh-48px)] overflow-y-auto pb-4 scrollbar-thin">
 
       <!-- Profile Card -->
       @if (user) {
         <div class="sidebar-section dm-card p-4">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-12 h-12 avatar-ring shrink-0">
+          <div class="flex flex-col items-center text-center mb-3">
+            <div class="w-16 h-16 avatar-ring shrink-0 mb-2">
               <div class="w-full h-full rounded-full overflow-hidden" [class.bg-white]="!darkMode" [class.bg-[#1e293b]]="darkMode">
                 <img [src]="$any(user).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" [alt]="user.name" class="w-full h-full object-cover" />
               </div>
             </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-1">
-                <p class="text-sm font-bold dm-text truncate" [class.text-[#0f1724]]="!darkMode">{{ user.name }}</p>
-                @if (getEquippedBadge()) {
-                  <span class="text-sm" [title]="getEquippedBadge()!.name">{{ getEquippedBadge()!.icon }}</span>
-                }
-              </div>
-              <p class="text-[11px] text-gray-400 truncate">{{'@' + user.name.replace(' ', '_').toLowerCase()}}</p>
+            <div class="flex items-center gap-1">
+              <p class="text-sm font-extrabold dm-text truncate" [class.text-[#1E293B]]="!darkMode">{{ user.name }}</p>
+              @if (getEquippedBadge()) {
+                <span class="text-sm" [title]="getEquippedBadge()!.name">{{ getEquippedBadge()!.icon }}</span>
+              }
+            </div>
+            <p class="text-[11px] text-[#94A3B8] truncate">{{'@' + user.name.replace(' ', '_').toLowerCase()}}</p>
+          </div>
+          <div class="flex items-center justify-center gap-3 mb-3">
+            <div class="flex flex-col items-center px-2">
+              <span class="text-xs font-extrabold text-[#7C3AED]">Lv.{{ userXP.level }}</span>
+              <span class="text-[9px] font-bold text-[#94A3B8] uppercase">Level</span>
+            </div>
+            <div class="w-px h-6 bg-[#E2E8F0]"></div>
+            <div class="flex flex-col items-center px-2">
+              <span class="text-xs font-extrabold text-[#7C3AED]">{{ userXP.xp }}</span>
+              <span class="text-[9px] font-bold text-[#94A3B8] uppercase">XP</span>
+            </div>
+            <div class="w-px h-6 bg-[#E2E8F0]"></div>
+            <div class="flex flex-col items-center px-2">
+              <span class="text-xs font-extrabold text-[#F59E0B]">🔥{{ userStreak.currentStreak }}</span>
+              <span class="text-[9px] font-bold text-[#94A3B8] uppercase">Streak</span>
             </div>
           </div>
-          <div class="flex items-center gap-2 text-[10px] text-gray-400 mb-3">
-            <span>Lv.{{ userXP.level }}</span>
-            <span>·</span>
-            <span>{{ userXP.xp }} XP</span>
-            <span>·</span>
-            <span>🔥 {{ userStreak.currentStreak }}</span>
-          </div>
-          <a href="/user/profile" class="w-full block text-center py-2 text-xs font-semibold text-[#38a9f3] bg-[#38a9f3]/10 rounded-xl hover:bg-[#38a9f3]/20 transition">View Profile</a>
+          <a href="/user/profile" class="w-full block text-center py-2.5 text-xs font-extrabold text-[#7C3AED] bg-[#EDE9FE] rounded-xl border-2 border-[#7C3AED]/20 border-b-4 border-b-[#7C3AED]/30 hover:bg-[#ddd6fe] transition active:translate-y-0.5 active:border-b-2 uppercase tracking-wide">View Profile</a>
         </div>
       }
 
       <!-- Feed Tabs: Saved / Favorites -->
       <div class="sidebar-section dm-card p-3">
-        <h3 class="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-2 px-1">Quick Access</h3>
-        <button (click)="switchTab(activeTab === 'saved' ? 'all' : 'saved')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all mb-1" [class.bg-[#38a9f3]/10]="activeTab === 'saved'" [class.text-[#38a9f3]]="activeTab === 'saved'" [class.text-gray-500]="activeTab !== 'saved'" [class.hover:bg-gray-100]="activeTab !== 'saved' && !darkMode">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
-          Saved Posts
+        <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-[#94A3B8] mb-2 px-1">Quick Access</h3>
+        <button (click)="switchTab(activeTab === 'saved' ? 'all' : 'saved')" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition-all mb-1 border-2 border-transparent" [class.bg-[#EDE9FE]]="activeTab === 'saved'" [class.border-[#7C3AED]]="activeTab === 'saved'" [class.text-[#7C3AED]]="activeTab === 'saved'" [class.text-[#94A3B8]]="activeTab !== 'saved'" [class.hover:bg-[#F8FAFC]]="activeTab !== 'saved' && !darkMode">
+          <span class="text-base">📚</span>
+          Saved
           @if (getSavedCount() > 0) {
-            <span class="ml-auto w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center bg-[#38a9f3]/15 text-[#38a9f3]">{{ getSavedCount() }}</span>
+            <span class="ml-auto w-5 h-5 rounded-full text-[10px] font-extrabold flex items-center justify-center bg-[#7C3AED] text-white">{{ getSavedCount() }}</span>
           }
         </button>
-        <button (click)="switchTab(activeTab === 'favorites' ? 'all' : 'favorites')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all" [class.bg-[#f59e0b]/10]="activeTab === 'favorites'" [class.text-[#f59e0b]]="activeTab === 'favorites'" [class.text-gray-500]="activeTab !== 'favorites'" [class.hover:bg-gray-100]="activeTab !== 'favorites' && !darkMode">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+        <button (click)="switchTab(activeTab === 'favorites' ? 'all' : 'favorites')" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition-all border-2 border-transparent" [class.bg-[#FEF3C7]]="activeTab === 'favorites'" [class.border-[#F59E0B]]="activeTab === 'favorites'" [class.text-[#F59E0B]]="activeTab === 'favorites'" [class.text-[#94A3B8]]="activeTab !== 'favorites'" [class.hover:bg-[#F8FAFC]]="activeTab !== 'favorites' && !darkMode">
+          <span class="text-base">⭐</span>
           Favorites
           @if (getFavoriteCount() > 0) {
-            <span class="ml-auto w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center bg-[#f59e0b]/15 text-[#f59e0b]">{{ getFavoriteCount() }}</span>
+            <span class="ml-auto w-5 h-5 rounded-full text-[10px] font-extrabold flex items-center justify-center bg-[#F59E0B] text-white">{{ getFavoriteCount() }}</span>
           }
         </button>
       </div>
 
-      <!-- Friend Suggestions -->
+      <!-- Friend Suggestions (Premium) -->
       @if (friendSuggestions.length > 0) {
-        <div class="sidebar-section dm-card p-4">
-          <div class="flex items-center gap-2 mb-3">
-            <div class="w-6 h-6 rounded-lg bg-green-50 flex items-center justify-center">
-              <span class="text-xs">👥</span>
+        <div class="sidebar-section dm-card overflow-hidden">
+          <div class="relative bg-gradient-to-r from-[#7C3AED] via-[#8b5cf6] to-[#EC4899] px-4 py-3">
+            <div class="absolute top-1 right-2 opacity-20">
+              <img src="mino_images/1770148246099.png" alt="" class="w-9 h-9 object-contain mascot-float" />
             </div>
-            <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">People You May Know</h3>
+            <div class="flex items-center gap-2 relative z-10">
+              <div class="w-7 h-7 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
+              </div>
+              <div>
+                <h3 class="text-sm font-extrabold text-white">People You May Know</h3>
+                <p class="text-[10px] text-white/60 font-bold">{{ friendSuggestions.length }} suggestions</p>
+              </div>
+            </div>
           </div>
-          @for (s of friendSuggestions; track s.id) {
-            <div class="flex items-center gap-2.5 py-2">
-              <div class="w-9 h-9 rounded-full overflow-hidden bg-gray-200 shrink-0 cursor-pointer" (click)="openProfileByUserId(s.id)">
-                <img [src]="s.avatar" [alt]="s.name" class="w-full h-full object-cover" />
+          <div class="p-3 space-y-1.5">
+            @for (s of friendSuggestions; track s.id) {
+              <div class="flex items-center gap-2.5 p-2 rounded-xl transition-all hover:bg-[#EDE9FE]/50 group cursor-pointer" [class.hover:bg-gray-700/50]="darkMode">
+                <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0 border-2 border-[#7C3AED]/20 group-hover:border-[#7C3AED]/50 transition-all shadow-sm" (click)="openProfileByUserId(s.id)">
+                  <img [src]="s.avatar" [alt]="s.name" class="w-full h-full object-cover" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-extrabold dm-text truncate cursor-pointer group-hover:text-[#7C3AED] transition-colors" [class.text-[#1E293B]]="!darkMode" (click)="openProfileByUserId(s.id)">{{ s.name }}</p>
+                  <p class="text-[10px] text-[#94A3B8] truncate font-bold">{{ s.username }}</p>
+                </div>
+                <button (click)="sendFriendRequestFromSuggestion(s)" class="px-3 py-1.5 text-[10px] font-extrabold text-white bg-gradient-to-r from-[#7C3AED] to-[#8b5cf6] rounded-xl border-b-2 border-b-[#6025c4] hover:from-[#8b5cf6] hover:to-[#a78bfa] active:translate-y-0.5 active:border-b-0 transition shrink-0 uppercase shadow-sm">Add</button>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold dm-text truncate cursor-pointer hover:underline" [class.text-[#0f1724]]="!darkMode" (click)="openProfileByUserId(s.id)">{{ s.name }}</p>
-                <p class="text-[10px] text-gray-400 truncate">{{ s.username }}</p>
-              </div>
-              <button (click)="sendFriendRequestFromSuggestion(s)" class="px-2.5 py-1 text-[10px] font-bold text-[#38a9f3] bg-[#38a9f3]/10 rounded-lg hover:bg-[#38a9f3]/20 transition shrink-0">Add</button>
-            </div>
-          }
+            }
+          </div>
         </div>
       }
 
-      <!-- Chat Link -->
-      <div class="sidebar-section dm-card p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <div class="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
-            <span class="text-xs">💬</span>
+      <!-- Chat Link (Premium) -->
+      <div class="sidebar-section dm-card overflow-hidden">
+        <div class="p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#EC4899] to-[#F43F5E] flex items-center justify-center border-b-2 border-[#d63384] shadow-sm">
+              <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+            </div>
+            <h3 class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Friends & Chat</h3>
           </div>
-          <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Chat</h3>
+          <a href="/user/friends" class="w-full block text-center py-2.5 text-xs font-extrabold text-white bg-gradient-to-r from-[#EC4899] to-[#F43F5E] rounded-xl border-b-4 border-[#d63384] hover:from-[#F43F5E] hover:to-[#EC4899] transition-all active:translate-y-0.5 active:border-b-0 uppercase tracking-wide shadow-sm">Open Chat</a>
         </div>
-        <a href="/user/friends" class="w-full block text-center py-2 text-xs font-semibold text-[#38a9f3] bg-[#38a9f3]/10 rounded-xl hover:bg-[#38a9f3]/20 transition">Open Friends &amp; Chat</a>
       </div>
 
       <!-- Footer -->
-      <div class="text-[10px] text-gray-400 dm-text-muted leading-relaxed px-1">
+      <div class="text-[10px] text-[#94A3B8] dm-text-muted leading-relaxed px-1">
         <div class="flex flex-wrap gap-x-2 gap-y-0.5">
-          <a class="hover:text-[#38a9f3] cursor-pointer">Terms</a>
-          <a class="hover:text-[#38a9f3] cursor-pointer">Privacy</a>
-          <a class="hover:text-[#38a9f3] cursor-pointer">Cookies</a>
+          <a class="hover:text-[#7C3AED] cursor-pointer font-bold">Terms</a>
+          <a class="hover:text-[#7C3AED] cursor-pointer font-bold">Privacy</a>
+          <a class="hover:text-[#7C3AED] cursor-pointer font-bold">Cookies</a>
         </div>
-        <p class="mt-1">&copy; 2024 MiNoLingo Inc.</p>
+        <p class="mt-1 font-bold">&copy; 2025 MiNoLingo Inc.</p>
       </div>
     </div>
   </div>
@@ -118,30 +137,31 @@
   <!-- ═══ CENTER CONTENT (scrollable) ═══ -->
   <div class="flex-1 min-w-0 overflow-y-auto" style="max-height: calc(100vh - 24px);">
     <!-- MinoLingo Welcome Banner -->
-    <div class="relative overflow-hidden rounded-2xl mb-6 p-5" [class.bg-gradient-to-r]="!darkMode" [class.from-[#38a9f3]]="!darkMode" [class.via-[#6366f1]]="!darkMode" [class.to-[#a855f7]]="!darkMode" [class.bg-gradient-to-r]="darkMode" [class.from-[#1e3a5f]]="darkMode" [class.via-[#2d2563]]="darkMode" [class.to-[#3b1f5e]]="darkMode">
-      <div class="absolute top-2 right-16 text-2xl float-bubble opacity-60">✨</div>
-      <div class="absolute top-8 right-8 text-lg float-bubble-delay opacity-50">🌟</div>
-      <div class="absolute bottom-2 right-32 text-xl float-bubble opacity-40">💬</div>
-      <div class="absolute bottom-1 left-[40%] text-sm sparkle opacity-30">⭐</div>
-      <div class="flex items-center gap-4">
-        <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 mascot-bounce overflow-hidden">
-          <img src="mino_images/1770148246099.png" alt="MinoLingo Mascot" class="w-14 h-14 object-contain drop-shadow-lg" />
+    <div class="relative overflow-hidden rounded-2xl mb-6 p-6 border-2 border-[#6025c4] border-b-4" [class.bg-[#7C3AED]]="!darkMode" [class.bg-[#2d5016]]="darkMode">
+      <div class="absolute top-2 right-16 text-3xl float-bubble opacity-70">✨</div>
+      <div class="absolute top-10 right-8 text-xl float-bubble-delay opacity-60">🌟</div>
+      <div class="absolute bottom-2 right-32 text-2xl float-bubble opacity-50">💬</div>
+      <div class="absolute bottom-1 left-[40%] text-lg sparkle opacity-40">⭐</div>
+      <div class="absolute top-1 left-[20%] text-sm float-bubble-delay opacity-30">🎯</div>
+      <div class="flex items-center gap-5">
+        <div class="w-20 h-20 rounded-2xl bg-white/25 backdrop-blur-sm flex items-center justify-center shrink-0 mascot-bounce overflow-hidden border-2 border-white/30">
+          <img src="mino_images/1770148246099.png" alt="MinoLingo Mascot" class="w-16 h-16 object-contain drop-shadow-lg" />
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
-            <h1 class="text-xl font-extrabold text-black tracking-tight">MinoLingo Community</h1>
-            <img src="mino_images/mino_with_pen.png" alt="" class="w-7 h-7 object-contain mascot-wave" />
+            <h1 class="text-2xl font-extrabold text-white tracking-tight drop-shadow-sm">MinoLingo Community</h1>
+            <img src="mino_images/mino_with_pen.png" alt="" class="w-8 h-8 object-contain mascot-wave" />
           </div>
-          <p class="text-black/80 text-sm mt-0.5 font-medium">Share your English adventures, help friends, and earn XP!</p>
+          <p class="text-white/90 text-sm mt-1 font-bold">Share your English adventures, help friends, and earn XP! 🚀</p>
         </div>
-        <div class="hidden md:flex items-center gap-2 shrink-0">
-          <div class="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-1.5 text-center">
-            <p class="text-white/90 text-[10px] font-bold uppercase tracking-wider">Posts</p>
-            <p class="text-white text-lg font-extrabold leading-tight">{{ posts.length }}</p>
+        <div class="hidden md:flex items-center gap-3 shrink-0">
+          <div class="bg-white rounded-2xl px-4 py-2.5 text-center border-b-4 border-[#E2E8F0]">
+            <p class="text-[#7C3AED] text-2xl font-extrabold leading-tight">{{ posts.length }}</p>
+            <p class="text-[#94A3B8] text-[10px] font-extrabold uppercase tracking-wider">Posts</p>
           </div>
-          <div class="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-1.5 text-center">
-            <p class="text-white/90 text-[10px] font-bold uppercase tracking-wider">Topics</p>
-            <p class="text-white text-lg font-extrabold leading-tight">{{ trendingTopics.length }}</p>
+          <div class="bg-white rounded-2xl px-4 py-2.5 text-center border-b-4 border-[#E2E8F0]">
+            <p class="text-[#7C3AED] text-2xl font-extrabold leading-tight">{{ trendingTopics.length }}</p>
+            <p class="text-[#94A3B8] text-[10px] font-extrabold uppercase tracking-wider">Topics</p>
           </div>
         </div>
       </div>
@@ -150,7 +170,7 @@
     <!-- Create Post -->
     <div class="forum-card dm-card p-5 mb-5" [class.bg-white]="!darkMode">
       <div class="flex items-start gap-3 mb-3">
-        <div class="w-11 h-11 avatar-ring shrink-0">
+        <div class="w-12 h-12 avatar-ring shrink-0">
           <div class="w-full h-full rounded-full overflow-hidden" [class.bg-white]="!darkMode" [class.bg-[#1e293b]]="darkMode">
             @if (user) {
               <img [src]="$any(user).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" [alt]="user.name" class="w-full h-full object-cover" />
@@ -158,19 +178,19 @@
           </div>
         </div>
         <div class="flex-1 relative user-suggestions-container">
-          <textarea #postInput [(ngModel)]="newPostContent" placeholder="What's on your mind? Use #topic or @user to tag..." class="w-full text-sm placeholder-gray-400 outline-none bg-transparent resize-none min-h-[44px] max-h-[120px] leading-relaxed dm-text dm-input" [class.text-[#0f1724]]="!darkMode" (input)="onPostContentInput()" maxlength="1000" rows="2"></textarea>
+          <textarea #postInput [(ngModel)]="newPostContent" placeholder="What's on your mind? 🤔 Use #topic or @friend..." class="w-full text-sm placeholder-[#94A3B8] outline-none bg-transparent resize-none min-h-[44px] max-h-[120px] leading-relaxed font-bold dm-text dm-input" [class.text-[#1E293B]]="!darkMode" (input)="onPostContentInput()" maxlength="1000" rows="2"></textarea>
 
           <!-- User Suggestions Dropdown -->
           @if (showUserSuggestions && userSuggestions.length > 0) {
-            <div class="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-30 w-64 overflow-hidden dm-card dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
+            <div class="absolute left-0 top-full mt-1 rounded-2xl shadow-xl z-30 w-64 overflow-hidden border-2 border-[#E2E8F0] dm-card" [class.bg-white]="!darkMode">
               @for (u of userSuggestions; track u.username) {
-                <button (click)="selectUserTag(u, $event)" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f0f7ff] transition-colors text-left dm-hover">
-                  <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shrink-0">
+                <button (click)="selectUserTag(u, $event)" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#EDE9FE] transition-colors text-left dm-hover">
+                  <div class="w-8 h-8 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0 border-2 border-[#7C3AED]/20">
                     <img [src]="u.avatar" [alt]="u.name" class="w-full h-full object-cover" />
                   </div>
                   <div class="min-w-0">
-                    <p class="text-sm font-semibold dm-text truncate" [class.text-[#0f1724]]="!darkMode">{{ u.name }}</p>
-                    <p class="text-xs text-gray-400 dm-text-muted truncate">{{ u.username }}</p>
+                    <p class="text-sm font-bold dm-text truncate" [class.text-[#1E293B]]="!darkMode">{{ u.name }}</p>
+                    <p class="text-xs text-[#94A3B8] dm-text-muted truncate">{{ u.username }}</p>
                   </div>
                 </button>
               }
@@ -227,16 +247,16 @@
       <!-- URL image input -->
       @if (showImageInput && !filePreviewUrl) {
         <div class="mb-3">
-          <input type="text" [(ngModel)]="newPostImage" placeholder="Paste image URL (https://...)" class="w-full text-sm border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-[#38a9f3]/30 dm-input" [class.border-gray-200]="!darkMode" />
+          <input type="text" [(ngModel)]="newPostImage" placeholder="Paste image URL (https://...)" class="w-full text-sm font-bold border-2 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED] dm-input" [class.border-[#E2E8F0]]="!darkMode" />
         </div>
       }
 
       <!-- Location input -->
       @if (showLocationInput) {
         <div class="mb-3 flex items-center gap-2">
-          <div class="flex items-center gap-1.5 bg-[#38a9f3]/10 text-[#38a9f3] rounded-lg px-3 py-1.5 flex-1">
+          <div class="flex items-center gap-1.5 bg-[#F43F5E]/10 text-[#F43F5E] rounded-xl px-3 py-2 flex-1 border-2 border-[#F43F5E]/20">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-            <input type="text" [(ngModel)]="newPostLocation" placeholder="Add a location (e.g. Paris, France)" class="flex-1 text-sm bg-transparent outline-none placeholder-[#38a9f3]/50 text-[#38a9f3]" maxlength="100" />
+            <input type="text" [(ngModel)]="newPostLocation" placeholder="Add a location (e.g. Paris, France)" class="flex-1 text-sm font-bold bg-transparent outline-none placeholder-[#F43F5E]/50 text-[#F43F5E]" maxlength="100" />
           </div>
           <button (click)="toggleLocationInput()" class="text-gray-400 hover:text-gray-600">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -247,7 +267,7 @@
       <!-- Location Badge -->
       @if (newPostLocation && !showLocationInput) {
         <div class="mb-3 flex items-center gap-1.5">
-          <span class="inline-flex items-center gap-1 bg-[#38a9f3]/10 text-[#38a9f3] text-xs font-medium px-2.5 py-1 rounded-full">
+          <span class="inline-flex items-center gap-1 bg-[#F43F5E]/10 text-[#F43F5E] text-xs font-bold px-3 py-1 rounded-xl border-2 border-[#F43F5E]/20">
             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
             {{ newPostLocation }}
           </span>
@@ -262,7 +282,7 @@
         <div class="mb-3 emoji-picker-container rounded-xl shadow-lg overflow-hidden dm-card dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode" (click)="$event.stopPropagation()">
           <div class="flex items-center gap-0.5 px-2 py-1.5 border-b dm-border overflow-x-auto" [class.border-gray-100]="!darkMode">
             @for (cat of emojiCategories; track cat.name; let i = $index) {
-              <button (click)="activeEmojiCategory = i; $event.stopPropagation()" class="px-2 py-1 text-lg rounded-lg transition-colors shrink-0" [class.bg-[#38a9f3]/10]="activeEmojiCategory === i" [class.hover:bg-gray-100]="activeEmojiCategory !== i">{{ cat.icon }}</button>
+              <button (click)="activeEmojiCategory = i; $event.stopPropagation()" class="px-2 py-1 text-lg rounded-lg transition-colors shrink-0" [class.bg-[#7C3AED]/10]="activeEmojiCategory === i" [class.hover:bg-gray-100]="activeEmojiCategory !== i">{{ cat.icon }}</button>
             }
           </div>
           <div class="p-2 h-[180px] overflow-y-auto">
@@ -279,14 +299,14 @@
       @if (showGifPicker) {
         <div class="mb-3 rounded-xl shadow-lg overflow-hidden dm-card dm-border" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode" (click)="$event.stopPropagation()">
           <div class="flex items-center gap-2 px-3 py-2 border-b dm-border" [class.border-gray-100]="!darkMode">
-            <span class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">GIF</span>
+            <span class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">GIF</span>
             <input type="text" [(ngModel)]="gifSearchQuery" (input)="onGifSearch()" placeholder="Search GIFs..." class="flex-1 text-sm bg-transparent outline-none gif-search dm-text dm-input" />
             <span class="text-[9px] text-gray-400 font-medium">GIPHY</span>
           </div>
           <div class="p-2 h-[220px] overflow-y-auto">
             @if (gifLoading) {
               <div class="flex items-center justify-center h-full">
-                <div class="w-6 h-6 border-2 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+                <div class="w-6 h-6 border-2 border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
               </div>
             } @else {
               <div class="gif-grid">
@@ -303,31 +323,31 @@
       }
 
       <!-- Action Bar -->
-      <div class="flex items-center justify-between border-t pt-3 dm-border" [class.border-gray-100]="!darkMode">
+      <div class="flex items-center justify-between border-t-2 pt-3 dm-border" [class.border-[#E2E8F0]]="!darkMode">
         <div class="flex items-center gap-1">
           <!-- Media upload -->
-          <button (click)="triggerFileInput()" class="p-2 rounded-lg text-gray-400 hover:text-[#38a9f3] hover:bg-[#38a9f3]/10 transition-all" title="Upload image or video">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M18 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75z" /></svg>
+          <button (click)="triggerFileInput()" class="p-2.5 rounded-xl text-[#94A3B8] hover:text-[#7C3AED] hover:bg-[#EDE9FE] transition-all border-2 border-transparent hover:border-[#7C3AED]/20" title="Upload image or video">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M18 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75z" /></svg>
           </button>
           <!-- URL paste -->
-          <button (click)="toggleImageInput()" class="p-2 rounded-lg transition-all" [class.text-[#38a9f3]]="showImageInput" [class.bg-[#38a9f3]/10]="showImageInput" [class.text-gray-400]="!showImageInput" title="Paste image URL">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.813a4.5 4.5 0 00-6.364-6.364L4.5 8.25" /></svg>
+          <button (click)="toggleImageInput()" class="p-2.5 rounded-xl transition-all border-2 border-transparent" [class.text-[#7C3AED]]="showImageInput" [class.bg-[#EDE9FE]]="showImageInput" [class.border-[#7C3AED]/20]="showImageInput" [class.text-[#94A3B8]]="!showImageInput" title="Paste image URL">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.813a4.5 4.5 0 00-6.364-6.364L4.5 8.25" /></svg>
           </button>
           <!-- GIF -->
-          <button (click)="toggleGifPicker($event)" class="p-2 rounded-lg transition-all" [class.text-[#38a9f3]]="showGifPicker" [class.bg-[#38a9f3]/10]="showGifPicker" [class.text-gray-400]="!showGifPicker" title="Add GIF">
+          <button (click)="toggleGifPicker($event)" class="p-2.5 rounded-xl transition-all border-2 border-transparent" [class.text-[#EC4899]]="showGifPicker" [class.bg-[#EC4899]/10]="showGifPicker" [class.border-[#EC4899]/20]="showGifPicker" [class.text-[#94A3B8]]="!showGifPicker" title="Add GIF">
             <span class="text-xs font-extrabold tracking-tight">GIF</span>
           </button>
           <!-- Emoji -->
-          <button (click)="toggleEmojiPicker($event)" class="emoji-picker-container p-2 rounded-lg transition-all" [class.text-[#38a9f3]]="showEmojiPicker" [class.bg-[#38a9f3]/10]="showEmojiPicker" [class.text-gray-400]="!showEmojiPicker" title="Add emoji">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" /></svg>
+          <button (click)="toggleEmojiPicker($event)" class="emoji-picker-container p-2.5 rounded-xl transition-all border-2 border-transparent" [class.text-[#F59E0B]]="showEmojiPicker" [class.bg-[#FEF3C7]]="showEmojiPicker" [class.border-[#F59E0B]/20]="showEmojiPicker" [class.text-[#94A3B8]]="!showEmojiPicker" title="Add emoji">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" /></svg>
           </button>
           <!-- Location -->
-          <button (click)="toggleLocationInput()" class="p-2 rounded-lg transition-all" [class.text-[#38a9f3]]="showLocationInput || newPostLocation" [class.bg-[#38a9f3]/10]="showLocationInput || newPostLocation" [class.text-gray-400]="!showLocationInput && !newPostLocation" title="Add location">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+          <button (click)="toggleLocationInput()" class="p-2.5 rounded-xl transition-all border-2 border-transparent" [class.text-[#F43F5E]]="showLocationInput || newPostLocation" [class.bg-[#FFE4E6]]="showLocationInput || newPostLocation" [class.border-[#F43F5E]/20]="showLocationInput || newPostLocation" [class.text-[#94A3B8]]="!showLocationInput && !newPostLocation" title="Add location">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
           </button>
         </div>
-        <button (click)="createPost()" class="btn-primary px-6 py-2 text-sm active:scale-95">
-          Post
+        <button (click)="createPost()" class="btn-primary px-8 py-2.5 text-sm">
+          Post 🚀
         </button>
       </div>
     </div>
@@ -335,63 +355,74 @@
     <!-- Active Filter Indicator -->
     @if (activeTab !== 'all') {
       <div class="flex items-center gap-2 mb-4 px-1">
-        <span class="text-sm text-gray-500">Showing:</span>
-        <span class="text-sm font-semibold px-3 py-0.5 rounded-full" [class.bg-[#38a9f3]/10]="activeTab === 'saved'" [class.text-[#38a9f3]]="activeTab === 'saved'" [class.bg-[#f59e0b]/10]="activeTab === 'favorites'" [class.text-[#f59e0b]]="activeTab === 'favorites'">{{ activeTab === 'saved' ? 'Saved Posts' : 'Favorites' }}</span>
-        <button (click)="switchTab('all')" class="text-xs text-gray-400 hover:text-gray-600 underline">Show all</button>
+        <span class="text-sm font-bold text-[#94A3B8]">Showing:</span>
+        <span class="text-sm font-extrabold px-4 py-1 rounded-xl border-2" [class.bg-[#EDE9FE]]="activeTab === 'saved'" [class.text-[#7C3AED]]="activeTab === 'saved'" [class.border-[#7C3AED]]="activeTab === 'saved'" [class.bg-[#FEF3C7]]="activeTab === 'favorites'" [class.text-[#F59E0B]]="activeTab === 'favorites'" [class.border-[#F59E0B]]="activeTab === 'favorites'">{{ activeTab === 'saved' ? '📚 Saved Posts' : '⭐ Favorites' }}</span>
+        <button (click)="switchTab('all')" class="text-xs font-bold text-[#F43F5E] hover:underline">Show all</button>
       </div>
     }
 
     <!-- Topic Filter Indicator -->
     @if (selectedTopicId !== null) {
       <div class="flex items-center gap-2 mb-4 px-1">
-        <span class="text-sm text-gray-500">Filtering by topic:</span>
+        <span class="text-sm font-bold text-[#94A3B8]">Topic:</span>
         @for (t of trendingTopics; track t.id) {
           @if (t.id === selectedTopicId) {
-            <span class="bg-[#38a9f3]/10 text-[#38a9f3] text-sm font-semibold px-3 py-0.5 rounded-full">{{ t.title }}</span>
+            <span class="bg-[#EDE9FE] text-[#7C3AED] text-sm font-extrabold px-4 py-1 rounded-xl border-2 border-[#7C3AED]">{{ t.title }}</span>
           }
         }
-        <button (click)="clearTopicFilter()" class="text-xs text-gray-400 hover:text-gray-600 underline">Clear</button>
+        <button (click)="clearTopicFilter()" class="text-xs font-bold text-[#F43F5E] hover:underline">Clear</button>
+      </div>
+    }
+
+    <!-- Posts Loading Spinner -->
+    @if (postsLoading) {
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="w-16 h-16 rounded-2xl bg-[#7C3AED] flex items-center justify-center mascot-bounce mb-4 border-b-4 border-[#6025c4]">
+          <img src="mino_images/1770148246099.png" alt="Loading..." class="w-12 h-12 object-contain" />
+        </div>
+        <p class="text-base font-extrabold text-[#1E293B]">Loading awesome posts...</p>
+        <p class="text-sm font-bold text-[#94A3B8] mt-1">Just a moment! ✨</p>
       </div>
     }
 
     <!-- Posts -->
     @for (post of filteredPosts; track post.id) {
-      <div [id]="'post-' + post.id" class="forum-card post-card dm-card p-5 mb-4 transition-all duration-500" [class.bg-white]="!darkMode" [class.ring-2]="highlightedPostId === post.id" [class.ring-[#38a9f3]]="highlightedPostId === post.id" [class.bg-blue-50]="highlightedPostId === post.id && !darkMode">
+      <div [id]="'post-' + post.id" class="forum-card post-card dm-card p-5 mb-4 transition-all duration-500" [class.bg-white]="!darkMode" [class.ring-2]="highlightedPostId === post.id" [class.ring-[#7C3AED]]="highlightedPostId === post.id" [class.bg-[#EDE9FE]/30]="highlightedPostId === post.id && !darkMode">
         <div class="flex items-start gap-3 mb-3">
-          <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0">
+          <div class="w-11 h-11 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0 border-2 border-[#E2E8F0] hover:border-[#7C3AED] transition-colors cursor-pointer">
             <img [src]="post.avatar" [alt]="post.author" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1 min-w-0">
             @if (editingPostId === post.id) {
               <div class="flex flex-col gap-2">
-                <textarea [(ngModel)]="editContent" (input)="editError = ''" class="w-full text-sm border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-[#38a9f3]/30 resize-none dm-input" [class.border-gray-200]="!darkMode" rows="3" maxlength="1000"></textarea>
+                <textarea [(ngModel)]="editContent" (input)="editError = ''" class="w-full text-sm font-bold border-2 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED] resize-none dm-input" [class.border-[#E2E8F0]]="!darkMode" rows="3" maxlength="1000"></textarea>
                 @if (editError) {
                   <p class="text-xs text-red-500">{{ editError }}</p>
                 }
                 <div class="flex items-center gap-2">
-                  <button (click)="submitEdit(post)" class="bg-[#38a9f3] text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-[#2196e3]">Save</button>
-                  <button (click)="cancelEdit()" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-semibold hover:bg-gray-200">Cancel</button>
-                  <span class="text-xs text-gray-400 ml-auto">{{ editContent.length }}/1000</span>
+                  <button (click)="submitEdit(post)" class="bg-[#7C3AED] text-white px-4 py-1.5 rounded-xl text-xs font-extrabold border-b-2 border-[#6025c4] hover:bg-[#8b5cf6] active:translate-y-0.5 active:border-b-0 uppercase">Save</button>
+                  <button (click)="cancelEdit()" class="bg-[#E2E8F0] text-[#64748B] px-4 py-1.5 rounded-xl text-xs font-extrabold border-b-2 border-[#CBD5E1] hover:bg-[#CBD5E1] active:translate-y-0.5 active:border-b-0 uppercase">Cancel</button>
+                  <span class="text-xs font-bold text-[#94A3B8] ml-auto">{{ editContent.length }}/1000</span>
                 </div>
               </div>
             } @else {
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-sm font-bold dm-text cursor-pointer hover:underline" [class.text-[#0f1724]]="!darkMode" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.author }}</span>
+                <span class="text-sm font-extrabold dm-text cursor-pointer hover:underline" [class.text-[#1E293B]]="!darkMode" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.author }}</span>
                 @if (getUserEquippedBadgeIcon(post.userId)) {
                   <span class="text-sm" [title]="'Badge'">{{ getUserEquippedBadgeIcon(post.userId) }}</span>
                 }
-                <span class="text-sm text-gray-400 dm-text-muted cursor-pointer hover:underline" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.username }}</span>
-                <span class="text-sm text-gray-400 dm-text-muted">· {{ getTimeAgo(post) }}</span>
+                <span class="text-sm text-[#94A3B8] dm-text-muted cursor-pointer hover:underline" (click)="post.userId ? openProfileByUserId(post.userId) : null">{{ post.username }}</span>
+                <span class="text-sm text-[#94A3B8] dm-text-muted">· {{ getTimeAgo(post) }}</span>
                 @if (post.isEdited) {
-                  <span class="text-[10px] text-gray-400 italic px-1.5 py-0.5 rounded" [class.bg-gray-100]="!darkMode" [class.bg-gray-700]="darkMode">(edited)</span>
+                  <span class="text-[10px] font-bold text-[#94A3B8] italic px-2 py-0.5 rounded-lg border" [class.bg-[#F8FAFC]]="!darkMode" [class.border-[#E2E8F0]]="!darkMode" [class.bg-gray-700]="darkMode">(edited)</span>
                 }
               </div>
-              <p class="text-sm mt-1.5 leading-relaxed dm-text" [class.text-[#0f1724]]="!darkMode" [innerHTML]="formatContent(post.content)"></p>
+              <p class="text-sm mt-1.5 leading-relaxed font-semibold dm-text" [class.text-[#1E293B]]="!darkMode" [innerHTML]="formatContent(post.content)"></p>
               <!-- Translation Toggle -->
               <div class="mt-1.5 flex items-center gap-2">
-                <button (click)="toggleTranslation(post)" class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full transition-all" [class.bg-[#38a9f3]/10]="isShowingTranslation(post.id)" [class.text-[#38a9f3]]="isShowingTranslation(post.id)" [class.text-gray-400]="!isShowingTranslation(post.id)" [class.hover:text-[#38a9f3]]="true">
+                <button (click)="toggleTranslation(post)" class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-xl transition-all border-2 border-transparent" [class.bg-[#EDE9FE]]="isShowingTranslation(post.id)" [class.text-[#7C3AED]]="isShowingTranslation(post.id)" [class.border-[#7C3AED]/20]="isShowingTranslation(post.id)" [class.text-[#94A3B8]]="!isShowingTranslation(post.id)" [class.hover:text-[#7C3AED]]="true">
                   @if (isTranslating(post.id)) {
-                    <div class="w-3 h-3 border border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+                    <div class="w-3 h-3 border-2 border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
                   } @else {
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" /></svg>
                   }
@@ -399,8 +430,8 @@
                 </button>
               </div>
               @if (isShowingTranslation(post.id) && getTranslation(post.id)) {
-                <div class="mt-1.5 px-3 py-2 rounded-lg border-l-2 border-[#38a9f3] text-sm leading-relaxed dm-text" [class.bg-blue-50]="!darkMode" [class.bg-blue-900/20]="darkMode">
-                  <span class="text-[10px] font-semibold text-[#38a9f3] uppercase tracking-wide block mb-0.5">English Translation</span>
+                <div class="mt-1.5 px-3 py-2 rounded-xl border-l-4 border-[#7C3AED] text-sm leading-relaxed font-semibold dm-text" [class.bg-[#EDE9FE]]="!darkMode" [class.bg-blue-900/20]="darkMode">
+                  <span class="text-[10px] font-extrabold text-[#7C3AED] uppercase tracking-wider block mb-0.5">🌍 English Translation</span>
                   {{ getTranslation(post.id) }}
                 </div>
               }
@@ -408,23 +439,23 @@
           </div>
           <!-- 3-dot menu -->
           <div class="relative">
-            <button (click)="toggleMenu(post.id)" class="text-gray-400 hover:text-gray-600 shrink-0 p-1 rounded-lg hover:bg-gray-100 transition-colors dm-hover">
+            <button (click)="toggleMenu(post.id)" class="text-[#94A3B8] hover:text-[#1E293B] shrink-0 p-1.5 rounded-xl hover:bg-[#F8FAFC] transition-colors dm-hover border-2 border-transparent hover:border-[#E2E8F0]">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
             </button>
             @if (openMenuPostId === post.id) {
-              <div class="absolute right-0 top-8 rounded-xl shadow-xl z-10 py-1.5 min-w-[160px] overflow-hidden dm-menu" [class.bg-white]="!darkMode" [class.border]="!darkMode" [class.border-gray-200]="!darkMode">
+              <div class="absolute right-0 top-9 rounded-2xl shadow-xl z-10 py-2 min-w-[180px] overflow-hidden border-2 border-[#E2E8F0] dm-menu" [class.bg-white]="!darkMode">
                 @if (isOwnPost(post)) {
-                  <button (click)="startEdit(post)" class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-2.5 dm-text dm-hover"><svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>Edit</button>
-                  <button (click)="deletePost(post)" class="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>Delete</button>
+                  <button (click)="startEdit(post)" class="w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-[#EDE9FE] flex items-center gap-2.5 dm-text dm-hover"><svg class="w-4 h-4 text-[#7C3AED]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>Edit</button>
+                  <button (click)="deletePost(post)" class="w-full text-left px-4 py-2.5 text-sm font-bold text-[#F43F5E] hover:bg-[#FFE4E6] flex items-center gap-2.5"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>Delete</button>
                 }
                 @if (!isOwnPost(post)) {
-                  <button (click)="sendFriendRequestFromForum(post)" class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 flex items-center gap-2.5 dm-text dm-hover" [class.text-[#38a9f3]]="getFriendStatus(post.userId) === 'none'" [class.text-gray-400]="getFriendStatus(post.userId) !== 'none'" [disabled]="getFriendStatus(post.userId) !== 'none'">
+                  <button (click)="sendFriendRequestFromForum(post)" class="w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-[#EDE9FE] flex items-center gap-2.5 dm-text dm-hover" [class.text-[#7C3AED]]="getFriendStatus(post.userId) === 'none'" [class.text-[#94A3B8]]="getFriendStatus(post.userId) !== 'none'" [disabled]="getFriendStatus(post.userId) !== 'none'">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>
                     {{ getFriendStatus(post.userId) === 'pending' ? 'Request Sent' : 'Add Friend' }}
                   </button>
-                  <button (click)="openReportModal(post)" class="w-full text-left px-4 py-2.5 text-sm text-orange-500 hover:bg-orange-50 flex items-center gap-2.5"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" /></svg>Report</button>
+                  <button (click)="openReportModal(post)" class="w-full text-left px-4 py-2.5 text-sm font-bold text-[#F59E0B] hover:bg-[#FEF3C7] flex items-center gap-2.5"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" /></svg>Report</button>
                 }
-                <button (click)="openMenuPostId = null" class="w-full text-left px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 flex items-center gap-2.5 border-t dm-border dm-hover" [class.border-gray-100]="!darkMode"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>Close</button>
+                <button (click)="openMenuPostId = null" class="w-full text-left px-4 py-2.5 text-sm font-bold text-[#94A3B8] hover:bg-[#F8FAFC] flex items-center gap-2.5 border-t-2 dm-border dm-hover" [class.border-[#E2E8F0]]="!darkMode"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>Close</button>
               </div>
             }
           </div>
@@ -432,7 +463,7 @@
 
         <!-- Post Image -->
         @if (post.image && !isVideoUrl(post.image)) {
-          <div class="rounded-xl overflow-hidden mb-3 max-h-80 flex items-center justify-center" [class.bg-gradient-to-br]="!darkMode" [class.from-blue-50]="!darkMode" [class.to-green-50]="!darkMode" [class.bg-gray-800]="darkMode">
+          <div class="rounded-2xl overflow-hidden mb-3 max-h-80 flex items-center justify-center border-2 border-[#E2E8F0]" [class.bg-[#F8FAFC]]="!darkMode" [class.bg-gray-800]="darkMode">
             <img [src]="post.image" alt="Post image" class="max-h-80 w-full object-contain" />
           </div>
         }
@@ -445,22 +476,22 @@
 
         <!-- Embedded Shared Post -->
         @if (post.sharedPostId) {
-          <div class="flex items-center gap-1.5 mb-2 text-xs text-gray-400 dm-text-muted">
+          <div class="flex items-center gap-1.5 mb-2 text-xs font-bold text-[#94A3B8] dm-text-muted">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
             <span class="font-medium">{{ post.author }}</span> shared a post
           </div>
           @if (getSharedPost(post); as sharedPost) {
-            <div class="mb-3 rounded-xl border overflow-hidden shared-post-embed dm-border" [class.border-gray-200]="!darkMode" [class.bg-gray-50]="!darkMode" [class.bg-[#0f172a]]="darkMode">
+            <div class="mb-3 rounded-2xl border-2 overflow-hidden shared-post-embed dm-border" [class.border-[#E2E8F0]]="!darkMode" [class.bg-[#F8FAFC]]="!darkMode" [class.bg-[#0f172a]]="darkMode">
               <div class="flex items-center gap-2 px-4 py-2.5 border-b dm-border" [class.border-gray-100]="!darkMode">
                 <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0">
                   <img [src]="sharedPost.avatar" [alt]="sharedPost.author" class="w-full h-full object-cover" />
                 </div>
-                <span class="text-xs font-bold dm-text cursor-pointer hover:underline" [class.text-[#0f1724]]="!darkMode" (click)="sharedPost.userId ? openProfileByUserId(sharedPost.userId) : null">{{ sharedPost.author }}</span>
+                <span class="text-xs font-extrabold dm-text cursor-pointer hover:underline" [class.text-[#1E293B]]="!darkMode" (click)="sharedPost.userId ? openProfileByUserId(sharedPost.userId) : null">{{ sharedPost.author }}</span>
                 <span class="text-xs text-gray-400 dm-text-muted">{{ sharedPost.username }}</span>
                 <span class="text-xs text-gray-400 dm-text-muted">· {{ getTimeAgo(sharedPost) }}</span>
               </div>
               <div class="px-4 py-3">
-                <p class="text-sm leading-relaxed dm-text" [class.text-[#0f1724]]="!darkMode" [innerHTML]="formatContent(sharedPost.content)"></p>
+                <p class="text-sm leading-relaxed font-semibold dm-text" [class.text-[#1E293B]]="!darkMode" [innerHTML]="formatContent(sharedPost.content)"></p>
                 @if (sharedPost.image && !isVideoUrl(sharedPost.image)) {
                   <div class="rounded-lg overflow-hidden mt-2 max-h-48">
                     <img [src]="sharedPost.image" alt="Shared post image" class="max-h-48 w-full object-contain" />
@@ -482,7 +513,7 @@
         @if (getPostReactions(post.id).length > 0) {
           <div class="flex items-center gap-1 mb-2 flex-wrap">
             @for (r of getPostReactions(post.id); track r.emoji) {
-              <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border reaction-pop" [class.bg-[#38a9f3]/10]="getUserReaction(post.id) === r.emoji" [class.border-[#38a9f3]/30]="getUserReaction(post.id) === r.emoji" [class.bg-gray-50]="getUserReaction(post.id) !== r.emoji && !darkMode" [class.border-gray-200]="getUserReaction(post.id) !== r.emoji && !darkMode" [class.bg-gray-700]="getUserReaction(post.id) !== r.emoji && darkMode" [class.border-gray-600]="getUserReaction(post.id) !== r.emoji && darkMode">{{ r.emoji }} <span class="font-semibold dm-text-sec" [class.text-gray-600]="!darkMode">{{ r.count }}</span></span>
+              <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl border-2 reaction-pop font-bold" [class.bg-[#EDE9FE]]="getUserReaction(post.id) === r.emoji" [class.border-[#7C3AED]]="getUserReaction(post.id) === r.emoji" [class.bg-[#F8FAFC]]="getUserReaction(post.id) !== r.emoji && !darkMode" [class.border-[#E2E8F0]]="getUserReaction(post.id) !== r.emoji && !darkMode" [class.bg-gray-700]="getUserReaction(post.id) !== r.emoji && darkMode" [class.border-gray-600]="getUserReaction(post.id) !== r.emoji && darkMode">{{ r.emoji }} <span class="font-extrabold dm-text-sec" [class.text-[#1E293B]]="!darkMode">{{ r.count }}</span></span>
             }
           </div>
         }
@@ -495,31 +526,42 @@
         }
 
         <!-- Post Actions -->
-        <div class="flex items-center gap-2 text-sm pt-3 mt-1 border-t dm-border" [class.border-gray-100]="!darkMode">
+        <div class="flex items-center gap-2 text-sm pt-3 mt-1 border-t-2 dm-border" [class.border-[#E2E8F0]]="!darkMode">
           <!-- Comment -->
           <button (click)="startReply(post.id)" class="action-btn" [class.active]="replyingToPostId === post.id">
             <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" /></svg>
-            <span class="text-xs font-medium">{{ post.comments }}</span>
+            <span class="text-xs font-extrabold">{{ post.comments }}</span>
           </button>
                     <!-- React (replaces old Like) -->
           <div class="relative">
-            <button (click)="toggleReactionPicker(post.id, $event)" [disabled]="isOwnPost(post)" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all" [class.hover:bg-red-50]="!isOwnPost(post)" [class.hover:text-red-400]="!isOwnPost(post)" [class.opacity-40]="isOwnPost(post)" [class.cursor-not-allowed]="isOwnPost(post)" [class.text-red-400]="getUserReaction(post.id)" [title]="isOwnPost(post) ? 'You cannot react to your own post' : 'React'">
+            <button (click)="toggleReactionPicker(post.id, $event)" [disabled]="isOwnPost(post)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all border-2 border-transparent" [class.hover:bg-[#FFE4E6]]="!isOwnPost(post)" [class.hover:text-[#F43F5E]]="!isOwnPost(post)" [class.hover:border-[#F43F5E]/20]="!isOwnPost(post)" [class.opacity-40]="isOwnPost(post)" [class.cursor-not-allowed]="isOwnPost(post)" [class.text-[#F43F5E]]="getUserReaction(post.id)" [title]="isOwnPost(post) ? 'You cannot react to your own post' : 'React'">
               @if (getUserReaction(post.id)) {
                 <span class="text-base">{{ getUserReaction(post.id) }}</span>
               } @else {
                 <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
               }
-              <span class="text-xs font-medium">{{ post.likes }}</span>
+              <span class="text-xs font-extrabold">{{ post.likes }}</span>
             </button>
-            <!-- Reaction Picker Popup -->
+            <!-- Reaction Picker Popup (Mascot-themed) -->
             @if (showReactionsPostId === post.id) {
-              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-0.5 px-2 py-1.5 rounded-2xl shadow-xl border z-20 dm-card" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode" (click)="$event.stopPropagation()">
-                @for (r of reactionEmojis; track r.emoji) {
-                  <button (click)="reactToPost(post, r.emoji, $event)" class="group relative w-9 h-9 flex items-center justify-center text-xl rounded-full hover:bg-gray-100 hover:scale-125 transition-all dm-hover" [class.bg-[#38a9f3]/15]="getUserReaction(post.id) === r.emoji" [class.scale-110]="getUserReaction(post.id) === r.emoji">
-                    {{ r.emoji }}
-                    <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none">{{ r.label }}</span>
-                  </button>
-                }
+              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-20 picker-reveal" (click)="$event.stopPropagation()">
+                <div class="relative">
+                  <!-- Mascot peeking -->
+                  <div class="absolute -top-5 left-1/2 -translate-x-1/2 z-30">
+                    <div class="w-8 h-8 rounded-full bg-[#EDE9FE] border-2 border-[#7C3AED]/30 flex items-center justify-center shadow-lg overflow-hidden mascot-bounce" [class.bg-gray-700]="darkMode">
+                      <img src="mino_images/1770148246099.png" alt="" class="w-6 h-6 object-contain" />
+                    </div>
+                  </div>
+                  <!-- Picker body -->
+                  <div class="flex items-center gap-1.5 px-4 py-2.5 pt-4 rounded-2xl shadow-xl dm-card" [class.bg-white]="!darkMode" [class.border-[#E2E8F0]]="!darkMode" style="border: 2px solid transparent; background-clip: padding-box; box-shadow: 0 0 0 2px rgba(124,58,237,0.15), 0 10px 25px -5px rgba(124,58,237,0.15);">
+                    @for (r of reactionEmojis; track r.emoji) {
+                      <button (click)="reactToPost(post, r.emoji, $event)" class="group relative w-10 h-10 flex items-center justify-center text-xl rounded-xl hover:scale-[1.35] transition-all duration-200 hover:-translate-y-1" [class.bg-gradient-to-br]="getUserReaction(post.id) === r.emoji" [class.from-[#EDE9FE]]="getUserReaction(post.id) === r.emoji" [class.to-[#ddd6fe]]="getUserReaction(post.id) === r.emoji" [class.ring-2]="getUserReaction(post.id) === r.emoji" [class.ring-[#7C3AED]]="getUserReaction(post.id) === r.emoji" [class.scale-110]="getUserReaction(post.id) === r.emoji" [class.shadow-md]="getUserReaction(post.id) === r.emoji">
+                        {{ r.emoji }}
+                        <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#7C3AED] to-[#EC4899] text-white text-[9px] font-extrabold px-2.5 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all pointer-events-none shadow-lg">{{ r.label }}</span>
+                      </button>
+                    }
+                  </div>
+                </div>
               </div>
             }
           </div>
@@ -551,16 +593,16 @@
 
         <!-- Reply Input -->
         @if (replyingToPostId === post.id) {
-          <div class="mt-3 pt-3 border-t dm-border" [class.border-gray-100]="!darkMode">
+          <div class="mt-3 pt-3 border-t-2 dm-border" [class.border-[#E2E8F0]]="!darkMode">
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shrink-0">
+              <div class="w-8 h-8 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0 border-2 border-[#7C3AED]/20">
                 @if (user) {
                   <img [src]="$any(user).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" [alt]="user.name" class="w-full h-full object-cover" />
                 }
               </div>
-              <input type="text" [(ngModel)]="replyContent" (input)="replyError = ''" placeholder="Write a reply..." class="flex-1 text-sm border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#38a9f3]/20 focus:border-[#38a9f3] dm-input" [class.border-gray-200]="!darkMode" (keydown.enter)="submitReply(post.id)" maxlength="500" />
-              <button (click)="submitReply(post.id)" class="bg-[#38a9f3] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-[#2196e3] transition-colors">Reply</button>
-              <button (click)="cancelReply()" class="text-gray-400 hover:text-gray-600 text-xs font-medium">Cancel</button>
+              <input type="text" [(ngModel)]="replyContent" (input)="replyError = ''" placeholder="Write a reply... 💬" class="flex-1 text-sm font-bold border-2 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] dm-input" [class.border-[#E2E8F0]]="!darkMode" (keydown.enter)="submitReply(post.id)" maxlength="500" />
+              <button (click)="submitReply(post.id)" class="bg-[#7C3AED] text-white px-5 py-2 rounded-xl text-xs font-extrabold border-b-2 border-[#6025c4] hover:bg-[#8b5cf6] active:translate-y-0.5 active:border-b-0 transition uppercase">Reply</button>
+              <button (click)="cancelReply()" class="text-[#94A3B8] hover:text-[#1E293B] text-xs font-bold">Cancel</button>
             </div>
             @if (replyError) {
               <p class="text-xs text-red-500 mt-1 pl-11">{{ replyError }}</p>
@@ -570,24 +612,24 @@
 
         <!-- Expanded Replies -->
         @if (expandedRepliesPostId === post.id && repliesMap.get(post.id)) {
-          <div class="mt-3 pt-3 border-t dm-border space-y-3" [class.border-gray-100]="!darkMode">
+          <div class="mt-3 pt-3 border-t-2 dm-border space-y-3" [class.border-[#E2E8F0]]="!darkMode">
             @for (reply of repliesMap.get(post.id); track reply.id) {
-              <div class="flex items-start gap-2 pl-4 border-l-2 border-[#38a9f3]/20">
-                <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0">
+              <div class="flex items-start gap-2 pl-4 border-l-4 border-[#7C3AED]/30 rounded-r-lg">
+                <div class="w-7 h-7 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0">
                   <img [src]="reply.avatar" [alt]="reply.author" class="w-full h-full object-cover" />
                 </div>
                 <div class="flex-1">
                   <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold dm-text" [class.text-[#0f1724]]="!darkMode">{{ reply.author }}</span>
-                    <span class="text-xs text-gray-400 dm-text-muted">{{ reply.username }}</span>
-                    <span class="text-xs text-gray-400 dm-text-muted">· {{ getTimeAgo(reply) }}</span>
+                    <span class="text-xs font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ reply.author }}</span>
+                    <span class="text-xs text-[#94A3B8] dm-text-muted">{{ reply.username }}</span>
+                    <span class="text-xs text-[#94A3B8] dm-text-muted">· {{ getTimeAgo(reply) }}</span>
                   </div>
-                  <p class="text-xs mt-0.5 leading-relaxed dm-text" [class.text-[#0f1724]]="!darkMode" [innerHTML]="formatContent(reply.content)"></p>
+                  <p class="text-xs mt-0.5 leading-relaxed font-semibold dm-text" [class.text-[#1E293B]]="!darkMode" [innerHTML]="formatContent(reply.content)"></p>
                 </div>
               </div>
             }
             @if (repliesMap.get(post.id)?.length === 0) {
-              <p class="text-xs text-gray-400 pl-4 italic dm-text-muted">No replies yet. Be the first to reply!</p>
+              <p class="text-xs font-bold text-[#94A3B8] pl-4 italic dm-text-muted">No replies yet. Be the first to reply! 😊</p>
             }
           </div>
         }
@@ -598,11 +640,11 @@
       <div class="text-center py-16 text-gray-400">
         @if (activeTab === 'saved') {
           <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" [class.bg-blue-50]="!darkMode" [class.bg-blue-900/20]="darkMode">
-            <svg class="w-8 h-8 text-[#38a9f3]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
+            <svg class="w-8 h-8 text-[#7C3AED]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
           </div>
           <p class="text-sm font-medium dm-text" [class.text-gray-500]="!darkMode">No saved posts yet</p>
           <p class="text-xs text-gray-400 mt-1">Tap the bookmark icon on any post to save it here!</p>
-          <button (click)="switchTab('all')" class="text-[#38a9f3] text-sm mt-3 hover:underline font-medium">Browse all posts</button>
+          <button (click)="switchTab('all')" class="text-[#7C3AED] text-sm mt-3 hover:underline font-extrabold">Browse all posts</button>
         } @else if (activeTab === 'favorites') {
           <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" [class.bg-yellow-50]="!darkMode" [class.bg-yellow-900/20]="darkMode">
             <svg class="w-8 h-8 text-[#f59e0b]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
@@ -616,7 +658,7 @@
           </div>
           @if (selectedTopicId !== null) {
             <p class="text-sm font-medium text-gray-500">No posts found for this topic.</p>
-            <button (click)="clearTopicFilter()" class="text-[#38a9f3] text-sm mt-2 hover:underline font-medium">Show all posts</button>
+            <button (click)="clearTopicFilter()" class="text-[#7C3AED] text-sm mt-2 hover:underline font-extrabold">Show all posts</button>
           } @else {
             <p class="text-sm font-medium text-gray-500">No posts yet.</p>
             <p class="text-xs text-gray-400 mt-1">Be the first to share something!</p>
@@ -627,69 +669,87 @@
   </div>
 
   <!-- ═══ RIGHT SIDEBAR (sticky) ═══ -->
-  <div class="w-80 shrink-0 hidden lg:block">
+  <div class="hidden lg:block lg:w-80 lg:shrink-0">
     <div class="sticky top-6 flex flex-col gap-3 overflow-y-auto pb-6 pr-1" style="max-height: calc(100vh - 48px); scrollbar-width: thin;">
     <!-- Top Bar: Theme + Notifications -->
     <div class="flex items-center justify-between px-1">
-      <span class="text-xs font-semibold dm-text-sec" [class.text-gray-500]="!darkMode">Theme</span>
+      <span class="text-xs font-extrabold dm-text-sec uppercase tracking-wider" [class.text-[#94A3B8]]="!darkMode">Theme</span>
       <div class="flex items-center gap-2">
         <!-- Notification Bell -->
         <div class="relative">
-          <button (click)="toggleNotifPanel()" class="relative p-1.5 rounded-lg transition-all" [class.text-[#38a9f3]]="showNotifPanel" [class.bg-[#38a9f3]/10]="showNotifPanel" [class.text-gray-400]="!showNotifPanel" [class.hover:text-[#38a9f3]]="!showNotifPanel">
+          <button (click)="toggleNotifPanel()" class="relative p-2 rounded-xl transition-all border-2 border-transparent" [class.text-[#7C3AED]]="showNotifPanel" [class.bg-[#EDE9FE]]="showNotifPanel" [class.border-[#7C3AED]/20]="showNotifPanel" [class.text-[#94A3B8]]="!showNotifPanel" [class.hover:text-[#7C3AED]]="!showNotifPanel">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
             @if (unreadNotifCount > 0) {
-              <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center notif-badge">{{ unreadNotifCount > 9 ? '9+' : unreadNotifCount }}</span>
+              <span class="absolute -top-1 -right-1 w-5 h-5 bg-[#F43F5E] text-white text-[9px] font-extrabold rounded-full flex items-center justify-center notif-badge border-2 border-white">{{ unreadNotifCount > 9 ? '9+' : unreadNotifCount }}</span>
             }
           </button>
           <!-- Notifications Panel (dropdown) -->
           @if (showNotifPanel) {
-            <div class="notif-panel dm-card bg-white absolute right-0 top-10 w-80 z-50" [class.bg-[#1e293b]]="darkMode">
-              <div class="flex items-center justify-between px-4 py-3 border-b dm-border" [class.border-gray-100]="!darkMode">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-lg bg-[#38a9f3]/10 flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+            <div class="notif-panel dm-card bg-white absolute right-0 top-10 w-80 z-50 picker-reveal" [class.bg-[#1e293b]]="darkMode">
+              <!-- Premium Gradient Header with Mascot -->
+              <div class="relative overflow-hidden rounded-t-[18px]">
+                <div class="bg-gradient-to-r from-[#7C3AED] via-[#8b5cf6] to-[#EC4899] px-4 py-3">
+                  <div class="absolute top-1 right-2 opacity-20">
+                    <img src="mino_images/1770148246099.png" alt="" class="w-10 h-10 object-contain mascot-float" />
                   </div>
-                  <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Notifications</h3>
+                  <div class="flex items-center justify-between relative z-10">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                      </div>
+                      <div>
+                        <h3 class="text-sm font-extrabold text-white">Notifications</h3>
+                        @if (unreadNotifCount > 0) {
+                          <p class="text-[10px] text-white/70 font-bold">{{ unreadNotifCount }} unread</p>
+                        }
+                      </div>
+                    </div>
+                    @if (unreadNotifCount > 0) {
+                      <button (click)="markAllNotifsRead()" class="text-[10px] text-white/90 font-extrabold hover:text-white bg-white/15 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/20 hover:bg-white/25 transition-all">Mark all read</button>
+                    }
+                  </div>
                 </div>
-                @if (unreadNotifCount > 0) {
-                  <button (click)="markAllNotifsRead()" class="text-[10px] text-[#38a9f3] font-semibold hover:underline">Mark all read</button>
-                }
               </div>
               <div class="max-h-[320px] overflow-y-auto overflow-x-hidden">
                 @for (notif of tagNotifications; track notif.id) {
-                  <div (click)="onNotifClick(notif)" class="notif-item flex items-start gap-3 px-4 py-3 cursor-pointer" [class.unread]="!notif.isRead">
-                    <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shrink-0 relative">
+                  <div (click)="onNotifClick(notif)" class="notif-item flex items-start gap-3 px-4 py-3 cursor-pointer group" [class.unread]="!notif.isRead">
+                    <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 relative border-2 transition-all" [class.border-[#7C3AED]/30]="!notif.isRead" [class.border-[#E2E8F0]]="notif.isRead" [class.bg-[#EDE9FE]]="!darkMode" [class.bg-gray-700]="darkMode">
                       <img [src]="notif.fromAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'" alt="" class="w-full h-full object-cover" />
                       @if (notif.type === 'FRIEND_REQUEST') {
-                        <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                        <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#10B981] rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                           <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </div>
+                      }
+                      @if (notif.type === 'TAG') {
+                        <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#7C3AED] rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                          <span class="text-[8px]">@</span>
                         </div>
                       }
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="text-xs dm-text leading-relaxed" [class.text-[#0f1724]]="!darkMode" [class.font-semibold]="!notif.isRead">{{ notif.message }}</p>
-                      <div class="flex items-center gap-2 mt-0.5">
-                        <p class="text-[10px] text-gray-400">{{ getNotifTimeAgo(notif.createdAt) }}</p>
+                      <p class="text-xs dm-text leading-relaxed font-semibold group-hover:text-[#7C3AED] transition-colors" [class.text-[#1E293B]]="!darkMode" [class.font-extrabold]="!notif.isRead">{{ notif.message }}</p>
+                      <div class="flex items-center gap-2 mt-1">
+                        <p class="text-[10px] text-[#94A3B8] font-bold">{{ getNotifTimeAgo(notif.createdAt) }}</p>
                         @if (notif.type === 'FRIEND_REQUEST') {
-                          <span class="text-[9px] font-semibold bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full">Friend Request</span>
+                          <span class="text-[9px] font-extrabold bg-[#D1FAE5] text-[#059669] px-2 py-0.5 rounded-lg border border-[#10B981]/20">Friend Request</span>
                         }
                         @if (notif.type === 'TAG') {
-                          <span class="text-[9px] font-semibold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">Mention</span>
+                          <span class="text-[9px] font-extrabold bg-[#EDE9FE] text-[#7C3AED] px-2 py-0.5 rounded-lg border border-[#7C3AED]/20">Mention</span>
                         }
                       </div>
                     </div>
                     @if (!notif.isRead) {
-                      <div class="w-2 h-2 bg-[#38a9f3] rounded-full shrink-0 mt-1.5"></div>
+                      <div class="w-2.5 h-2.5 bg-gradient-to-br from-[#7C3AED] to-[#EC4899] rounded-full shrink-0 mt-1.5 shadow-sm notif-badge"></div>
                     }
                   </div>
                 }
                 @if (tagNotifications.length === 0) {
-                  <div class="text-center py-10 px-4 bg-white" [class.bg-[#1e293b]]="darkMode">
-                    <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center" [class.bg-gray-700]="darkMode">
-                      <svg class="w-6 h-6 text-gray-300" [class.text-gray-500]="darkMode" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                  <div class="text-center py-10 px-4" [class.bg-white]="!darkMode" [class.bg-[#1e293b]]="darkMode">
+                    <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-[#EDE9FE] flex items-center justify-center border-b-4 border-[#ddd6fe] overflow-hidden" [class.bg-gray-700]="darkMode">
+                      <img src="mino_images/1770148246099.png" alt="No notifications" class="w-12 h-12 object-contain mascot-float" />
                     </div>
-                    <p class="text-xs font-medium text-gray-400" [class.text-gray-300]="darkMode">No notifications yet</p>
-                    <p class="text-[10px] text-gray-300 mt-0.5" [class.text-gray-500]="darkMode">Mentions will appear here</p>
+                    <p class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">All caught up!</p>
+                    <p class="text-[10px] text-[#94A3B8] mt-1 font-bold">Mentions and friend requests will appear here</p>
                   </div>
                 }
               </div>
@@ -697,8 +757,8 @@
           }
         </div>
         <!-- Dark Mode Toggle -->
-        <button (click)="toggleDarkMode()" class="relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none" [class.bg-[#38a9f3]]="darkMode" [class.bg-gray-300]="!darkMode">
-          <div class="absolute top-0.5 w-5 h-5 rounded-full shadow-md flex items-center justify-center text-[10px] transition-transform duration-300" [class.translate-x-6]="darkMode" [class.translate-x-0.5]="!darkMode" [class.bg-[#0f172a]]="darkMode" [class.bg-white]="!darkMode">
+        <button (click)="toggleDarkMode()" class="relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none border-2" [class.bg-[#7C3AED]]="darkMode" [class.border-[#6025c4]]="darkMode" [class.bg-[#E2E8F0]]="!darkMode" [class.border-[#CBD5E1]]="!darkMode">
+          <div class="absolute top-0.5 w-5 h-5 rounded-full shadow-md flex items-center justify-center text-[10px] transition-transform duration-300" [class.translate-x-6]="darkMode" [class.translate-x-0.5]="!darkMode" [class.bg-[#0f172a]]="darkMode" [class.bg-white]="!darkMode" style="border: 1px solid rgba(0,0,0,0.1);">
             @if (darkMode) { <span>🌙</span> } @else { <span>☀️</span> }
           </div>
         </button>
@@ -710,33 +770,33 @@
       <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
       </svg>
-      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search forums..." class="search-input w-full pl-9 pr-4 py-2.5 text-sm placeholder-gray-400 outline-none dm-input" />
+      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search posts... 🔍" class="search-input w-full pl-9 pr-4 py-2.5 text-sm font-bold placeholder-[#94A3B8] outline-none dm-input" />
     </div>
 
     <!-- XP & Level Card -->
     @if (user) {
       <div class="sidebar-section dm-card p-4 relative">
         @if (xpGainAnimation) {
-          <div class="absolute top-2 right-3 text-xs font-bold text-[#38a9f3] animate-bounce">+{{ xpGainAnimation.amount }} XP</div>
+          <div class="absolute top-2 right-3 text-sm font-extrabold text-[#7C3AED] animate-bounce">+{{ xpGainAnimation.amount }} XP ✨</div>
         }
         <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#38a9f3] to-[#6366f1] flex items-center justify-center text-white text-sm font-bold shadow-lg">{{ userXP.level }}</div>
+          <div class="w-12 h-12 rounded-2xl bg-[#7C3AED] flex items-center justify-center text-white text-lg font-extrabold border-b-4 border-[#6025c4]">{{ userXP.level }}</div>
           <div>
-            <p class="text-xs font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Level {{ userXP.level }}</p>
-            <p class="text-[10px] text-gray-400">{{ userXP.xp }} XP total</p>
+            <p class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Level {{ userXP.level }}</p>
+            <p class="text-[10px] font-bold text-[#94A3B8]">{{ userXP.xp }} XP total</p>
           </div>
           <div class="ml-auto text-right">
-            <p class="text-[10px] text-gray-400">Next level</p>
-            <p class="text-xs font-bold text-[#38a9f3]">{{ getXPToNextLevel() }} XP</p>
+            <p class="text-[10px] font-bold text-[#94A3B8] uppercase">Next</p>
+            <p class="text-sm font-extrabold text-[#7C3AED]">{{ getXPToNextLevel() }} XP</p>
           </div>
         </div>
-        <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden" [class.bg-gray-700]="darkMode">
-          <div class="h-full bg-gradient-to-r from-[#38a9f3] to-[#6366f1] rounded-full transition-all duration-500" [style.width.%]="getXPProgress()"></div>
+        <div class="w-full h-3 bg-[#E2E8F0] rounded-full overflow-hidden" [class.bg-gray-700]="darkMode">
+          <div class="xp-bar h-full bg-[#7C3AED] rounded-full transition-all duration-500" [style.width.%]="getXPProgress()"></div>
         </div>
-        <div class="flex items-center justify-between mt-2 text-[10px] text-gray-400">
+        <div class="flex items-center justify-between mt-2.5 text-[10px] font-bold text-[#94A3B8]">
           <span>📝 {{ userXP.postsCount }} posts</span>
           <span>💬 {{ userXP.commentsCount }} comments</span>
-          <span>� {{ userXP.likesGivenCount }} reactions</span>
+          <span>❤️ {{ userXP.likesGivenCount }} reactions</span>
         </div>
       </div>
     }
@@ -744,79 +804,81 @@
     <!-- Streak Tracker -->
     <div class="sidebar-section dm-card p-4">
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span [class]="getStreakFlameSize()" [class.animate-bounce]="showStreakAnimation">🔥</span>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#F59E0B] flex items-center justify-center border-b-4 border-[#d97706]">
+            <span [class]="getStreakFlameSize()" [class.animate-bounce]="showStreakAnimation">🔥</span>
+          </div>
           <div>
-            <p class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">{{ userStreak.currentStreak }} day streak</p>
-            <p class="text-[10px] text-gray-400">Best: {{ userStreak.longestStreak }} days</p>
+            <p class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ userStreak.currentStreak }} day streak!</p>
+            <p class="text-[10px] font-bold text-[#94A3B8]">Best: {{ userStreak.longestStreak }} days 🏆</p>
           </div>
         </div>
-        <div class="flex gap-0.5">
+        <div class="flex gap-1">
           @for (i of [1,2,3,4,5,6,7]; track i) {
-            <div class="w-3 h-3 rounded-sm transition-all" [class.bg-[#38a9f3]]="i <= userStreak.currentStreak" [class.bg-gray-200]="i > userStreak.currentStreak" [class.bg-gray-700]="i > userStreak.currentStreak && darkMode"></div>
+            <div class="w-3.5 h-3.5 rounded-md transition-all border" [class.bg-[#F59E0B]]="i <= userStreak.currentStreak" [class.border-[#e68600]]="i <= userStreak.currentStreak" [class.bg-[#E2E8F0]]="i > userStreak.currentStreak" [class.border-[#CBD5E1]]="i > userStreak.currentStreak" [class.bg-gray-700]="i > userStreak.currentStreak && darkMode"></div>
           }
         </div>
       </div>
     </div>
 
     <!-- Word of the Day -->
-    <div class="sidebar-section dm-card p-4 relative" [class.ring-2]="showWotdCelebration" [class.ring-yellow-400]="showWotdCelebration">
+    <div class="sidebar-section dm-card p-4 relative" [class.ring-2]="showWotdCelebration" [class.ring-[#F59E0B]]="showWotdCelebration">
       @if (showWotdCelebration) {
-        <div class="absolute inset-0 flex items-center justify-center bg-yellow-50/80 rounded-xl z-10">
+        <div class="absolute inset-0 flex items-center justify-center bg-[#FEF3C7]/90 rounded-2xl z-10">
           <div class="text-center">
-            <p class="text-3xl mb-1">🎯</p>
-            <p class="text-sm font-bold text-yellow-600">Word Used!</p>
-            <p class="text-xs text-yellow-500">+{{ 15 }} XP bonus!</p>
+            <p class="text-4xl mb-2">🎯</p>
+            <p class="text-base font-extrabold text-[#F59E0B]">Word Used!</p>
+            <p class="text-sm font-bold text-[#F59E0B]">+{{ 15 }} XP bonus! ✨</p>
           </div>
         </div>
       }
-      <div class="flex items-center gap-2 mb-2">
-        <div class="w-6 h-6 rounded-lg bg-yellow-50 flex items-center justify-center">
-          <span class="text-xs">�</span>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 rounded-xl bg-[#F59E0B] flex items-center justify-center border-b-2 border-[#d97706]">
+          <span class="text-sm">📖</span>
         </div>
-        <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Word of the Day</h3>
+        <h3 class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Word of the Day</h3>
         @if (wotdUsedToday) {
-          <span class="ml-auto text-[9px] font-bold bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full">Used ✓</span>
+          <span class="ml-auto text-[9px] font-extrabold bg-[#EDE9FE] text-[#7C3AED] px-2 py-0.5 rounded-lg">Used ✓</span>
         } @else {
-          <span class="ml-auto text-[9px] font-bold bg-yellow-100 text-yellow-600 px-1.5 py-0.5 rounded-full">+15 XP</span>
+          <span class="ml-auto text-[9px] font-extrabold bg-[#FEF3C7] text-[#F59E0B] px-2 py-0.5 rounded-lg border border-[#F59E0B]">+15 XP</span>
         }
       </div>
-      <div class="rounded-xl p-5" [class.bg-gradient-to-r]="!darkMode" [class.from-yellow-50]="!darkMode" [class.to-orange-50]="!darkMode" [class.bg-gray-800]="darkMode">
-        <p class="text-2xl font-extrabold dm-text" [class.text-[#0f1724]]="!darkMode">{{ wordOfTheDay.word }}</p>
-        <p class="text-sm text-gray-500 mt-2 italic leading-relaxed">{{ wordOfTheDay.definition }}</p>
-        <p class="text-sm text-gray-400 mt-3 leading-relaxed">"{{ wordOfTheDay.example }}"</p>
+      <div class="rounded-2xl p-5 border-2" [class.bg-[#FEF3C7]]="!darkMode" [class.border-[#F59E0B]/30]="!darkMode" [class.bg-gray-800]="darkMode" [class.border-gray-700]="darkMode">
+        <p class="text-2xl font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ wordOfTheDay.word }}</p>
+        <p class="text-sm font-semibold text-[#94A3B8] mt-2 italic leading-relaxed">{{ wordOfTheDay.definition }}</p>
+        <p class="text-sm font-semibold text-[#F59E0B] mt-3 leading-relaxed">"{{ wordOfTheDay.example }}"</p>
       </div>
       @if (!wotdUsedToday) {
-        <button (click)="insertWotd()" class="mt-3 w-full py-2.5 text-sm font-semibold text-[#38a9f3] bg-[#38a9f3]/10 rounded-lg hover:bg-[#38a9f3]/20 transition">Use in your post →</button>
+        <button (click)="insertWotd()" class="mt-3 w-full py-2.5 text-sm font-extrabold text-white bg-[#F59E0B] rounded-xl border-b-4 border-[#d97706] hover:bg-[#ffd633] active:translate-y-0.5 active:border-b-0 transition uppercase">Use in your post →</button>
       }
     </div>
 
     <!-- Badges -->
     <div class="sidebar-section dm-card p-4">
       <div class="flex items-center gap-2 mb-3">
-        <div class="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center">
-          <span class="text-xs">🏆</span>
+        <div class="w-8 h-8 rounded-xl bg-[#EC4899] flex items-center justify-center border-b-2 border-[#d63384]">
+          <span class="text-sm">🏆</span>
         </div>
-        <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Badges</h3>
-        <span class="ml-auto text-[10px] text-gray-400">{{ getUserBadges().length }}/{{ allBadges.length }}</span>
+        <h3 class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Badges</h3>
+        <span class="ml-auto text-[10px] font-extrabold text-[#94A3B8]">{{ getUserBadges().length }}/{{ allBadges.length }}</span>
       </div>
       @if (equippedBadgeId) {
-        <div class="flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50" [class.from-yellow-900/20]="darkMode" [class.to-orange-900/20]="darkMode">
+        <div class="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl border-2 border-[#EC4899]/30" [class.bg-[#EC4899]/10]="!darkMode" [class.bg-purple-900/20]="darkMode">
           <span class="text-lg">{{ getEquippedBadge()?.icon }}</span>
-          <span class="text-[10px] font-bold dm-text" [class.text-[#0f1724]]="!darkMode">{{ getEquippedBadge()?.name }}</span>
-          <span class="ml-auto text-[9px] text-green-500 font-bold">EQUIPPED</span>
+          <span class="text-[10px] font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ getEquippedBadge()?.name }}</span>
+          <span class="ml-auto text-[9px] text-[#7C3AED] font-extrabold uppercase">Equipped</span>
         </div>
       }
-      <p class="text-[10px] text-gray-400 mb-2">Tap an unlocked badge to equip it</p>
-      <div class="flex flex-wrap gap-1.5">
+      <p class="text-[10px] font-bold text-[#94A3B8] mb-2">Tap an unlocked badge to equip it</p>
+      <div class="flex flex-wrap gap-2">
         @for (badge of getUserBadges(); track badge.id) {
-          <div (click)="toggleEquipBadge(badge)" class="group relative w-9 h-9 rounded-lg flex items-center justify-center text-lg cursor-pointer transition-all hover:scale-110" [class.ring-2]="equippedBadgeId === badge.id" [class.ring-[#38a9f3]]="equippedBadgeId === badge.id" [class.bg-gradient-to-br]="true" [class.from-yellow-50]="!darkMode" [class.to-orange-50]="!darkMode" [class.from-yellow-900/30]="darkMode" [class.to-orange-900/30]="darkMode" [title]="badge.name + ': ' + badge.description + (equippedBadgeId === badge.id ? ' (equipped - click to unequip)' : ' (click to equip)')">
+          <div (click)="toggleEquipBadge(badge)" class="group relative w-10 h-10 rounded-xl flex items-center justify-center text-lg cursor-pointer transition-all hover:scale-110 border-2" [class.border-[#7C3AED]]="equippedBadgeId === badge.id" [class.bg-[#EDE9FE]]="equippedBadgeId === badge.id" [class.border-[#E2E8F0]]="equippedBadgeId !== badge.id && !darkMode" [class.bg-[#F8FAFC]]="equippedBadgeId !== badge.id && !darkMode" [class.bg-gray-700]="darkMode" [title]="badge.name + ': ' + badge.description + (equippedBadgeId === badge.id ? ' (equipped - click to unequip)' : ' (click to equip)')">
             {{ badge.icon }}
-            <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[8px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">{{ equippedBadgeId === badge.id ? 'Unequip' : 'Equip' }}</span>
+            <span class="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-[#1E293B] text-white text-[8px] font-bold px-2 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">{{ equippedBadgeId === badge.id ? 'Unequip' : 'Equip' }}</span>
           </div>
         }
         @for (badge of getLockedBadges(); track badge.id) {
-          <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg opacity-20 grayscale cursor-default" [class.bg-gray-100]="!darkMode" [class.bg-gray-800]="darkMode" [title]="badge.name + ' (locked): ' + badge.description">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg opacity-20 grayscale cursor-default border-2" [class.bg-[#F8FAFC]]="!darkMode" [class.border-[#E2E8F0]]="!darkMode" [class.bg-gray-800]="darkMode" [title]="badge.name + ' (locked): ' + badge.description">
             {{ badge.icon }}
           </div>
         }
@@ -825,24 +887,24 @@
 
     <!-- New Topic Form -->
     @if (showNewTopicForm) {
-      <div class="dm-card dm-border rounded-xl p-4" [class.bg-white]="!darkMode" [class.border-gray-200]="!darkMode">
-        <h3 class="text-sm font-bold dm-text mb-3" [class.text-[#0f1724]]="!darkMode">Create New Topic</h3>
+      <div class="dm-card dm-border rounded-2xl p-4 border-2" [class.bg-white]="!darkMode" [class.border-[#E2E8F0]]="!darkMode">
+        <h3 class="text-sm font-extrabold dm-text mb-3" [class.text-[#1E293B]]="!darkMode">Create New Topic</h3>
         <div class="flex flex-col gap-2">
           <div>
-            <input type="text" [(ngModel)]="newTopicTitle" (input)="topicTitleError = ''" placeholder="Topic title (e.g. #PastParticiple)" class="w-full text-sm border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-[#38a9f3]/30" [class.border-red-400]="topicTitleError" [class.border-gray-200]="!topicTitleError" maxlength="50" />
+            <input type="text" [(ngModel)]="newTopicTitle" (input)="topicTitleError = ''" placeholder="Topic title (e.g. #PastParticiple)" class="w-full text-sm font-bold border-2 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]" [class.border-[#F43F5E]]="topicTitleError" [class.border-[#E2E8F0]]="!topicTitleError" maxlength="50" />
             @if (topicTitleError) {
-              <p class="text-xs text-red-500 mt-1">{{ topicTitleError }}</p>
+              <p class="text-xs font-bold text-[#F43F5E] mt-1">{{ topicTitleError }}</p>
             }
           </div>
           <div>
-            <input type="text" [(ngModel)]="newTopicCategory" (input)="topicCategoryError = ''" placeholder="Category (e.g. Grammar)" class="w-full text-sm border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-[#38a9f3]/30" [class.border-red-400]="topicCategoryError" [class.border-gray-200]="!topicCategoryError" maxlength="30" />
+            <input type="text" [(ngModel)]="newTopicCategory" (input)="topicCategoryError = ''" placeholder="Category (e.g. Grammar)" class="w-full text-sm font-bold border-2 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]" [class.border-[#F43F5E]]="topicCategoryError" [class.border-[#E2E8F0]]="!topicCategoryError" maxlength="30" />
             @if (topicCategoryError) {
-              <p class="text-xs text-red-500 mt-1">{{ topicCategoryError }}</p>
+              <p class="text-xs font-bold text-[#F43F5E] mt-1">{{ topicCategoryError }}</p>
             }
           </div>
           <div class="flex gap-2">
-            <button (click)="createTopic()" class="flex-1 bg-[#38a9f3] text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-[#2196e3]">Create</button>
-            <button (click)="toggleNewTopicForm()" class="flex-1 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200">Cancel</button>
+            <button (click)="createTopic()" class="flex-1 bg-[#7C3AED] text-white py-2 rounded-xl text-xs font-extrabold border-b-2 border-[#6025c4] hover:bg-[#8b5cf6] active:translate-y-0.5 active:border-b-0 uppercase">Create</button>
+            <button (click)="toggleNewTopicForm()" class="flex-1 bg-[#E2E8F0] text-[#64748B] py-2 rounded-xl text-xs font-extrabold border-b-2 border-[#CBD5E1] hover:bg-[#CBD5E1] active:translate-y-0.5 active:border-b-0 uppercase">Cancel</button>
           </div>
         </div>
       </div>
@@ -851,25 +913,25 @@
     <!-- Trending Topics -->
     <div class="sidebar-section dm-card p-4">
       <div class="flex items-center gap-2 mb-3">
-        <div class="w-6 h-6 rounded-lg bg-orange-50 flex items-center justify-center">
-          <span class="text-xs">🔥</span>
+        <div class="w-8 h-8 rounded-xl bg-[#F43F5E] flex items-center justify-center border-b-2 border-[#e11d48]">
+          <span class="text-sm">🔥</span>
         </div>
-        <h3 class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">Trending Topics</h3>
-        <span class="ml-auto text-[10px] text-gray-400">{{ trendingTopics.length }}</span>
+        <h3 class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Trending Topics</h3>
+        <span class="ml-auto text-[10px] font-extrabold bg-[#F43F5E] text-white px-2 py-0.5 rounded-lg">{{ trendingTopics.length }}</span>
       </div>
-      <div class="space-y-1">
+      <div class="space-y-1.5">
         @for (topic of trendingTopics; track topic.id; let i = $index) {
           <div (click)="selectTopic(topic)" class="topic-item" [class.active]="selectedTopicId === topic.id">
-            <p class="text-xs text-gray-400 dm-text-muted">{{ topic.category }}</p>
-            <p class="text-sm font-bold dm-text" [class.text-[#0f1724]]="!darkMode">{{ topic.title }}</p>
+            <p class="text-[10px] font-bold text-[#94A3B8] dm-text-muted uppercase tracking-wider">{{ topic.category }}</p>
+            <p class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ topic.title }}</p>
             <div class="flex items-center gap-2">
-              <p class="text-xs text-gray-400">{{ topic.postCount || 0 }} posts</p>
-              <p class="text-xs text-gray-400">{{ topic.viewCount || 0 }} views</p>
+              <p class="text-xs font-bold text-[#94A3B8]">📝 {{ topic.postCount || 0 }} posts</p>
+              <p class="text-xs font-bold text-[#94A3B8]">👁 {{ topic.viewCount || 0 }} views</p>
             </div>
           </div>
         }
         @if (trendingTopics.length === 0) {
-          <p class="text-xs text-gray-400">No trending topics yet.</p>
+          <p class="text-xs font-bold text-[#94A3B8]">No trending topics yet. Be the first! 🌟</p>
         }
       </div>
     </div>
@@ -883,16 +945,14 @@
   <div class="report-overlay fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeReportModal()">
     <div class="report-modal bg-white w-full max-w-md" (click)="$event.stopPropagation()">
       <!-- Header -->
-      <div class="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-4 flex items-center justify-between">
+      <div class="bg-[#F43F5E] px-6 py-4 flex items-center justify-between border-b-4 border-[#e11d48]">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
-            </svg>
+          <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+            <span class="text-xl">🚩</span>
           </div>
           <div>
-            <h3 class="text-white font-bold text-base">Report Post</h3>
-            <p class="text-white/70 text-xs">Help us keep the community safe</p>
+            <h3 class="text-white font-extrabold text-base">Report Post</h3>
+            <p class="text-white/80 text-xs font-bold">Help us keep the community safe</p>
           </div>
         </div>
         <button (click)="closeReportModal()" class="text-white/80 hover:text-white transition-colors">
@@ -904,17 +964,17 @@
 
       <!-- Reported Post Preview -->
       <div class="px-6 pt-4">
-        <p class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2">Reported Post</p>
-        <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-start gap-3">
+        <p class="text-[10px] uppercase tracking-widest text-[#94A3B8] font-extrabold mb-2">Reported Post</p>
+        <div class="bg-[#F8FAFC] border-2 border-[#E2E8F0] rounded-2xl p-3 flex items-start gap-3">
           <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shrink-0">
             <img [src]="reportingPost.avatar" [alt]="reportingPost.author" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-[#0f1724]">{{ reportingPost.author }}</span>
-              <span class="text-xs text-gray-400">{{ reportingPost.username }}</span>
+              <span class="text-xs font-extrabold text-[#1E293B]">{{ reportingPost.author }}</span>
+              <span class="text-xs text-[#94A3B8]">{{ reportingPost.username }}</span>
             </div>
-            <p class="text-xs text-gray-600 mt-0.5 line-clamp-2">{{ reportingPost.content }}</p>
+            <p class="text-xs font-semibold text-[#64748B] mt-0.5 line-clamp-2">{{ reportingPost.content }}</p>
           </div>
         </div>
       </div>
@@ -922,8 +982,8 @@
       <!-- Form -->
       <div class="px-6 py-4 space-y-4">
         <div>
-          <label class="text-xs font-semibold text-gray-700 mb-1.5 block">Reason for reporting <span class="text-red-500">*</span></label>
-          <select [(ngModel)]="reportReason" (change)="reportError = ''" class="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-orange-300/40 focus:border-orange-400 bg-white appearance-none cursor-pointer transition-all" [class.border-red-400]="reportError && !reportReason">
+          <label class="text-xs font-extrabold text-[#1E293B] mb-1.5 block">Reason for reporting <span class="text-[#F43F5E]">*</span></label>
+          <select [(ngModel)]="reportReason" (change)="reportError = ''" class="w-full text-sm font-bold border-2 border-[#E2E8F0] rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#F43F5E]/20 focus:border-[#F43F5E] bg-white appearance-none cursor-pointer transition-all" [class.border-[#F43F5E]]="reportError && !reportReason">
             <option value="" disabled>Select a reason...</option>
             @for (reason of reportReasons; track reason) {
               <option [value]="reason">{{ reason }}</option>
@@ -931,30 +991,30 @@
           </select>
         </div>
         <div>
-          <label class="text-xs font-semibold text-gray-700 mb-1.5 block">Additional details <span class="text-gray-400">(optional)</span></label>
-          <textarea [(ngModel)]="reportDescription" placeholder="Provide more context..." class="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-orange-300/40 focus:border-orange-400 resize-none transition-all" rows="3" maxlength="500"></textarea>
+          <label class="text-xs font-extrabold text-[#1E293B] mb-1.5 block">Additional details <span class="text-[#94A3B8]">(optional)</span></label>
+          <textarea [(ngModel)]="reportDescription" placeholder="Provide more context..." class="w-full text-sm font-bold border-2 border-[#E2E8F0] rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#F43F5E]/20 focus:border-[#F43F5E] resize-none transition-all" rows="3" maxlength="500"></textarea>
           <div class="flex justify-end mt-1">
-            <span class="text-[10px] text-gray-400">{{ reportDescription.length }}/500</span>
+            <span class="text-[10px] font-bold text-[#94A3B8]">{{ reportDescription.length }}/500</span>
           </div>
         </div>
         @if (reportError) {
-          <div class="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-            <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
-            <p class="text-xs text-red-600">{{ reportError }}</p>
+          <div class="flex items-center gap-2 bg-[#FFE4E6] border-2 border-[#F43F5E] rounded-xl px-3 py-2">
+            <span class="text-sm">⚠️</span>
+            <p class="text-xs font-bold text-[#F43F5E]">{{ reportError }}</p>
           </div>
         }
         @if (reportSuccess) {
-          <div class="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
-            <svg class="w-4 h-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <p class="text-xs text-green-600">{{ reportSuccess }}</p>
+          <div class="flex items-center gap-2 bg-[#EDE9FE] border-2 border-[#7C3AED] rounded-xl px-3 py-2">
+            <span class="text-sm">✅</span>
+            <p class="text-xs font-bold text-[#7C3AED]">{{ reportSuccess }}</p>
           </div>
         }
       </div>
 
       <!-- Actions -->
       <div class="px-6 pb-5 flex gap-3">
-        <button (click)="closeReportModal()" class="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors" [disabled]="reportSubmitting">Cancel</button>
-        <button (click)="submitReport()" class="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 rounded-xl text-sm font-semibold hover:from-orange-600 hover:to-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" [disabled]="!!reportSuccess || reportSubmitting">
+        <button (click)="closeReportModal()" class="flex-1 bg-[#E2E8F0] text-[#64748B] py-2.5 rounded-xl text-sm font-extrabold border-b-4 border-[#CBD5E1] hover:bg-[#CBD5E1] active:translate-y-0.5 active:border-b-0 transition uppercase" [disabled]="reportSubmitting">Cancel</button>
+        <button (click)="submitReport()" class="flex-1 bg-[#F43F5E] text-white py-2.5 rounded-xl text-sm font-extrabold border-b-4 border-[#e11d48] hover:bg-[#ff6060] active:translate-y-0.5 active:border-b-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 uppercase" [disabled]="!!reportSuccess || reportSubmitting">
           @if (reportSubmitting) {
             <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             Submitting...
@@ -971,20 +1031,27 @@
 @if (showShareModal && sharingPost) {
   <div class="report-overlay fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeShareModal()">
     <div class="report-modal bg-white w-full max-w-lg" (click)="$event.stopPropagation()">
-      <!-- Header -->
-      <div class="bg-gradient-to-r from-[#38a9f3] to-[#6366f1] px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+      <!-- Premium Header with Gradient & Mascot -->
+      <div class="relative overflow-hidden border-b-4 border-[#6025c4]">
+        <div class="bg-gradient-to-r from-[#7C3AED] via-[#8b5cf6] to-[#EC4899] px-6 py-4">
+          <div class="absolute -bottom-2 right-4 opacity-15">
+            <img src="mino_images/mino_with_pen.png" alt="" class="w-16 h-16 object-contain mascot-wave" />
           </div>
-          <div>
-            <h3 class="text-white font-bold text-base">Share to Your Feed</h3>
-            <p class="text-white/70 text-xs">Add your thoughts and share this post</p>
+          <div class="flex items-center justify-between relative z-10">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white/30 shadow-lg">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+              </div>
+              <div>
+                <h3 class="text-white font-extrabold text-base">Share to Your Feed</h3>
+                <p class="text-white/70 text-xs font-bold">Add your thoughts and share this post</p>
+              </div>
+            </div>
+            <button (click)="closeShareModal()" class="text-white/60 hover:text-white transition-colors bg-white/10 rounded-xl p-1.5 hover:bg-white/20">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
           </div>
         </div>
-        <button (click)="closeShareModal()" class="text-white/80 hover:text-white transition-colors">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
       </div>
 
       <!-- Your Message -->
@@ -996,16 +1063,16 @@
             </div>
           }
           <div class="flex-1 relative">
-            <textarea [(ngModel)]="shareMessage" (input)="onShareMessageInput()" placeholder="Say something about this post... Use @user to tag someone" class="w-full text-sm placeholder-gray-400 outline-none bg-transparent resize-none min-h-[60px] max-h-[100px] leading-relaxed text-[#0f1724]" rows="3" maxlength="500"></textarea>
+            <textarea [(ngModel)]="shareMessage" (input)="onShareMessageInput()" placeholder="Say something about this post... 💭 Use @friend to tag" class="w-full text-sm font-bold placeholder-[#94A3B8] outline-none bg-transparent resize-none min-h-[60px] max-h-[100px] leading-relaxed text-[#1E293B]" rows="3" maxlength="500"></textarea>
             <!-- User suggestions for share -->
             @if (shareShowUserSuggestions && shareUserSuggestions.length > 0) {
-              <div class="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-30 w-56 overflow-hidden bg-white border border-gray-200">
+              <div class="absolute left-0 top-full mt-1 rounded-2xl shadow-xl z-30 w-56 overflow-hidden bg-white border-2 border-[#E2E8F0]">
                 @for (u of shareUserSuggestions; track u.username) {
-                  <button (click)="selectShareUserTag(u, $event)" class="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f0f7ff] transition-colors text-left">
-                    <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0"><img [src]="u.avatar" [alt]="u.name" class="w-full h-full object-cover" /></div>
+                  <button (click)="selectShareUserTag(u, $event)" class="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#EDE9FE] transition-colors text-left">
+                    <div class="w-7 h-7 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0 border-2 border-[#7C3AED]/20"><img [src]="u.avatar" [alt]="u.name" class="w-full h-full object-cover" /></div>
                     <div class="min-w-0">
-                      <p class="text-xs font-semibold text-[#0f1724] truncate">{{ u.name }}</p>
-                      <p class="text-[10px] text-gray-400 truncate">{{ u.username }}</p>
+                      <p class="text-xs font-bold text-[#1E293B] truncate">{{ u.name }}</p>
+                      <p class="text-[10px] text-[#94A3B8] truncate">{{ u.username }}</p>
                     </div>
                   </button>
                 }
@@ -1014,20 +1081,20 @@
           </div>
         </div>
         <!-- Share Actions -->
-        <div class="flex items-center gap-1 mt-2 border-b border-gray-100 pb-3">
-          <button (click)="toggleShareEmojiPicker($event)" class="p-1.5 rounded-lg transition-all text-gray-400 hover:text-[#38a9f3] hover:bg-[#38a9f3]/10" title="Add emoji">
+        <div class="flex items-center gap-1 mt-2 border-b-2 border-[#E2E8F0] pb-3">
+          <button (click)="toggleShareEmojiPicker($event)" class="p-2 rounded-xl transition-all text-[#94A3B8] hover:text-[#F59E0B] hover:bg-[#FEF3C7] border-2 border-transparent hover:border-[#F59E0B]/20" title="Add emoji">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" /></svg>
           </button>
           @if (shareMessage.length > 0) {
-            <span class="text-[10px] text-gray-400 ml-auto">{{ shareMessage.length }}/500</span>
+            <span class="text-[10px] font-bold text-[#94A3B8] ml-auto">{{ shareMessage.length }}/500</span>
           }
         </div>
         <!-- Share Emoji Picker -->
         @if (showShareEmojiPicker) {
-          <div class="mt-2 rounded-xl shadow-lg overflow-hidden bg-white border border-gray-200" (click)="$event.stopPropagation()">
-            <div class="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 overflow-x-auto">
+          <div class="mt-2 rounded-2xl shadow-lg overflow-hidden bg-white border-2 border-[#E2E8F0]" (click)="$event.stopPropagation()">
+            <div class="flex items-center gap-0.5 px-2 py-1.5 border-b-2 border-[#E2E8F0] overflow-x-auto">
               @for (cat of emojiCategories; track cat.name; let i = $index) {
-                <button (click)="activeEmojiCategory = i; $event.stopPropagation()" class="px-2 py-1 text-lg rounded-lg transition-colors shrink-0" [class.bg-[#38a9f3]/10]="activeEmojiCategory === i">{{ cat.icon }}</button>
+                <button (click)="activeEmojiCategory = i; $event.stopPropagation()" class="px-2 py-1 text-lg rounded-lg transition-colors shrink-0" [class.bg-[#7C3AED]/10]="activeEmojiCategory === i">{{ cat.icon }}</button>
               }
             </div>
             <div class="p-2 h-[140px] overflow-y-auto">
@@ -1043,16 +1110,16 @@
 
       <!-- Embedded Post Preview -->
       <div class="px-6 pt-3 pb-2">
-        <div class="rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
-          <div class="flex items-center gap-2 px-4 py-2.5 border-b border-gray-100">
-            <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0">
+        <div class="rounded-2xl border-2 border-[#E2E8F0] overflow-hidden bg-[#F8FAFC]">
+          <div class="flex items-center gap-2 px-4 py-2.5 border-b-2 border-[#E2E8F0]">
+            <div class="w-7 h-7 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0">
               <img [src]="sharingPost.avatar" [alt]="sharingPost.author" class="w-full h-full object-cover" />
             </div>
-            <span class="text-xs font-bold text-[#0f1724]">{{ sharingPost.author }}</span>
-            <span class="text-xs text-gray-400">{{ sharingPost.username }}</span>
+            <span class="text-xs font-extrabold text-[#1E293B]">{{ sharingPost.author }}</span>
+            <span class="text-xs text-[#94A3B8]">{{ sharingPost.username }}</span>
           </div>
           <div class="px-4 py-3">
-            <p class="text-sm text-gray-700 leading-relaxed line-clamp-3" [innerHTML]="formatContent(sharingPost.content)"></p>
+            <p class="text-sm font-semibold text-[#1E293B] leading-relaxed line-clamp-3" [innerHTML]="formatContent(sharingPost.content)"></p>
             @if (sharingPost.image && !isVideoUrl(sharingPost.image)) {
               <div class="rounded-lg overflow-hidden mt-2 max-h-32"><img [src]="sharingPost.image" alt="" class="max-h-32 w-full object-contain" /></div>
             }
@@ -1060,12 +1127,44 @@
         </div>
       </div>
 
+      <!-- Send to Friend -->
+      <div class="px-6 pt-2 pb-1">
+        <p class="text-[10px] font-extrabold text-[#94A3B8] uppercase tracking-widest mb-2">Or send directly to a friend</p>
+        <div class="relative mb-2">
+          <svg class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          <input type="text" [(ngModel)]="shareSearchQuery" placeholder="Search friends... 🔍" class="w-full pl-8 pr-3 py-2 bg-[#F8FAFC] border-2 border-[#E2E8F0] rounded-xl text-xs font-bold placeholder-[#94A3B8] outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all" />
+        </div>
+        <div class="max-h-[120px] overflow-y-auto custom-scrollbar">
+          @if (shareLoading) {
+            <div class="flex items-center justify-center py-3">
+              <div class="w-5 h-5 border-2 border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          } @else {
+            @for (friend of filteredShareFriends; track friend.id) {
+              <button (click)="sendPostToFriend(friend)" class="w-full flex items-center gap-2.5 px-2 py-2 hover:bg-[#EDE9FE] rounded-xl transition-colors">
+                <div class="w-7 h-7 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0 border-2 border-[#7C3AED]/20">
+                  <img [src]="friend.avatar" [alt]="friend.name" class="w-full h-full object-cover" />
+                </div>
+                <span class="text-xs font-bold text-[#1E293B] flex-1 text-left">{{ friend.name }}</span>
+                <span class="text-xs font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-2 py-1 rounded-lg border border-[#7C3AED]/20">Send</span>
+              </button>
+            }
+            @if (filteredShareFriends.length === 0 && shareFriends.length > 0) {
+              <p class="text-center text-[10px] font-bold text-[#94A3B8] py-2">No matching friends</p>
+            }
+            @if (shareFriends.length === 0) {
+              <p class="text-center text-[10px] font-bold text-[#94A3B8] py-2">Add friends to share posts directly 👋</p>
+            }
+          }
+        </div>
+      </div>
+
       <!-- Share Button -->
       <div class="px-6 pb-5 pt-2 flex gap-3">
-        <button (click)="closeShareModal()" class="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors">Cancel</button>
-        <button (click)="submitShare()" class="flex-1 bg-gradient-to-r from-[#38a9f3] to-[#6366f1] text-white py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+        <button (click)="closeShareModal()" class="flex-1 bg-[#E2E8F0] text-[#64748B] py-2.5 rounded-xl text-sm font-extrabold border-b-4 border-[#CBD5E1] hover:bg-[#CBD5E1] active:translate-y-0.5 active:border-b-0 transition uppercase">Cancel</button>
+        <button (click)="submitShare()" class="flex-1 bg-[#7C3AED] text-white py-2.5 rounded-xl text-sm font-extrabold border-b-4 border-[#6025c4] hover:bg-[#8b5cf6] active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 uppercase">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
-          Share Now
+          Share to Feed
         </button>
       </div>
     </div>
@@ -1077,25 +1176,28 @@
   <div class="report-overlay fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeProfileModal()">
     <div class="report-modal bg-white w-full max-w-lg max-h-[85vh] flex flex-col" (click)="$event.stopPropagation()">
       @if (profileLoading) {
-        <div class="flex items-center justify-center py-20">
-          <div class="w-8 h-8 border-2 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+        <div class="flex flex-col items-center justify-center py-20">
+          <div class="w-12 h-12 rounded-2xl bg-[#7C3AED] flex items-center justify-center mascot-bounce mb-3 border-b-4 border-[#6025c4]">
+            <img src="mino_images/1770148246099.png" alt="Loading..." class="w-8 h-8 object-contain" />
+          </div>
+          <p class="text-sm font-extrabold text-[#1E293B]">Loading profile...</p>
         </div>
       } @else if (profileUser) {
         <!-- Profile Header -->
-        <div class="bg-gradient-to-r from-[#38a9f3] to-[#56c8ff] px-6 py-5 text-white shrink-0">
+        <div class="bg-[#7C3AED] px-6 py-5 text-white shrink-0 border-b-4 border-[#6025c4]">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-              <div class="w-16 h-16 rounded-full border-3 border-white/30 overflow-hidden bg-white/20 shrink-0">
+              <div class="w-16 h-16 rounded-2xl border-3 border-white/30 overflow-hidden bg-white/20 shrink-0">
                 <img [src]="profileUser.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + profileUser.name" [alt]="profileUser.name" class="w-full h-full object-cover" />
               </div>
               <div>
-                <h3 class="text-lg font-bold">{{ profileUser.name }}</h3>
-                <p class="text-white/80 text-sm">{{ profileUser.username }}</p>
-                @if (profileUser.bio) { <p class="text-white/70 text-xs mt-1">{{ profileUser.bio }}</p> }
-                <div class="flex items-center gap-3 mt-2">
-                  @if (profileUser.level) { <span class="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-medium">{{ profileUser.level }}</span> }
-                  @if (profileUser.xp) { <span class="text-xs">{{ profileUser.xp }} XP</span> }
-                  @if (profileUser.streak) { <span class="text-xs">🔥 {{ profileUser.streak }}</span> }
+                <h3 class="text-lg font-extrabold">{{ profileUser.name }}</h3>
+                <p class="text-white/80 text-sm font-bold">{{ profileUser.username }}</p>
+                @if (profileUser.bio) { <p class="text-white/70 text-xs font-semibold mt-1">{{ profileUser.bio }}</p> }
+                <div class="flex items-center gap-2 mt-2">
+                  @if (profileUser.level) { <span class="bg-white/20 px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold">{{ profileUser.level }}</span> }
+                  @if (profileUser.xp) { <span class="text-xs font-extrabold">✨ {{ profileUser.xp }} XP</span> }
+                  @if (profileUser.streak) { <span class="text-xs font-extrabold">🔥 {{ profileUser.streak }}</span> }
                 </div>
               </div>
             </div>
@@ -1105,37 +1207,37 @@
           </div>
           <!-- Friend Request Actions -->
           @if (profileFriendRequest) {
-            <div class="flex items-center gap-2 mt-4 bg-white/15 rounded-xl px-4 py-3">
-              <svg class="w-5 h-5 text-white/80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>
-              <span class="text-sm flex-1">Wants to be your friend</span>
-              <button (click)="acceptFriendRequestFromProfile(profileFriendRequest)" class="px-3 py-1 bg-white text-[#38a9f3] text-xs font-bold rounded-lg hover:bg-gray-100">Accept</button>
-              <button (click)="rejectFriendRequestFromProfile(profileFriendRequest)" class="px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-lg hover:bg-white/30">Decline</button>
+            <div class="flex items-center gap-2 mt-4 bg-white/15 rounded-2xl px-4 py-3">
+              <span class="text-lg">🤝</span>
+              <span class="text-sm font-bold flex-1">Wants to be your friend!</span>
+              <button (click)="acceptFriendRequestFromProfile(profileFriendRequest)" class="px-4 py-1.5 bg-white text-[#7C3AED] text-xs font-extrabold rounded-xl border-b-2 border-[#E2E8F0] hover:bg-gray-100 active:translate-y-0.5 active:border-b-0 uppercase">Accept</button>
+              <button (click)="rejectFriendRequestFromProfile(profileFriendRequest)" class="px-4 py-1.5 bg-white/20 text-white text-xs font-extrabold rounded-xl hover:bg-white/30 uppercase">Decline</button>
             </div>
           }
         </div>
 
         <!-- User's Posts (including shared posts) -->
         <div class="flex-1 overflow-y-auto px-6 py-4">
-          <h4 class="text-sm font-bold text-[#0f1724] mb-3">Posts ({{ profileUserPosts.length }})</h4>
+          <h4 class="text-sm font-extrabold text-[#1E293B] mb-3">📝 Posts ({{ profileUserPosts.length }})</h4>
           @for (post of profileUserPosts; track post.id) {
-            <div class="border border-gray-200 rounded-xl p-4 mb-3">
-              <p class="text-sm text-[#0f1724] leading-relaxed" [innerHTML]="formatContent(post.content)"></p>
+            <div class="border-2 border-[#E2E8F0] rounded-2xl p-4 mb-3 hover:border-[#7C3AED]/30 transition-colors">
+              <p class="text-sm font-semibold text-[#1E293B] leading-relaxed" [innerHTML]="formatContent(post.content)"></p>
               <!-- Show embedded shared post -->
               @if (post.sharedPost) {
-                <div class="mt-2 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
-                  <div class="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
-                    <div class="w-6 h-6 rounded-full overflow-hidden bg-gray-200 shrink-0"><img [src]="post.sharedPost.avatar" class="w-full h-full object-cover" /></div>
-                    <span class="text-[11px] font-bold text-[#0f1724]">{{ post.sharedPost.author }}</span>
+                <div class="mt-2 rounded-xl border-2 border-[#E2E8F0] bg-[#F8FAFC] overflow-hidden">
+                  <div class="flex items-center gap-2 px-3 py-2 border-b-2 border-[#E2E8F0]">
+                    <div class="w-6 h-6 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0"><img [src]="post.sharedPost.avatar" class="w-full h-full object-cover" /></div>
+                    <span class="text-[11px] font-extrabold text-[#1E293B]">{{ post.sharedPost.author }}</span>
                   </div>
                   <div class="px-3 py-2">
-                    <p class="text-xs text-gray-600 line-clamp-2">{{ post.sharedPost.content }}</p>
+                    <p class="text-xs font-semibold text-[#64748B] line-clamp-2">{{ post.sharedPost.content }}</p>
                   </div>
                 </div>
               }
               @if (post.image) {
-                <div class="rounded-lg overflow-hidden mt-2 max-h-32"><img [src]="post.image" class="max-h-32 w-full object-contain" /></div>
+                <div class="rounded-xl overflow-hidden mt-2 max-h-32"><img [src]="post.image" class="max-h-32 w-full object-contain" /></div>
               }
-              <div class="flex items-center gap-3 mt-2 text-xs text-gray-400">
+              <div class="flex items-center gap-3 mt-2 text-xs font-bold text-[#94A3B8]">
                 <span>{{ getTimeAgo(post) }}</span>
                 <span>❤️ {{ post.likes }}</span>
                 <span>💬 {{ post.comments }}</span>
@@ -1145,7 +1247,7 @@
           }
           @if (profileUserPosts.length === 0) {
             <div class="text-center py-8">
-              <p class="text-sm text-gray-400">No posts yet</p>
+              <p class="text-sm font-bold text-[#94A3B8]">No posts yet 😊</p>
             </div>
           }
         </div>

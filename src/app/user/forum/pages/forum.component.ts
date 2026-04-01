@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -29,6 +29,10 @@ export class ForumComponent implements OnInit, OnDestroy {
   trendingTopics: TrendingTopic[] = [];
   filteredPosts: ForumPost[] = [];
   user: AuthUser | null = null;
+
+  // Loading state
+  postsLoading = true;
+  private postsPollInterval: any;
 
   // Create post
   newPostContent = '';
@@ -217,22 +221,51 @@ export class ForumComponent implements OnInit, OnDestroy {
       this.user = u;
     });
     this.darkMode = localStorage.getItem('forum_dark_mode') === 'true';
+
+    // Load local data instantly (no network)
     this.loadReactionsFromStorage();
     this.loadSavedAndFavorites();
+    this.loadEquippedBadge();
+
+    // Load critical path data in parallel with forkJoin
+    this.postsLoading = true;
+    forkJoin({
+      posts: this.forumService.getAllPosts(),
+      topics: this.forumService.getAllTopics()
+    }).subscribe({
+      next: ({ posts, topics }) => {
+        this.allPosts = posts;
+        this.posts = posts.filter(p => !p.parentPostId);
+        this.trendingTopics = topics || [];
+        this.countCommentsFromAll();
+        this.resolveSharedPosts();
+        this.buildKnownUsers();
+        this.applyFilter();
+        this.postsLoading = false;
+        this.cdRef.detectChanges();
+      },
+      error: () => {
+        this.postsLoading = false;
+        this.cdRef.detectChanges();
+      }
+    });
+
+    // Load secondary data in parallel (non-blocking)
     this.loadXPData();
     this.loadStreakData();
     this.loadWordOfTheDay();
-    this.loadPosts();
-    this.loadTrendingTopics();
     this.loadAllUsers();
     this.loadTrendingGifs();
     this.loadTagNotifications();
     this.loadPendingFriendRequests();
-    this.loadEquippedBadge();
     this.loadFriendSuggestions();
+
     this.forumService.newTopic$.subscribe(() => {
       this.toggleNewTopicForm();
     });
+
+    // Poll for new posts every 10 seconds
+    this.postsPollInterval = setInterval(() => this.pollNewPosts(), 10000);
     // Poll for new notifications every 15 seconds
     this.notifPollInterval = setInterval(() => this.pollNotifications(), 15000);
   }
@@ -240,6 +273,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.newTopicSub?.unsubscribe();
     if (this.notifPollInterval) clearInterval(this.notifPollInterval);
+    if (this.postsPollInterval) clearInterval(this.postsPollInterval);
   }
 
   @HostListener('document:click', ['$event'])
@@ -296,7 +330,23 @@ export class ForumComponent implements OnInit, OnDestroy {
         this.resolveSharedPosts();
         this.buildKnownUsers();
         this.applyFilter();
+        this.postsLoading = false;
         this.cdRef.detectChanges();
+      }
+    });
+  }
+
+  private pollNewPosts(): void {
+    this.forumService.getAllPosts().subscribe({
+      next: (all) => {
+        if (all.length !== this.allPosts.length) {
+          this.allPosts = all;
+          this.posts = all.filter(p => !p.parentPostId);
+          this.countCommentsFromAll();
+          this.resolveSharedPosts();
+          this.applyFilter();
+          this.cdRef.detectChanges();
+        }
       }
     });
   }
@@ -1339,6 +1389,7 @@ export class ForumComponent implements OnInit, OnDestroy {
     this.shareSearchQuery = '';
     this.showShareEmojiPicker = false;
     this.openMenuPostId = null;
+    this.loadShareFriends();
   }
 
   closeShareModal(): void {
@@ -1347,6 +1398,59 @@ export class ForumComponent implements OnInit, OnDestroy {
     this.shareMessage = '';
     this.shareSearchQuery = '';
     this.showShareEmojiPicker = false;
+  }
+
+  private loadShareFriends(): void {
+    if (!this.user) return;
+    this.shareLoading = true;
+    this.friendsService.getFriends(this.user.id).subscribe({
+      next: (friendships) => {
+        this.shareFriends = friendships.map(f => {
+          const isUser = f.userId === this.user!.id;
+          return {
+            id: isUser ? f.friendId : f.userId,
+            friendshipId: f.id!,
+            name: isUser ? f.friendName : f.userName,
+            avatar: isUser ? f.friendAvatar : f.userAvatar,
+            lastMessage: '',
+            lastMessageTime: '',
+            online: false,
+            unreadCount: 0
+          };
+        });
+        this.shareLoading = false;
+        this.cdRef.detectChanges();
+      },
+      error: () => { this.shareLoading = false; }
+    });
+  }
+
+  sendPostToFriend(friend: Friend): void {
+    if (!this.user || !this.sharingPost) return;
+    const msg: ChatMessage = {
+      senderId: this.user.id,
+      senderName: this.user.name,
+      senderAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      receiverId: friend.id,
+      receiverName: friend.name,
+      content: this.sharingPost.content?.substring(0, 200) || 'Shared a post',
+      messageType: 'SHARED_POST',
+      sharedPostId: this.sharingPost.id,
+      isRead: false
+    };
+    this.friendsService.sendMessage(msg).subscribe({
+      next: () => {
+        this.addNotification(`Post sent to ${friend.name}!`, 'success');
+        this.closeShareModal();
+      },
+      error: () => this.addNotification('Failed to send post', 'warning')
+    });
+  }
+
+  get filteredShareFriends(): Friend[] {
+    if (!this.shareSearchQuery.trim()) return this.shareFriends;
+    const q = this.shareSearchQuery.toLowerCase();
+    return this.shareFriends.filter(f => f.name.toLowerCase().includes(q));
   }
 
   toggleShareEmojiPicker(event: Event): void {
