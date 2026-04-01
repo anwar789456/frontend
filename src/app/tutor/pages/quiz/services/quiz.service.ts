@@ -33,6 +33,14 @@ export class TutorQuizService {
     return this.http.delete<void>(`${this.apiUrl}/quizzes/delete-quiz/${id}`);
   }
 
+  archiveQuiz(id: number): Observable<Quiz> {
+    return this.http.put<Quiz>(`${this.apiUrl}/quizzes/archive/${id}`, {});
+  }
+
+  unarchiveQuiz(id: number): Observable<Quiz> {
+    return this.http.put<Quiz>(`${this.apiUrl}/quizzes/unarchive/${id}`, {});
+  }
+
   // ── Questions ──
 
   getQuestionsByQuizId(quizId: number): Observable<QuestionQuiz[]> {
@@ -82,6 +90,26 @@ export class TutorQuizService {
   deleteStoryQuiz(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/story-quizzes/delete/${id}`);
   }
+
+  archiveStoryQuiz(id: number): Observable<StoryQuiz> {
+    return this.http.put<StoryQuiz>(`${this.apiUrl}/story-quizzes/archive/${id}`, {});
+  }
+
+  unarchiveStoryQuiz(id: number): Observable<StoryQuiz> {
+    return this.http.put<StoryQuiz>(`${this.apiUrl}/story-quizzes/unarchive/${id}`, {});
+  }
+
+  // ── AI Generation ──
+
+  generateQuizDescription(title: string, level: string): Observable<{ description: string }> {
+    return this.http.post<{ description: string }>(`${this.apiUrl}/quizzes/generate-description`, { title, level });
+  }
+
+  generateSingleQuestion(title: string, level: string, questionNumber: number): Observable<{ question: string }> {
+    return this.http.post<{ question: string }>(`${this.apiUrl}/quizzes/generate-single-question`, { title, level, questionNumber });
+  }
+
+  // ── Word Bank ──
 
   getWordBank(storyQuizId: number): Observable<StoryWordBank> {
     return this.http.get<StoryWordBank>(`${this.apiUrl}/story-quizzes/${storyQuizId}/word-bank`);

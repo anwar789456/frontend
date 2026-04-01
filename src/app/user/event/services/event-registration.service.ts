@@ -45,4 +45,14 @@ export class EventRegistrationService {
     delete(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/delete/${id}`);
     }
+
+    /** QR Check-in */
+    checkIn(code: string): Observable<EventRegistration> {
+        return this.http.post<EventRegistration>(`${this.apiUrl}/check-in/${code}`, {});
+    }
+
+    /** Rate an event (1-5 stars) */
+    rateEvent(registrationId: number, rating: number): Observable<EventRegistration> {
+        return this.http.post<EventRegistration>(`${this.apiUrl}/rate/${registrationId}`, { rating });
+    }
 }

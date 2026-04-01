@@ -30,7 +30,7 @@ export class UserQuizListComponent implements OnInit {
 
   // Pagination
   currentPage = 0;
-  readonly itemsPerPage = 6; // Show 6 quizzes per page (2 rows of 3)
+  readonly itemsPerPage = 3; // Show 6 quizzes per page (2 rows of 3)
   storyCurrentPage = 0;
   readonly storyItemsPerPage = 3; // Show 3 story quizzes per page
 
@@ -56,7 +56,7 @@ export class UserQuizListComponent implements OnInit {
 
     this.quizService.getAllQuizzes().subscribe({
       next: (quizzes) => {
-        this.quizzes = [...quizzes.filter(q => q.status === 'OPEN')];
+        this.quizzes = [...quizzes.filter(q => q.status === 'OPEN' && !q.archived)];
         this.cdr.markForCheck(); // show quizzes while attempts load
         this.loadAttempts();
       },
@@ -68,7 +68,7 @@ export class UserQuizListComponent implements OnInit {
 
     this.quizService.getAllStoryQuizzes().subscribe({
       next: (stories) => {
-        this.storyQuizzes = [...stories];
+        this.storyQuizzes = [...stories.filter(s => !s.archived)];
         this.cdr.markForCheck();
         this.loadStoryAttempts();
       },

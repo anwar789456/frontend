@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SubscriptionPlan, PlanType, UserSubscription } from '../models/subscription.model';
 import { SubscriptionService, ServiceError } from '../services/subscription.service';
 import { AuthService } from '../../../shared/services/auth.service';
@@ -10,7 +11,7 @@ import { StripePaymentService } from '../services/stripe-payment.service';
 @Component({
   selector: 'app-subscriptions',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './subscriptions.component.html'
 })
 export class SubscriptionsComponent implements OnInit, OnDestroy {
@@ -24,6 +25,15 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
   // Active subscription (Feature 4)
   currentSubscription: UserSubscription | null = null;
   isTogglingAutoRenew = false;
+
+  // Discount Code (Feature)
+  discountCode: string = '';
+  discountPercentage: number = 0;
+  finalPrice: number = 0;
+  isDiscountApplied: boolean = false;
+  isApplyingDiscount: boolean = false;
+  discountError: string | null = null;
+  discountMessage: string | null = null;
 
   // Feedback
   subscriptionMessage: string | null = null;
@@ -402,5 +412,88 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
     const yearlyMonthlyTotal = monthlyPrice * 12;
     const savings = ((yearlyMonthlyTotal - plan.price) / yearlyMonthlyTotal) * 100;
     return Math.round(savings);
+  }
+
+  /**
+   * Apply discount code
+   */
+  applyDiscountCode(): void {
+    if (!this.discountCode || this.discountCode.trim() === '') {
+      this.discountError = 'Please enter a discount code';
+      return;
+    }
+
+    this.isApplyingDiscount = true;
+    this.discountError = null;
+    this.discountMessage = null;
+
+    this.subscriptionService.validateDiscountCode(this.discountCode.trim().toUpperCase()).pipe(
+      takeUntil(this.destroy$),
+      finalize(() => {
+        this.isApplyingDiscount = false;
+      })
+    ).subscribe({
+      next: (response: { code: string; discountPercentage: number }) => {
+        this.discountPercentage = response.discountPercentage;
+        this.isDiscountApplied = true;
+        this.discountMessage = `✓ ${this.discountPercentage}% discount applied!`;
+        this.discountCode = this.discountCode.toUpperCase();
+        this.updateFinalPrice();
+      },
+      error: (err: ServiceError) => {
+        this.discountError = err.message || 'Invalid or expired discount code';
+        this.isDiscountApplied = false;
+        this.discountPercentage = 0;
+      }
+    });
+  }
+
+  /**
+   * Update final price based on discount
+   */
+  updateFinalPrice(): void {
+    if (this.selectedPlanId) {
+      const selectedPlan = this.plans.find(p => p.id === this.selectedPlanId);
+      if (selectedPlan) {
+        const basePrice = this.getPrice(selectedPlan);
+        this.finalPrice = basePrice * (100 - this.discountPercentage) / 100;
+      }
+    }
+  }
+
+  /**
+   * Get final price for a plan (with discount applied)
+   */
+  getFinalPrice(plan: SubscriptionPlan): number {
+    const basePrice = this.getPrice(plan);
+    return basePrice * (100 - this.discountPercentage) / 100;
+  }
+
+  /**
+   * Get savings amount from discount
+   */
+  getDiscountSavings(plan: SubscriptionPlan): number {
+    if (!this.isDiscountApplied) return 0;
+    const basePrice = this.getPrice(plan);
+    return basePrice - this.getFinalPrice(plan);
+  }
+
+  /**
+   * Clear discount code
+   */
+  clearDiscountCode(): void {
+    this.discountCode = '';
+    this.discountPercentage = 0;
+    this.isDiscountApplied = false;
+    this.discountError = null;
+    this.discountMessage = null;
+    this.finalPrice = 0;
+  }
+
+  /**
+   * Get selected plan ID
+   */
+  get selectedPlanId(): number | null {
+    return this.activePlanId;
   }
 }

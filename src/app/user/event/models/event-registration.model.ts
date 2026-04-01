@@ -15,4 +15,7 @@ export interface EventRegistration {
     // Registration details
     registrationDate?: string;
     status?: RegistrationStatus;
+    checkInCode?: string;
+    phoneNumber?: string;
+    rating?: number;
 }

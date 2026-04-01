@@ -28,7 +28,7 @@ export interface AnalyticsDashboard {
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private readonly apiUrl = 'https://minolingo.online/api/analytics';
+  private readonly apiUrl = 'https://minolingo.online/api/abonnements/analytics';
 
   constructor(private http: HttpClient) {}
 

@@ -1,10 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CourseService } from '../services/course.service';
 import { Cours, ContenuPedagogique } from '../models/course.model';
 import { AuthService } from '../../../shared/services/auth.service';
-import { MOCK_LEADERBOARD, MOCK_USER } from '../../../shared/constants/mock-data';
+import { UserService } from '../../user/services/user.service';
+import { User } from '../../user/models/user.model';
 
 @Component({
   selector: 'app-courses',
@@ -41,13 +43,16 @@ import { MOCK_LEADERBOARD, MOCK_USER } from '../../../shared/constants/mock-data
 })
 export class CoursesComponent implements OnInit {
   courses: Cours[] = [];
-  leaderboard = MOCK_LEADERBOARD;
-  user = MOCK_USER;
+  leaderboard: { rank: number; name: string; xp: number; avatar: string; isCurrentUser: boolean }[] = [];
+  user: { name: string; xp: number; streak: number; avatar: string } = { name: '', xp: 0, streak: 0, avatar: '' };
   isLoading = true;
   errorMessage = '';
 
   // View state: null = adventure map, Cours = detail view
   selectedCourse: Cours | null = null;
+
+  // Content viewer state: null = lesson list, ContenuPedagogique = content viewer
+  selectedContenu: ContenuPedagogique | null = null;
 
   // CRUD state
   showCourseForm = false;
@@ -87,8 +92,10 @@ export class CoursesComponent implements OnInit {
   constructor(
     private courseService: CourseService,
     private authService: AuthService,
+    private userService: UserService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private sanitizer: DomSanitizer
   ) {}
 
   get isTutor(): boolean {
@@ -97,10 +104,75 @@ export class CoursesComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForms();
+    this.loadCurrentUser();
+    this.loadLeaderboard();
   }
 
   ngAfterViewInit(): void {
     this.loadCourses();
+  }
+
+  private loadCurrentUser(): void {
+    try {
+      const stored = JSON.parse(localStorage.getItem('auth_user') || 'null');
+      if (stored) {
+        this.user = {
+          name: stored.name || stored.username || 'Student',
+          xp: stored.xp ?? 0,
+          streak: stored.streak ?? 0,
+          avatar: stored.avatar || ''
+        };
+        // Also fetch fresh data from API
+        if (stored.id) {
+          this.userService.getUserById(stored.id).subscribe({
+            next: (u: User) => {
+              this.user = {
+                name: u.name || u.username || 'Student',
+                xp: u.xp ?? 0,
+                streak: u.streak ?? 0,
+                avatar: u.avatar || ''
+              };
+              // Keep localStorage in sync
+              stored.xp = u.xp;
+              stored.streak = u.streak;
+              localStorage.setItem('auth_user', JSON.stringify(stored));
+              this.cdr.detectChanges();
+            },
+            error: () => {}
+          });
+        }
+      }
+    } catch { }
+  }
+
+  private loadLeaderboard(): void {
+    this.userService.getAllUsers().subscribe({
+      next: (users: User[]) => {
+        const currentUserId = this.getCurrentUserId();
+        // Filter students only, sort by XP descending, take top 10
+        const students = users
+          .filter(u => u.role === 'ETUDIANT' && (u.xp ?? 0) > 0)
+          .sort((a, b) => (b.xp ?? 0) - (a.xp ?? 0))
+          .slice(0, 10);
+
+        this.leaderboard = students.map((u, i) => ({
+          rank: i + 1,
+          name: u.name || u.username || 'Student',
+          xp: u.xp ?? 0,
+          avatar: u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username || u.id}`,
+          isCurrentUser: u.id === currentUserId
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
+  private getCurrentUserId(): number | null {
+    try {
+      const stored = JSON.parse(localStorage.getItem('auth_user') || 'null');
+      return stored?.id ?? null;
+    } catch { return null; }
   }
 
   private initForms(): void {
@@ -121,7 +193,7 @@ export class CoursesComponent implements OnInit {
     this.isLoading = true;
     this.courseService.getAllCours().subscribe({
       next: (data) => {
-        this.courses = data;
+        this.courses = data.filter(c => !c.archived);
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -148,8 +220,54 @@ export class CoursesComponent implements OnInit {
   }
 
   backToMap(): void {
+    if (this.selectedContenu) {
+      this.selectedContenu = null;
+      return;
+    }
     this.selectedCourse = null;
     this.currentContenuPage = 0;
+  }
+
+  openContenu(contenu: ContenuPedagogique): void {
+    this.selectedContenu = contenu;
+    this.cdr.detectChanges();
+  }
+
+  closeContenu(): void {
+    this.selectedContenu = null;
+  }
+
+  getContenuFileUrl(contenu: ContenuPedagogique): SafeResourceUrl | null {
+    if (!contenu.files || contenu.files.length === 0) return null;
+    const url = contenu.files[0].fileUrl;
+    if (!url) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  getRawFileUrl(contenu: ContenuPedagogique): string | null {
+    if (!contenu.files || contenu.files.length === 0) return null;
+    return contenu.files[0].fileUrl ?? null;
+  }
+
+  isVideoType(contenu: ContenuPedagogique): boolean {
+    return contenu.contentType?.toUpperCase() === 'VIDEO';
+  }
+
+  isPdfType(contenu: ContenuPedagogique): boolean {
+    return contenu.contentType?.toUpperCase() === 'PDF';
+  }
+
+  isTextType(contenu: ContenuPedagogique): boolean {
+    return contenu.contentType?.toUpperCase() === 'TEXT';
+  }
+
+  getTextContent(contenu: ContenuPedagogique): string {
+    // For TEXT type, content can come from the first file's URL (if it's raw text stored as a file)
+    // or we display the course content section. Files may also contain a .txt URL.
+    if (contenu.files && contenu.files.length > 0) {
+      return contenu.files[0].fileUrl ?? '';
+    }
+    return '';
   }
 
   getCourseColor(index: number): { bg: string; icon: string } {

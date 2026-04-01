@@ -140,6 +140,17 @@ export class SubscriptionService {
     );
   }
 
+  // ── Discount Codes ──
+
+  validateDiscountCode(code: string): Observable<{ code: string; discountPercentage: number }> {
+    return this.http.get<{ code: string; discountPercentage: number }>(
+      `${this.apiUrl}/discounts/validate/${code}`
+    ).pipe(
+      retry(this.maxRetries),
+      catchError(this.handleError)
+    );
+  }
+
   // ── Helper Methods ──
 
   /**

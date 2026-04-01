@@ -32,6 +32,7 @@ export class AdminLayoutComponent {
         { label: 'Forums', icon: 'forums', route: '/admin/forums' },
         { label: 'Donations', icon: 'donations', route: '/admin/donations' },
         { label: 'Subscriptions', icon: 'subscriptions', route: '/admin/subscriptions' },
+        { label: 'Discount Codes', icon: 'discounts', route: '/admin/discounts' },
         { label: 'Analytics', icon: 'analytics', route: '/admin/analytics' }
       ]
     }

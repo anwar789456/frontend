@@ -27,6 +27,7 @@ export interface Quiz {
   status: QuizStatus | string;
   courseId?: number;
   xpReward?: number;
+  archived?: boolean;
   questions?: QuestionQuiz[];
 }
 
@@ -57,6 +58,7 @@ export interface StoryQuiz {
   illustration?: string;
   xpReward: number;
   difficulty: string;
+  archived?: boolean;
   blanks?: StoryBlank[];
 }
 

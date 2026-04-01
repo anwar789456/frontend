@@ -8,7 +8,7 @@
     </div>
 
     <!-- Success State -->
-    <div *ngIf="!isLoading && isConfirmed" class="success-state">
+    <div *ngIf="!isLoading && isConfirmed && !redirecting" class="success-state">
       <div class="success-icon">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -17,6 +17,13 @@
       </div>
       <h1>Payment Successful!</h1>
       <p class="message">Your subscription has been activated successfully.</p>
+      
+      <!-- Countdown Timer -->
+      <div class="countdown-container">
+        <p class="countdown-text">
+          🎉 Redirecting to courses in <span class="countdown-number">{{ countdown }}</span> seconds...
+        </p>
+      </div>
       
       <div *ngIf="subscription" class="subscription-details">
         <h3>Subscription Details</h3>
@@ -37,17 +44,27 @@
       <div class="info-box">
         <p *ngIf="emailSent"><strong>✅ A confirmation email has been sent to your email address.</strong></p>
         <p *ngIf="!emailSent"><strong>📧 Sending confirmation email to your inbox...</strong></p>
-        <p>Please check your inbox for the receipt and subscription details.</p>
+        <p>Please check your inbox for receipt and subscription details.</p>
       </div>
 
       <div class="action-buttons">
-        <button (click)="goToSubscriptions()" class="btn btn-primary">
+        <button (click)="goToCourses()" class="btn btn-primary">
+          Go to Courses Now 🚀
+        </button>
+        <button (click)="goToSubscriptions()" class="btn btn-secondary">
           View Subscriptions
         </button>
         <button (click)="goToDashboard()" class="btn btn-secondary">
           Go to Dashboard
         </button>
       </div>
+    </div>
+
+    <!-- Redirecting State -->
+    <div *ngIf="redirecting" class="redirecting-state">
+      <div class="spinner"></div>
+      <h2>Redirecting to courses...</h2>
+      <p>Hold on while we take you to your learning dashboard!</p>
     </div>
 
     <!-- Error State -->

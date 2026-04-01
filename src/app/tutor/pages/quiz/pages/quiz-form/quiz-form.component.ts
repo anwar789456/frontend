@@ -23,6 +23,7 @@ export class TutorQuizFormComponent implements OnInit {
 
   quizLevels = Object.values(QuizLevel);
   quizStatuses = Object.values(QuizStatus);
+  isGeneratingDescription = false;
 
   constructor(
     private fb: FormBuilder,
@@ -85,6 +86,26 @@ export class TutorQuizFormComponent implements OnInit {
       error: (err) => {
         console.error('Failed to load quiz:', err);
         this.isLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  generateDescription(): void {
+    const title = this.quizForm.get('title')?.value;
+    if (!title?.trim()) return;
+    this.isGeneratingDescription = true;
+    this.cdr.markForCheck();
+
+    const level = this.quizForm.get('level')?.value || '';
+    this.quizService.generateQuizDescription(title, level).subscribe({
+      next: (res) => {
+        this.quizForm.patchValue({ description: res.description });
+        this.isGeneratingDescription = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isGeneratingDescription = false;
         this.cdr.markForCheck();
       }
     });

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Event, EventStatus, TargetLevel } from '../../../user/event/models/event.model';
 import { EventService } from '../../../user/event/services/event.service';
+import { EventRegistrationService } from '../../../user/event/services/event-registration.service';
 import * as L from 'leaflet';
 
 @Component({
@@ -48,8 +49,27 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   eventStatuses: EventStatus[] = ['DRAFT', 'UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED'];
   targetLevels: TargetLevel[] = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'ALL_LEVELS'];
 
+  // Mock users for host dropdown
+  mockHosts = [
+    { name: 'Alex Johnson', email: 'alex.johnson@example.com' },
+    { name: 'Priya Patel', email: 'priya.patel@example.com' },
+    { name: 'Alex Chen', email: 'alex.chen@example.com' },
+    { name: 'Maria Garcia', email: 'maria.garcia@example.com' },
+    { name: 'David Okafor', email: 'david.okafor@example.com' },
+    { name: 'Hassan M.', email: 'hassan.m@example.com' },
+    { name: 'Yuki S.', email: 'yuki.s@example.com' },
+    { name: 'Mahmoud Salhi', email: 'mahmoud.salhi@esprit.tn' }
+  ];
+
+  // QR Check-in state
+  showCheckInModal = false;
+  checkInCode = '';
+  checkInLoading = false;
+  checkInResult: { success: boolean; message: string } | null = null;
+
   constructor(
     private eventService: EventService,
+    private registrationService: EventRegistrationService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -525,5 +545,61 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
 
   set tagsString(val: string) {
     this.formData.tags = val.split(',').map(t => t.trim()).filter(t => t);
+  }
+
+  // --- QR Check-in ---
+
+  openCheckInModal(): void {
+    this.showCheckInModal = true;
+    this.checkInCode = '';
+    this.checkInResult = null;
+    this.checkInLoading = false;
+  }
+
+  closeCheckInModal(): void {
+    this.showCheckInModal = false;
+    this.checkInCode = '';
+    this.checkInResult = null;
+  }
+
+  processCheckIn(): void {
+    const code = this.checkInCode.trim();
+    if (!code) return;
+
+    this.checkInLoading = true;
+    this.checkInResult = null;
+    this.cdr.markForCheck();
+
+    this.registrationService.checkIn(code).subscribe({
+      next: (reg) => {
+        this.checkInResult = {
+          success: true,
+          message: `✅ ${reg.userName || 'User'} checked in successfully!`
+        };
+        this.checkInLoading = false;
+        this.checkInCode = '';
+        // Refresh events to update attendee counts
+        this.loadEvents();
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        const msg = err?.error?.error || 'Invalid or expired check-in code';
+        this.checkInResult = {
+          success: false,
+          message: `❌ ${msg}`
+        };
+        this.checkInLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onHostChange(hostName: string): void {
+    const host = this.mockHosts.find(h => h.name === hostName);
+    if (host) {
+      this.formData.contactEmail = host.email;
+    } else {
+      this.formData.contactEmail = '';
+    }
   }
 }
