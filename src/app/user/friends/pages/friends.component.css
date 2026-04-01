@@ -1,5 +1,6 @@
 /* ══════════════════════════════════════════════
-   MinoLingo Friends – Kid-Friendly Design System
+   MinoLingo Friends – Duolingo-Style Design
+   Chunky, Fun, Kid-Friendly UI
    ══════════════════════════════════════════════ */
 
 :host {
@@ -8,62 +9,65 @@
 
 /* ── Chat Background ── */
 .chat-bg {
-  background-color: #f8fbff;
+  background-color: #F7F7F7;
   background-image:
-    radial-gradient(circle at 15% 50%, rgba(56, 169, 243, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 85% 20%, rgba(168, 85, 247, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 50% 80%, rgba(34, 197, 94, 0.03) 0%, transparent 50%);
+    radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(88, 204, 2, 0.03) 0%, transparent 50%);
 }
 
-/* ── Message Bubbles ── */
+/* ── Message Bubbles - Bouncy entrance ── */
 .message-bubble {
   word-break: break-word;
-  animation: messageIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: messagePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes messageIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.92); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes messagePop {
+  0% { opacity: 0; transform: translateY(16px) scale(0.85); }
+  60% { transform: translateY(-3px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── Custom Scrollbar ── */
+/* ── Custom Scrollbar - Chunky & fun ── */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #38a9f3, #a855f7);
+  background: #F7F7F7;
   border-radius: 999px;
 }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #7C3AED;
+  border-radius: 999px;
+  border: 2px solid #F7F7F7;
+}
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #2196e3, #7c3aed);
+  background: #5B21B6;
 }
 
-/* ── Toast Animations ── */
+/* ── Toast Animations - Bouncy ── */
 .toast-enter {
-  animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: toastBounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .toast-exit {
   animation: toastSlideOut 0.3s ease-in forwards;
 }
-@keyframes toastSlideIn {
-  from { opacity: 0; transform: translateX(120px) scale(0.8); }
-  to { opacity: 1; transform: translateX(0) scale(1); }
+@keyframes toastBounceIn {
+  0% { opacity: 0; transform: translateX(120px) scale(0.7); }
+  60% { transform: translateX(-8px) scale(1.03); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
 }
 @keyframes toastSlideOut {
   from { opacity: 1; transform: translateX(0) scale(1); }
-  to { opacity: 0; transform: translateX(120px) scale(0.8); }
+  to { opacity: 0; transform: translateX(120px) scale(0.7); }
 }
 
-/* ── Online Pulse ── */
+/* ── Online Pulse - Green Duolingo style ── */
 .online-pulse {
-  animation: pulse 2s infinite;
+  animation: greenPulse 2s infinite;
 }
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(86, 196, 22, 0.5); }
-  50% { box-shadow: 0 0 0 6px rgba(86, 196, 22, 0); }
+@keyframes greenPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(88, 204, 2, 0); }
 }
 
 /* ── Typing Indicator ── */
@@ -74,25 +78,26 @@
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes typingBounce {
   0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-5px); }
+  30% { transform: translateY(-6px); }
 }
 
-/* ── Mascot Animations ── */
+/* ── Mascot Animations - Extra bouncy for kids ── */
 @keyframes mascotFloat {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-8px) rotate(2deg); }
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
 }
 @keyframes mascotBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-12px) scale(1.05); }
+  50% { transform: translateY(-8px) scale(1.02); }
 }
 @keyframes mascotWave {
   0%, 100% { transform: rotate(0deg); }
-  15% { transform: rotate(14deg); }
-  30% { transform: rotate(-8deg); }
-  45% { transform: rotate(14deg); }
-  60% { transform: rotate(-4deg); }
-  75% { transform: rotate(10deg); }
+  15% { transform: rotate(16deg); }
+  30% { transform: rotate(-10deg); }
+  45% { transform: rotate(16deg); }
+  60% { transform: rotate(-6deg); }
+  75% { transform: rotate(12deg); }
 }
 .mascot-float { animation: mascotFloat 3s ease-in-out infinite; }
 .mascot-bounce { animation: mascotBounce 2s ease-in-out infinite; }
@@ -101,29 +106,27 @@
 /* ── Floating Decorations ── */
 @keyframes floatBubble {
   0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
-  50% { transform: translateY(-12px) scale(1.1); opacity: 1; }
+  50% { transform: translateY(-15px) scale(1.15); opacity: 1; }
 }
 @keyframes sparkle {
   0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
-  50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+  50% { transform: scale(1.4) rotate(180deg); opacity: 1; }
 }
 .float-bubble { animation: floatBubble 3s ease-in-out infinite; }
 .float-bubble-delay { animation: floatBubble 3.5s ease-in-out 0.5s infinite; }
 .sparkle { animation: sparkle 2s ease-in-out infinite; }
 
-/* ── Hover Effects ── */
-.friend-item {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 16px;
+/* ── Global Transitions - Snappy & fun ── */
+button, a {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
-.friend-item:hover {
-  background-color: #f0f9ff;
-  transform: translateX(3px);
+button:active {
+  transform: scale(0.97);
 }
-
-/* ── Smooth Transitions ── */
-button, a { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-input { transition: border-color 0.25s ease, box-shadow 0.25s ease; }
+input {
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
 
 /* ── Line Clamp ── */
 .line-clamp-3 {
@@ -134,34 +137,61 @@ input { transition: border-color 0.25s ease, box-shadow 0.25s ease; }
   overflow: hidden;
 }
 
-/* ── Gradient Shift ── */
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-/* ── Card Entrance ── */
-@keyframes cardSlideIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
 /* ── Mascot Image Styling ── */
 .mascot-bounce img,
 .mascot-float img {
-  filter: drop-shadow(0 4px 8px rgba(56, 169, 243, 0.25));
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .mascot-bounce:hover img,
 .mascot-float:hover img {
-  transform: scale(1.1) rotate(3deg);
+  transform: scale(1.15) rotate(5deg);
 }
 
-/* ── Action Menu ── */
+/* ── Action Menu - Bouncy popup ── */
 .action-menu-enter {
-  animation: actionMenuIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: actionMenuPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-@keyframes actionMenuIn {
-  from { opacity: 0; transform: translateY(-4px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes actionMenuPop {
+  0% { opacity: 0; transform: translateY(-6px) scale(0.9); }
+  60% { transform: translateY(2px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Typing Indicator Dots ── */
+.typing-dots span {
+  animation: typingDot 1.4s infinite;
+  display: inline-block;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+}
+
+/* ── Voice Audio Player ── */
+.voice-audio {
+  filter: hue-rotate(200deg) saturate(1.5);
+}
+.voice-audio::-webkit-media-controls-panel {
+  background: transparent;
+}
+.voice-audio::-webkit-media-controls-enclosure {
+  border-radius: 16px;
+}
+
+/* ── No Scrollbar ── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Card Entrance - Bouncy ── */
+@keyframes cardBounceIn {
+  0% { opacity: 0; transform: translateY(10px) scale(0.95); }
+  60% { transform: translateY(-3px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }

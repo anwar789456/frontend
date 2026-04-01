@@ -1,74 +1,80 @@
 <!-- Hidden file input for chat images -->
 <input type="file" #chatFileInput class="hidden" accept="image/*" (change)="onFileSelected($event)" />
 
-<!-- Toast Notifications -->
-<div class="fixed top-4 right-4 z-[999] flex flex-col gap-2 w-80">
+<!-- Toast Notifications - Duolingo chunky style -->
+<div class="fixed top-4 right-4 z-[999] flex flex-col gap-3 w-80">
   @for (t of toasts; track t.id) {
-    <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm bg-white" [class]="t.exiting ? 'toast-exit' : 'toast-enter'" [class.border-green-200]="t.type === 'success'" [class.border-blue-200]="t.type === 'info'" [class.border-orange-200]="t.type === 'warning'">
-      <span class="text-lg">{{ getToastIcon(t.type) }}</span>
-      <p class="text-sm flex-1 text-gray-700">{{ t.message }}</p>
-      <button (click)="dismissToast(t.id)" class="text-gray-400 hover:text-gray-600 shrink-0">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+    <div class="flex items-center gap-3 px-5 py-4 rounded-[20px] border-[3px] border-b-[5px] shadow-lg bg-white" [class]="t.exiting ? 'toast-exit' : 'toast-enter'" [class.border-[#7C3AED]]="t.type === 'success'" [class.border-[#6366F1]]="t.type === 'info'" [class.border-[#F59E0B]]="t.type === 'warning'">
+      <span class="text-2xl">{{ getToastIcon(t.type) }}</span>
+      <p class="text-[15px] font-black flex-1 text-[#3C3C3C]">{{ t.message }}</p>
+      <button (click)="dismissToast(t.id)" class="text-[#AFAFAF] hover:text-[#3C3C3C] shrink-0 hover:scale-110 transition-transform">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
     </div>
   }
 </div>
 
-<div class="flex h-screen bg-[#f8fafc] overflow-hidden">
+<div class="flex h-screen overflow-hidden bg-[#F7F7F7]">
 
   <!-- ═══════════════ LEFT SIDEBAR ═══════════════ -->
-  <div class="w-[340px] bg-white border-r border-gray-100 flex flex-col shrink-0">
+  <div class="w-[360px] bg-white border-r-[3px] border-[#E5E5E5] flex flex-col shrink-0">
 
-    <!-- Header -->
-    <div class="px-5 pt-5 pb-3">
-      <div class="relative overflow-hidden rounded-2xl mb-4 p-4 bg-gradient-to-r from-[#38a9f3] via-[#6366f1] to-[#a855f7]">
-        <div class="absolute top-1 right-10 text-lg float-bubble opacity-50">✨</div>
-        <div class="absolute bottom-1 right-4 text-sm float-bubble-delay opacity-40">🌟</div>
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 mascot-bounce overflow-hidden">
-            <img src="mino_images/1770148246099.png" alt="MinoLingo" class="w-10 h-10 object-contain drop-shadow-lg" />
+    <!-- Mascot Header Banner -->
+    <div class="px-5 pt-5 pb-4">
+      <div class="relative overflow-hidden rounded-[20px] mb-5 p-5 bg-[#7C3AED] border-[3px] border-b-[6px] border-[#5B21B6]">
+        <div class="absolute -top-2 -right-2 w-20 h-20 bg-[#8b5cf6] rounded-full opacity-30"></div>
+        <div class="absolute bottom-0 right-3 w-14 h-14 bg-[#6D28D9] rounded-full opacity-20"></div>
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shrink-0 mascot-bounce overflow-hidden border-[3px] border-b-[5px] border-[#E5E5E5]">
+            <img src="mino_images/1770148246099.png" alt="MinoLingo" class="w-12 h-12 object-contain" />
           </div>
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-1.5">
-              <h1 class="text-base font-extrabold text-white tracking-tight">My Friends</h1>
-              <img src="mino_images/mino_with_pen.png" alt="" class="w-5 h-5 object-contain mascot-wave" />
-            </div>
-            <p class="text-white/80 text-[11px] font-medium">{{ friends.length }} friends · {{ onlineFriends.length }} online</p>
+            <h1 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+              My Friends
+              <img src="mino_images/mino_with_pen.png" alt="" class="w-6 h-6 object-contain mascot-wave" />
+            </h1>
+            <p class="text-white/80 text-[13px] font-extrabold mt-0.5">{{ friends.length }} buddies · {{ onlineFriends.length }} online 🟢</p>
           </div>
         </div>
       </div>
 
-      <!-- Tab Navigation -->
-      <div class="flex gap-1 bg-gray-100 rounded-xl p-1">
-        <button (click)="activeTab = 'chats'" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all" [class.bg-white]="activeTab === 'chats'" [class.text-[#38a9f3]]="activeTab === 'chats'" [class.shadow-sm]="activeTab === 'chats'" [class.text-gray-500]="activeTab !== 'chats'">
-          Chats
+      <!-- Tab Navigation - Duolingo chunky pills -->
+      <div class="flex gap-2 overflow-x-auto no-scrollbar">
+        <button (click)="activeTab = 'chats'" class="px-4 py-2.5 text-[13px] font-black rounded-2xl transition-all whitespace-nowrap border-[3px]" [class.bg-[#7C3AED]]="activeTab === 'chats'" [class.text-white]="activeTab === 'chats'" [class.border-[#5B21B6]]="activeTab === 'chats'" [class.border-b-[5px]]="activeTab === 'chats'" [class.bg-white]="activeTab !== 'chats'" [class.text-[#AFAFAF]]="activeTab !== 'chats'" [class.border-[#E5E5E5]]="activeTab !== 'chats'" [class.border-b-[5px]]="activeTab !== 'chats'" [class.hover:text-[#7C3AED]]="activeTab !== 'chats'">
+          💬 Chats
           @if (friends.length > 0) {
-            <span class="ml-1 text-[10px] bg-[#38a9f3]/10 text-[#38a9f3] px-1.5 py-0.5 rounded-full">{{ friends.length }}</span>
+            <span class="ml-1.5 text-[11px] px-2 py-0.5 rounded-full font-black" [class.bg-white/25]="activeTab === 'chats'" [class.bg-[#7C3AED]/10]="activeTab !== 'chats'" [class.text-[#7C3AED]]="activeTab !== 'chats'">{{ friends.length }}</span>
           }
         </button>
-        <button (click)="activeTab = 'requests'" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all" [class.bg-white]="activeTab === 'requests'" [class.text-[#38a9f3]]="activeTab === 'requests'" [class.shadow-sm]="activeTab === 'requests'" [class.text-gray-500]="activeTab !== 'requests'">
-          Requests
+        <button (click)="activeTab = 'requests'" class="px-4 py-2.5 text-[13px] font-black rounded-2xl transition-all whitespace-nowrap border-[3px]" [class.bg-[#7C3AED]]="activeTab === 'requests'" [class.text-white]="activeTab === 'requests'" [class.border-[#5B21B6]]="activeTab === 'requests'" [class.border-b-[5px]]="activeTab === 'requests'" [class.bg-white]="activeTab !== 'requests'" [class.text-[#AFAFAF]]="activeTab !== 'requests'" [class.border-[#E5E5E5]]="activeTab !== 'requests'" [class.border-b-[5px]]="activeTab !== 'requests'" [class.hover:text-[#7C3AED]]="activeTab !== 'requests'">
+          📩 Inbox
           @if (friendRequests.length > 0) {
-            <span class="ml-1 text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full">{{ friendRequests.length }}</span>
+            <span class="ml-1.5 text-[11px] bg-[#FF4B4B] text-white px-2 py-0.5 rounded-full font-black animate-pulse">{{ friendRequests.length }}</span>
           }
         </button>
-        <button (click)="activeTab = 'explore'" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all" [class.bg-white]="activeTab === 'explore'" [class.text-[#38a9f3]]="activeTab === 'explore'" [class.shadow-sm]="activeTab === 'explore'" [class.text-gray-500]="activeTab !== 'explore'">
-          Explore
+        <button (click)="activeTab = 'suggestions'; loadFriendSuggestions()" class="px-4 py-2.5 text-[13px] font-black rounded-2xl transition-all whitespace-nowrap border-[3px]" [class.bg-[#7C3AED]]="activeTab === 'suggestions'" [class.text-white]="activeTab === 'suggestions'" [class.border-[#5B21B6]]="activeTab === 'suggestions'" [class.border-b-[5px]]="activeTab === 'suggestions'" [class.bg-white]="activeTab !== 'suggestions'" [class.text-[#AFAFAF]]="activeTab !== 'suggestions'" [class.border-[#E5E5E5]]="activeTab !== 'suggestions'" [class.border-b-[5px]]="activeTab !== 'suggestions'" [class.hover:text-[#7C3AED]]="activeTab !== 'suggestions'">
+          🔍 Discover
+        </button>
+        <button (click)="activeTab = 'explore'" class="px-4 py-2.5 text-[13px] font-black rounded-2xl transition-all whitespace-nowrap border-[3px]" [class.bg-[#7C3AED]]="activeTab === 'explore'" [class.text-white]="activeTab === 'explore'" [class.border-[#5B21B6]]="activeTab === 'explore'" [class.border-b-[5px]]="activeTab === 'explore'" [class.bg-white]="activeTab !== 'explore'" [class.text-[#AFAFAF]]="activeTab !== 'explore'" [class.border-[#E5E5E5]]="activeTab !== 'explore'" [class.border-b-[5px]]="activeTab !== 'explore'" [class.hover:text-[#7C3AED]]="activeTab !== 'explore'">
+          🌍 Explore
+        </button>
+        <button (click)="activeTab = 'blocked'" class="px-4 py-2.5 text-[13px] font-black rounded-2xl transition-all whitespace-nowrap border-[3px]" [class.bg-[#7C3AED]]="activeTab === 'blocked'" [class.text-white]="activeTab === 'blocked'" [class.border-[#5B21B6]]="activeTab === 'blocked'" [class.border-b-[5px]]="activeTab === 'blocked'" [class.bg-white]="activeTab !== 'blocked'" [class.text-[#AFAFAF]]="activeTab !== 'blocked'" [class.border-[#E5E5E5]]="activeTab !== 'blocked'" [class.border-b-[5px]]="activeTab !== 'blocked'" [class.hover:text-[#7C3AED]]="activeTab !== 'blocked'">
+          🚫 Blocked
         </button>
       </div>
     </div>
 
-    <!-- Search -->
-    <div class="px-5 pb-3">
+    <!-- Search - Duolingo chunky input -->
+    <div class="px-5 pb-4">
       @if (activeTab === 'explore') {
         <div class="relative">
-          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-          <input type="text" [(ngModel)]="userSearchQuery" placeholder="Search people..." class="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#38a9f3]/20 focus:border-[#38a9f3]/40 transition-all" />
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔎</span>
+          <input type="text" [(ngModel)]="userSearchQuery" placeholder="Find new buddies..." class="w-full pl-12 pr-4 py-3.5 bg-[#F7F7F7] border-[3px] border-[#E5E5E5] border-b-[5px] rounded-2xl text-[15px] font-bold placeholder-[#AFAFAF] text-[#3C3C3C] outline-none focus:border-[#7C3AED] focus:bg-white transition-all" />
         </div>
       } @else {
         <div class="relative">
-          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-          <input type="text" [(ngModel)]="searchQuery" placeholder="Search friends..." class="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#38a9f3]/20 focus:border-[#38a9f3]/40 transition-all" />
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔎</span>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search friends..." class="w-full pl-12 pr-4 py-3.5 bg-[#F7F7F7] border-[3px] border-[#E5E5E5] border-b-[5px] rounded-2xl text-[15px] font-bold placeholder-[#AFAFAF] text-[#3C3C3C] outline-none focus:border-[#7C3AED] focus:bg-white transition-all" />
         </div>
       }
     </div>
@@ -79,59 +85,57 @@
       <!-- ── CHATS TAB ── -->
       @if (activeTab === 'chats') {
         @if (onlineFriends.length > 0) {
-          <div class="px-5 pb-2">
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Online Now</p>
-            <div class="flex gap-3 overflow-x-auto pb-2">
+          <div class="px-5 pb-4">
+            <p class="text-[13px] font-black text-[#AFAFAF] uppercase tracking-wider mb-3">🟢 Online Now</p>
+            <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
               @for (f of onlineFriends; track f.id) {
-                <button (click)="selectFriend(f)" class="flex flex-col items-center gap-1 shrink-0 group">
+                <button (click)="selectFriend(f)" class="flex flex-col items-center gap-2 shrink-0 group hover:scale-105 transition-transform">
                   <div class="relative">
-                    <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-200 ring-2 ring-[#56c416]/40 group-hover:ring-[#38a9f3] transition-all">
+                    <div class="w-14 h-14 rounded-full overflow-hidden border-[3px] border-[#58CC02] bg-white">
                       <img [src]="f.avatar" [alt]="f.name" class="w-full h-full object-cover" />
                     </div>
-                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#56c416] rounded-full border-2 border-white"></div>
+                    <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#58CC02] rounded-full border-[3px] border-white"></div>
                   </div>
-                  <span class="text-[10px] text-gray-500 font-medium truncate max-w-[56px]">{{ f.name.split(' ')[0] }}</span>
+                  <span class="text-[12px] text-[#777] font-black truncate max-w-[60px] group-hover:text-[#7C3AED] transition-colors">{{ f.name.split(' ')[0] }}</span>
                 </button>
               }
             </div>
           </div>
         }
 
-        <div class="px-2">
+        <div class="px-4">
           @for (friend of filteredFriends; track friend.id) {
-            <div (click)="selectFriend(friend)" class="flex items-center gap-3 px-3 py-3 mx-1 rounded-xl cursor-pointer hover:bg-gray-50 transition-all group" [class.bg-[#38a9f3]/5]="selectedFriend?.id === friend.id" [class.border-l-2]="selectedFriend?.id === friend.id" [class.border-[#38a9f3]]="selectedFriend?.id === friend.id">
+            <div (click)="selectFriend(friend)" class="flex items-center gap-3.5 px-4 py-3.5 mb-2.5 rounded-2xl cursor-pointer transition-all group bg-white border-[3px] border-b-[5px] hover:border-[#7C3AED] active:border-b-[3px] active:mt-[2px]" [class.border-[#7C3AED]]="selectedFriend?.id === friend.id" [class.bg-[#F3EEFF]]="selectedFriend?.id === friend.id" [class.border-[#E5E5E5]]="selectedFriend?.id !== friend.id">
               <div class="relative shrink-0">
-                <div class="w-11 h-11 rounded-full overflow-hidden bg-gray-200">
+                <div class="w-12 h-12 rounded-full overflow-hidden border-[3px]" [class.border-[#58CC02]]="friend.online" [class.border-[#E5E5E5]]="!friend.online">
                   <img [src]="friend.avatar" [alt]="friend.name" class="w-full h-full object-cover" />
                 </div>
                 @if (friend.online) {
-                  <div class="absolute bottom-0 right-0 w-3 h-3 bg-[#56c416] rounded-full border-2 border-white"></div>
-                } @else {
-                  <div class="absolute bottom-0 right-0 w-3 h-3 bg-gray-300 rounded-full border-2 border-white"></div>
+                  <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#58CC02] rounded-full border-[3px] border-white"></div>
                 }
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
-                  <span class="text-sm font-semibold text-[#0f1724]">{{ friend.name }}</span>
-                  <span class="text-[10px] text-gray-400">{{ friend.lastMessageTime }}</span>
+                  <span class="text-[15px] font-black text-[#3C3C3C]">{{ friend.name }}</span>
+                  <span class="text-[11px] text-[#AFAFAF] font-bold">{{ friend.lastMessageTime }}</span>
                 </div>
-                <div class="flex items-center justify-between">
-                  <p class="text-xs truncate" [class.text-gray-500]="!friend.unreadCount" [class.text-[#0f1724]]="friend.unreadCount" [class.font-semibold]="friend.unreadCount">{{ friend.lastMessage || (friend.online ? 'Online' : getLastSeenText(friend)) }}</p>
+                <div class="flex items-center justify-between mt-0.5">
+                  <p class="text-[13px] truncate font-bold" [class.text-[#AFAFAF]]="!friend.unreadCount" [class.text-[#3C3C3C]]="friend.unreadCount">{{ friend.lastMessage || (friend.online ? '🟢 Online' : getLastSeenText(friend)) }}</p>
                   @if (friend.unreadCount > 0) {
-                    <span class="w-5 h-5 bg-[#38a9f3] text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">{{ friend.unreadCount > 9 ? '9+' : friend.unreadCount }}</span>
+                    <span class="w-6 h-6 bg-[#FF4B4B] text-white text-[11px] font-black rounded-full flex items-center justify-center shrink-0 ml-2 animate-bounce">{{ friend.unreadCount > 9 ? '9+' : friend.unreadCount }}</span>
                   }
                 </div>
               </div>
             </div>
           }
           @if (filteredFriends.length === 0) {
-            <div class="text-center py-12 px-6">
-              <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#38a9f3]/10 to-[#a855f7]/10 flex items-center justify-center overflow-hidden">
-                <img src="mino_images/nino.png" alt="MinoLingo" class="w-16 h-16 object-contain mascot-float drop-shadow-md" />
+            <div class="text-center py-16 px-6">
+              <div class="w-28 h-28 mx-auto mb-5 rounded-3xl bg-white flex items-center justify-center overflow-hidden border-[3px] border-b-[6px] border-[#E5E5E5] mascot-bounce">
+                <img src="mino_images/nino.png" alt="MinoLingo" class="w-22 h-22 object-contain" />
               </div>
-              <p class="text-sm font-bold text-[#0f1724]">No friends yet!</p>
-              <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">MinoLingo is more fun with friends!<br>Let's find some learning buddies!</p>
-              <button (click)="activeTab = 'explore'" class="mt-4 px-5 py-2 bg-gradient-to-r from-[#38a9f3] to-[#6366f1] text-white text-xs font-bold rounded-xl hover:shadow-lg hover:scale-105 transition-all">
+              <p class="text-xl font-black text-[#3C3C3C]">No friends yet!</p>
+              <p class="text-[15px] text-[#AFAFAF] mt-2 leading-relaxed font-bold">Learning is more fun with friends! 🎉<br>Let's find some study buddies!</p>
+              <button (click)="activeTab = 'explore'" class="mt-5 px-8 py-3.5 bg-[#7C3AED] text-white text-[15px] font-black rounded-2xl hover:scale-105 transition-all border-[3px] border-b-[6px] border-[#5B21B6] active:border-b-[3px] active:mt-[3px]">
                 Find Friends ✨
               </button>
             </div>
@@ -143,30 +147,30 @@
       @if (activeTab === 'requests') {
         <div class="px-4">
           @if (friendRequests.length > 0) {
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Pending Requests</p>
+            <p class="text-[13px] font-black text-[#AFAFAF] uppercase tracking-wider mb-3 px-1">📩 Pending Requests</p>
           }
           @for (req of friendRequests; track req.friendshipId) {
-            <div class="flex items-center gap-3 p-3 mb-2 bg-white border border-gray-100 rounded-xl hover:shadow-sm transition-all">
-              <div class="w-11 h-11 rounded-full overflow-hidden bg-gray-200 shrink-0">
+            <div class="flex items-center gap-3.5 p-4 mb-2.5 bg-white border-[3px] border-b-[5px] border-[#E5E5E5] rounded-2xl hover:border-[#7C3AED] transition-all">
+              <div class="w-12 h-12 rounded-full overflow-hidden border-[3px] border-[#CE82FF] shrink-0">
                 <img [src]="req.avatar" [alt]="req.name" class="w-full h-full object-cover" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-[#0f1724]">{{ req.name }}</p>
-                <p class="text-[10px] text-gray-400">{{ getTimeAgo(req.createdAt) }} ago</p>
+                <p class="text-[15px] font-black text-[#3C3C3C]">{{ req.name }}</p>
+                <p class="text-[12px] text-[#AFAFAF] font-bold">{{ getTimeAgo(req.createdAt) }} ago</p>
               </div>
               <div class="flex items-center gap-2">
-                <button (click)="acceptRequest(req)" class="px-3 py-1.5 bg-[#38a9f3] text-white text-xs font-semibold rounded-lg hover:bg-[#2196e3] transition-colors">Accept</button>
-                <button (click)="rejectRequest(req)" class="px-3 py-1.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-colors">Decline</button>
+                <button (click)="acceptRequest(req)" class="px-4 py-2 bg-[#58CC02] text-white text-[13px] font-black rounded-2xl transition-all border-[3px] border-b-[5px] border-[#46A302] active:border-b-[3px] active:mt-[2px] hover:scale-105">Accept</button>
+                <button (click)="rejectRequest(req)" class="px-4 py-2 bg-white text-[#AFAFAF] text-[13px] font-black rounded-2xl transition-all border-[3px] border-b-[5px] border-[#E5E5E5] active:border-b-[3px] active:mt-[2px]">Nope</button>
               </div>
             </div>
           }
           @if (friendRequests.length === 0) {
-            <div class="text-center py-12 px-6">
-              <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
-                <span class="text-4xl mascot-float">📬</span>
+            <div class="text-center py-16 px-6">
+              <div class="w-24 h-24 mx-auto mb-5 rounded-3xl bg-white flex items-center justify-center border-[3px] border-b-[6px] border-[#E5E5E5] mascot-float">
+                <span class="text-5xl">📬</span>
               </div>
-              <p class="text-sm font-bold text-[#0f1724]">All caught up!</p>
-              <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">No pending friend requests right now.<br>Check back soon!</p>
+              <p class="text-xl font-black text-[#3C3C3C]">All caught up! 🎉</p>
+              <p class="text-[15px] text-[#AFAFAF] mt-2 leading-relaxed font-bold">No pending friend requests.<br>Check back later!</p>
             </div>
           }
         </div>
@@ -175,30 +179,97 @@
       <!-- ── EXPLORE TAB ── -->
       @if (activeTab === 'explore') {
         <div class="px-4">
-          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Discover People</p>
+          <p class="text-[13px] font-black text-[#AFAFAF] uppercase tracking-wider mb-3 px-1">🌍 Discover People</p>
           @for (u of exploreUsers; track u.id) {
-            <div class="flex items-center gap-3 p-3 mb-2 bg-white border border-gray-100 rounded-xl hover:shadow-sm transition-all">
-              <div class="w-11 h-11 rounded-full overflow-hidden bg-gray-200 shrink-0">
+            <div class="flex items-center gap-3.5 p-4 mb-2.5 bg-white border-[3px] border-b-[5px] border-[#E5E5E5] rounded-2xl hover:border-[#7C3AED] transition-all">
+              <div class="w-12 h-12 rounded-full overflow-hidden border-[3px] border-[#E5E5E5] shrink-0">
                 <img [src]="u.avatar" [alt]="u.name" class="w-full h-full object-cover" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-[#0f1724]">{{ u.name }}</p>
+                <p class="text-[15px] font-black text-[#3C3C3C]">{{ u.name }}</p>
               </div>
               @if (u.isFriend) {
-                <span class="text-[10px] text-[#56c416] font-semibold bg-[#56c416]/10 px-2.5 py-1 rounded-full">Friends</span>
+                <span class="text-[12px] text-[#58CC02] font-black bg-[#E5F9D0] px-3 py-1.5 rounded-2xl border-[2px] border-[#58CC02]/30">✅ Friends</span>
               } @else if (u.isPending) {
-                <span class="text-[10px] text-gray-400 font-semibold bg-gray-100 px-2.5 py-1 rounded-full">Pending</span>
+                <span class="text-[12px] text-[#AFAFAF] font-black bg-[#F7F7F7] px-3 py-1.5 rounded-2xl border-[2px] border-[#E5E5E5]">⏳ Pending</span>
               } @else {
-                <button (click)="sendFriendRequest(u)" class="px-3 py-1.5 bg-[#38a9f3] text-white text-xs font-semibold rounded-lg hover:bg-[#2196e3] transition-colors flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                  Add
+                <button (click)="sendFriendRequest(u)" class="px-4 py-2 bg-[#7C3AED] text-white text-[13px] font-black rounded-2xl transition-all border-[3px] border-b-[5px] border-[#5B21B6] active:border-b-[3px] active:mt-[2px] hover:scale-105 flex items-center gap-1.5">
+                  ➕ Add
                 </button>
               }
             </div>
           }
           @if (exploreUsers.length === 0) {
-            <div class="text-center py-12 px-6">
-              <p class="text-sm font-medium text-gray-400">No users found</p>
+            <div class="text-center py-16 px-6">
+              <div class="w-24 h-24 mx-auto mb-5 rounded-3xl bg-white flex items-center justify-center border-[3px] border-b-[6px] border-[#E5E5E5]">
+                <span class="text-5xl mascot-float">🌎</span>
+              </div>
+              <p class="text-xl font-black text-[#3C3C3C]">No one found</p>
+              <p class="text-[15px] text-[#AFAFAF] mt-2 font-bold">Try a different search!</p>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── SUGGESTIONS TAB ── -->
+      @if (activeTab === 'suggestions') {
+        <div class="px-4">
+          <p class="text-[13px] font-black text-[#AFAFAF] uppercase tracking-wider mb-3 px-1">🔍 People You May Know</p>
+          @for (s of friendSuggestions; track s.id) {
+            <div class="flex items-center gap-3.5 p-4 mb-2.5 bg-white border-[3px] border-b-[5px] border-[#E5E5E5] rounded-2xl hover:border-[#7C3AED] transition-all">
+              <div (click)="openProfileModal(s.id, s.name, s.avatar)" class="w-12 h-12 rounded-full overflow-hidden border-[3px] border-[#CE82FF] shrink-0 cursor-pointer hover:scale-105 transition-transform">
+                <img [src]="s.avatar" [alt]="s.name" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[15px] font-black text-[#3C3C3C]">{{ s.name }}</p>
+                @if (s.mutualCount > 0) {
+                  <p class="text-[12px] text-[#7C3AED] font-bold">👥 {{ s.mutualCount }} mutual friend{{ s.mutualCount > 1 ? 's' : '' }}</p>
+                } @else {
+                  <p class="text-[12px] text-[#AFAFAF] font-bold">✨ Suggested for you</p>
+                }
+              </div>
+              <button (click)="sendSuggestionRequest(s)" class="px-4 py-2 bg-[#7C3AED] text-white text-[13px] font-black rounded-2xl transition-all border-[3px] border-b-[5px] border-[#5B21B6] active:border-b-[3px] active:mt-[2px] hover:scale-105 flex items-center gap-1.5">
+                ➕ Add
+              </button>
+            </div>
+          }
+          @if (friendSuggestions.length === 0) {
+            <div class="text-center py-16 px-6">
+              <div class="w-24 h-24 mx-auto mb-5 rounded-3xl bg-white flex items-center justify-center border-[3px] border-b-[6px] border-[#E5E5E5] mascot-float">
+                <span class="text-5xl">🔍</span>
+              </div>
+              <p class="text-xl font-black text-[#3C3C3C]">No suggestions yet!</p>
+              <p class="text-[15px] text-[#AFAFAF] mt-2 leading-relaxed font-bold">Keep making friends and we'll<br>find more people for you! 🚀</p>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── BLOCKED TAB ── -->
+      @if (activeTab === 'blocked') {
+        <div class="px-4">
+          <p class="text-[13px] font-black text-[#AFAFAF] uppercase tracking-wider mb-3 px-1">🚫 Blocked Users</p>
+          @for (b of blockedUsers; track b.id) {
+            <div class="flex items-center gap-3.5 p-4 mb-2.5 bg-white border-[3px] border-b-[5px] border-[#E5E5E5] rounded-2xl transition-all">
+              <div class="w-12 h-12 rounded-full overflow-hidden border-[3px] border-[#E5E5E5] shrink-0 opacity-40 grayscale">
+                <img [src]="b.avatar" [alt]="b.name" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[15px] font-black text-[#777]">{{ b.name }}</p>
+                <p class="text-[12px] text-[#FF4B4B] font-black">🚫 Blocked</p>
+              </div>
+              <button (click)="unblockUser(b)" class="px-4 py-2 bg-white text-[#777] text-[13px] font-black rounded-2xl transition-all border-[3px] border-b-[5px] border-[#E5E5E5] active:border-b-[3px] active:mt-[2px] hover:border-[#7C3AED] hover:text-[#7C3AED]">
+                Unblock
+              </button>
+            </div>
+          }
+          @if (blockedUsers.length === 0) {
+            <div class="text-center py-16 px-6">
+              <div class="w-24 h-24 mx-auto mb-5 rounded-3xl bg-white flex items-center justify-center border-[3px] border-b-[6px] border-[#E5E5E5] mascot-float">
+                <span class="text-5xl">✅</span>
+              </div>
+              <p class="text-xl font-black text-[#3C3C3C]">All clear! 🎉</p>
+              <p class="text-[15px] text-[#AFAFAF] mt-2 leading-relaxed font-bold">You haven't blocked anyone.<br>That's awesome!</p>
             </div>
           }
         </div>
@@ -209,160 +280,183 @@
   <!-- ═══════════════ CENTER: CHAT AREA ═══════════════ -->
   <div class="flex-1 flex flex-col min-w-0">
     @if (selectedFriend) {
-      <!-- Chat Header -->
-      <div class="flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-100 shrink-0">
-        <div class="flex items-center gap-3">
+      <!-- Chat Header - Duolingo chunky -->
+      <div class="flex items-center justify-between px-6 py-4 bg-white border-b-[3px] border-[#E5E5E5] shrink-0">
+        <div class="flex items-center gap-3.5">
           <div class="relative">
-            <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+            <div class="w-12 h-12 rounded-full overflow-hidden border-[3px]" [class.border-[#58CC02]]="selectedFriend.online" [class.border-[#E5E5E5]]="!selectedFriend.online">
               <img [src]="selectedFriend.avatar" [alt]="selectedFriend.name" class="w-full h-full object-cover" />
             </div>
             @if (selectedFriend.online) {
-              <div class="absolute bottom-0 right-0 w-3 h-3 bg-[#56c416] rounded-full border-2 border-white"></div>
+              <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#58CC02] rounded-full border-[3px] border-white"></div>
             }
           </div>
           <div>
-            <h3 class="text-sm font-bold text-[#0f1724]">{{ selectedFriend.name }}</h3>
-            <span class="text-[11px]" [class.text-[#56c416]]="selectedFriend.online" [class.text-gray-400]="!selectedFriend.online">{{ getLastSeenText(selectedFriend) }}</span>
+            <h3 class="text-[17px] font-black text-[#3C3C3C]">{{ selectedFriend.name }}</h3>
+            @if (friendIsTyping) {
+              <span class="text-[13px] text-[#7C3AED] font-black typing-indicator">typing<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></span>
+            } @else {
+              <span class="text-[13px] font-bold" [class.text-[#58CC02]]="selectedFriend.online" [class.text-[#AFAFAF]]="!selectedFriend.online">{{ getLastSeenText(selectedFriend) }}</span>
+            }
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button (click)="showFriendInfo = !showFriendInfo" class="p-2 rounded-lg text-gray-400 hover:text-[#38a9f3] hover:bg-[#38a9f3]/10 transition-all">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
-          </button>
-        </div>
+        <button (click)="showFriendInfo = !showFriendInfo" class="p-3 rounded-2xl text-[#AFAFAF] hover:text-[#7C3AED] hover:bg-[#F3EEFF] transition-all border-[3px] border-[#E5E5E5] hover:border-[#7C3AED]">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+        </button>
       </div>
 
-      <!-- Chat Messages -->
-      <div #chatContainer class="flex-1 overflow-y-auto px-6 py-4 chat-bg custom-scrollbar">
+      <!-- Chat Messages - Duolingo bubbly style -->
+      <div #chatContainer class="flex-1 overflow-y-auto px-6 py-5 chat-bg custom-scrollbar">
         @if (chatLoading) {
           <div class="flex items-center justify-center h-full">
-            <div class="w-8 h-8 border-3 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+            <div class="w-10 h-10 border-[4px] border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
           </div>
         } @else {
           @if (messages.length > 0) {
             <div class="text-center mb-6">
-              <span class="text-[10px] text-gray-400 bg-white/80 px-3 py-1 rounded-full shadow-sm">Messages with {{ selectedFriend.name }}</span>
+              <span class="text-[12px] font-black text-[#AFAFAF] bg-white px-5 py-2 rounded-full border-[3px] border-[#E5E5E5]">💬 Chat with {{ selectedFriend.name }}</span>
             </div>
           }
 
           @for (msg of messages; track msg.id) {
-            <div class="mb-3 flex group" [class.justify-end]="msg.isMine">
+            <div class="mb-3.5 flex group" [class.justify-end]="msg.isMine">
               @if (!msg.isMine) {
-                <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0 mr-2 mt-auto">
+                <div (click)="openProfileModal(msg.senderId, msg.senderName, msg.senderAvatar)" class="w-8 h-8 rounded-full overflow-hidden border-[2px] border-[#E5E5E5] shrink-0 mr-2 mt-auto cursor-pointer hover:scale-110 transition-transform">
                   <img [src]="msg.senderAvatar" [alt]="msg.senderName" class="w-full h-full object-cover" />
                 </div>
               }
               <div class="max-w-[65%] relative msg-action-zone">
-                <!-- Reply Preview (if this message is a reply) -->
+                <!-- Forwarded Label -->
+                @if (msg.isForwarded) {
+                  <div class="flex items-center gap-1.5 mb-1 px-1" [class.justify-end]="msg.isMine">
+                    <span class="text-[11px] text-[#AFAFAF] font-bold">📨 Forwarded from {{ msg.forwardedFromName }}</span>
+                  </div>
+                }
+                <!-- Reply Preview -->
                 @if (msg.replyToContent) {
-                  <div class="mb-1 px-3 py-1.5 rounded-xl text-[10px] border-l-2 border-[#38a9f3]" [class.bg-white/60]="msg.isMine" [class.bg-gray-100]="!msg.isMine">
-                    <p class="font-semibold text-[#38a9f3]">{{ msg.replyToSenderName }}</p>
-                    <p class="text-gray-500 truncate">{{ msg.replyToContent }}</p>
+                  <div class="mb-1.5 px-3.5 py-2 rounded-2xl text-[11px] border-l-[4px] border-[#7C3AED]" [class.bg-white/60]="msg.isMine" [class.bg-[#F7F7F7]]="!msg.isMine">
+                    <p class="font-black text-[#7C3AED]">{{ msg.replyToSenderName }}</p>
+                    <p class="text-[#AFAFAF] truncate font-bold">{{ msg.replyToContent }}</p>
                   </div>
                 }
 
                 <!-- Text Message -->
                 @if (msg.messageType === 'TEXT') {
-                  <div (click)="toggleMessageActions(msg.id, $event)" class="px-4 py-2.5 rounded-2xl text-sm leading-relaxed message-bubble cursor-pointer" [class.bg-gradient-to-br]="msg.isMine" [class.from-[#38a9f3]]="msg.isMine" [class.to-[#6366f1]]="msg.isMine" [class.text-white]="msg.isMine" [class.bg-white]="!msg.isMine" [class.text-[#0f1724]]="!msg.isMine" [class.shadow-sm]="!msg.isMine" [class.rounded-br-md]="msg.isMine" [class.rounded-bl-md]="!msg.isMine">
+                  <div (click)="toggleMessageActions(msg.id, $event)" class="px-4 py-3 rounded-[20px] text-[15px] leading-relaxed message-bubble cursor-pointer font-bold border-[3px]" [class.bg-[#7C3AED]]="msg.isMine" [class.border-[#5B21B6]]="msg.isMine" [class.border-b-[5px]]="msg.isMine" [class.text-white]="msg.isMine" [class.bg-white]="!msg.isMine" [class.text-[#3C3C3C]]="!msg.isMine" [class.border-[#E5E5E5]]="!msg.isMine" [class.border-b-[5px]]="!msg.isMine" [class.rounded-br-lg]="msg.isMine" [class.rounded-bl-lg]="!msg.isMine">
                     {{ msg.content }}
                   </div>
                 }
                 <!-- Emoji Message -->
                 @if (msg.messageType === 'EMOJI') {
-                  <div (click)="toggleMessageActions(msg.id, $event)" class="text-4xl py-1 cursor-pointer">{{ msg.content }}</div>
+                  <div (click)="toggleMessageActions(msg.id, $event)" class="text-5xl py-1 cursor-pointer hover:scale-110 transition-transform">{{ msg.content }}</div>
                 }
                 <!-- Image Message -->
                 @if (msg.messageType === 'IMAGE') {
-                  <div (click)="toggleMessageActions(msg.id, $event)" class="rounded-2xl overflow-hidden shadow-sm cursor-pointer" [class.rounded-br-md]="msg.isMine" [class.rounded-bl-md]="!msg.isMine">
+                  <div (click)="toggleMessageActions(msg.id, $event)" class="rounded-[20px] overflow-hidden cursor-pointer border-[3px] border-b-[5px]" [class.border-[#5B21B6]]="msg.isMine" [class.border-[#E5E5E5]]="!msg.isMine" [class.rounded-br-lg]="msg.isMine" [class.rounded-bl-lg]="!msg.isMine">
                     <img [src]="msg.imageUrl" alt="Image" class="max-w-full max-h-64 object-cover" />
                     @if (msg.content) {
-                      <div class="px-3 py-2 text-xs" [class.bg-[#38a9f3]]="msg.isMine" [class.text-white]="msg.isMine" [class.bg-white]="!msg.isMine" [class.text-gray-600]="!msg.isMine">{{ msg.content }}</div>
+                      <div class="px-3.5 py-2.5 text-[13px] font-bold" [class.bg-[#7C3AED]]="msg.isMine" [class.text-white]="msg.isMine" [class.bg-white]="!msg.isMine" [class.text-[#777]]="!msg.isMine">{{ msg.content }}</div>
                     }
                   </div>
                 }
                 <!-- GIF Message -->
                 @if (msg.messageType === 'GIF') {
-                  <div (click)="toggleMessageActions(msg.id, $event)" class="rounded-2xl overflow-hidden shadow-sm cursor-pointer" [class.rounded-br-md]="msg.isMine" [class.rounded-bl-md]="!msg.isMine">
+                  <div (click)="toggleMessageActions(msg.id, $event)" class="rounded-[20px] overflow-hidden cursor-pointer border-[3px] border-b-[5px]" [class.border-[#5B21B6]]="msg.isMine" [class.border-[#E5E5E5]]="!msg.isMine" [class.rounded-br-lg]="msg.isMine" [class.rounded-bl-lg]="!msg.isMine">
                     <img [src]="msg.gifUrl" alt="GIF" class="max-w-full max-h-52 object-cover" />
                   </div>
                 }
                 <!-- Shared Post -->
                 @if (msg.messageType === 'SHARED_POST') {
-                  <div (click)="toggleMessageActions(msg.id, $event)" class="rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm cursor-pointer" [class.rounded-br-md]="msg.isMine" [class.rounded-bl-md]="!msg.isMine">
-                    <div class="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
-                      <svg class="w-3.5 h-3.5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
-                      <span class="text-[10px] font-semibold text-gray-500">Shared Post</span>
+                  <div (click)="toggleMessageActions(msg.id, $event)" class="rounded-[20px] overflow-hidden border-[3px] border-b-[5px] border-[#E5E5E5] bg-white cursor-pointer" [class.rounded-br-lg]="msg.isMine" [class.rounded-bl-lg]="!msg.isMine">
+                    <div class="px-3.5 py-2.5 bg-[#F7F7F7] border-b-[3px] border-[#E5E5E5] flex items-center gap-2">
+                      <span class="text-sm">📝</span>
+                      <span class="text-[12px] font-black text-[#AFAFAF] uppercase tracking-wider">Shared Post</span>
                     </div>
-                    <div class="px-3 py-2">
-                      <p class="text-xs text-gray-700 leading-relaxed line-clamp-3">{{ msg.content }}</p>
+                    <div class="px-3.5 py-2.5">
+                      <p class="text-[13px] text-[#777] font-bold leading-relaxed line-clamp-3">{{ msg.content }}</p>
                     </div>
+                  </div>
+                }
+                <!-- Voice Message -->
+                @if (msg.messageType === 'VOICE') {
+                  <div (click)="toggleMessageActions(msg.id, $event)" class="px-4 py-3 rounded-[20px] cursor-pointer flex items-center gap-3 border-[3px] border-b-[5px]" [class.bg-[#7C3AED]]="msg.isMine" [class.border-[#5B21B6]]="msg.isMine" [class.bg-white]="!msg.isMine" [class.border-[#E5E5E5]]="!msg.isMine" [class.rounded-br-lg]="msg.isMine" [class.rounded-bl-lg]="!msg.isMine">
+                    <span class="text-xl shrink-0">🎤</span>
+                    <div class="flex-1 min-w-0">
+                      <audio [src]="msg.voiceUrl" controls class="w-full h-8 voice-audio" style="max-width: 200px;"></audio>
+                    </div>
+                    @if (msg.voiceDuration) {
+                      <span class="text-[11px] shrink-0 font-bold" [class.text-white/70]="msg.isMine" [class.text-[#AFAFAF]]="!msg.isMine">{{ formatDuration(msg.voiceDuration) }}</span>
+                    }
                   </div>
                 }
 
                 <!-- Translation -->
                 @if (msg.showTranslation && msg.translatedContent) {
-                  <div class="mt-1 px-3 py-1.5 rounded-xl bg-yellow-50 border border-yellow-200 text-xs text-yellow-800">
-                    <span class="font-semibold text-[10px] text-yellow-600">Translation:</span> {{ msg.translatedContent }}
+                  <div class="mt-2 px-3.5 py-2.5 rounded-2xl bg-[#FFF9DB] border-[3px] border-[#FFD43B] text-[13px] text-[#8B6508] font-bold">
+                    <span class="font-black text-[11px] text-[#F59F00] uppercase tracking-wider">🌐 Translation:</span> {{ msg.translatedContent }}
                   </div>
                 }
 
                 <!-- Reactions Display -->
                 @if (msg.reactions) {
-                  <div class="flex flex-wrap gap-1 mt-1" [class.justify-end]="msg.isMine">
+                  <div class="flex flex-wrap gap-1.5 mt-1.5" [class.justify-end]="msg.isMine">
                     @for (r of getReactionsList(msg.reactions); track r.emoji) {
-                      <button (click)="reactToMessage(msg, r.emoji)" class="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border transition-all hover:scale-105" [class.bg-[#38a9f3]/10]="r.userReacted" [class.border-[#38a9f3]/30]="r.userReacted" [class.bg-gray-100]="!r.userReacted" [class.border-gray-200]="!r.userReacted">
+                      <button (click)="reactToMessage(msg, r.emoji)" class="flex items-center gap-0.5 px-2 py-1 rounded-full text-[13px] border-[2px] transition-all hover:scale-110" [class.bg-[#F3EEFF]]="r.userReacted" [class.border-[#7C3AED]]="r.userReacted" [class.bg-white]="!r.userReacted" [class.border-[#E5E5E5]]="!r.userReacted">
                         <span>{{ r.emoji }}</span>
                         @if (r.count > 1) {
-                          <span class="text-[9px] font-bold text-gray-500">{{ r.count }}</span>
+                          <span class="text-[10px] font-black text-[#777]">{{ r.count }}</span>
                         }
                       </button>
                     }
                   </div>
                 }
 
-                <p class="text-[10px] text-gray-400 mt-1 px-1" [class.text-right]="msg.isMine">{{ msg.time }}</p>
+                <div class="flex items-center gap-1 mt-1.5 px-1" [class.justify-end]="msg.isMine">
+                  <span class="text-[11px] text-[#AFAFAF] font-bold">{{ msg.time }}</span>
+                  @if (msg.isMine) {
+                    @if (msg.isRead) {
+                      <span class="text-[11px]">✅</span>
+                    } @else {
+                      <span class="text-[11px]">☑️</span>
+                    }
+                  }
+                </div>
 
-                <!-- ── Message Action Menu (appears on click) ── -->
+                <!-- ── Message Action Menu ── -->
                 @if (activeMessageId === msg.id) {
                   <div class="absolute z-40 msg-action-zone" [class.right-0]="msg.isMine" [class.left-0]="!msg.isMine" style="bottom: -8px; transform: translateY(100%);">
-                    <div class="bg-white rounded-xl shadow-xl border border-gray-100 py-1 min-w-[160px] action-menu-enter">
-                      <!-- React -->
-                      <button (click)="openReactionPicker(msg.id, $event)" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
-                        <span class="text-sm">😊</span> React
+                    <div class="bg-white rounded-[20px] shadow-lg border-[3px] border-b-[5px] border-[#E5E5E5] py-2 min-w-[170px] action-menu-enter">
+                      <button (click)="openReactionPicker(msg.id, $event)" class="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-black text-[#3C3C3C] hover:bg-[#F3EEFF] hover:text-[#7C3AED] transition-colors">
+                        <span class="text-base">😊</span> React
                       </button>
-                      <!-- Reply -->
-                      <button (click)="replyToMessage(msg)" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
-                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
-                        Reply
+                      <button (click)="replyToMessage(msg)" class="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-black text-[#3C3C3C] hover:bg-[#F3EEFF] hover:text-[#7C3AED] transition-colors">
+                        <span class="text-base">↩️</span> Reply
                       </button>
-                      <!-- Translate -->
+                      <button (click)="openForwardModal(msg)" class="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-black text-[#3C3C3C] hover:bg-[#F3EEFF] hover:text-[#7C3AED] transition-colors">
+                        <span class="text-base">📤</span> Forward
+                      </button>
                       @if (msg.messageType === 'TEXT' && msg.content) {
-                        <button (click)="translateMessage(msg)" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
-                          <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" /></svg>
-                          {{ msg.showTranslation ? 'Hide Translation' : 'Translate' }}
+                        <button (click)="translateMessage(msg)" class="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-black text-[#3C3C3C] hover:bg-[#F3EEFF] hover:text-[#7C3AED] transition-colors">
+                          <span class="text-base">🌐</span> {{ msg.showTranslation ? 'Hide' : 'Translate' }}
                         </button>
                       }
-                      <!-- Delete -->
-                      <div class="border-t border-gray-100 mt-1 pt-1">
-                        <button (click)="openDeleteMenu(msg.id, $event)" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors">
-                          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                          Delete
+                      <div class="border-t-[3px] border-[#E5E5E5] mt-2 pt-2">
+                        <button (click)="openDeleteMenu(msg.id, $event)" class="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-black text-[#FF4B4B] hover:bg-[#FFF0F0] transition-colors">
+                          <span class="text-base">🗑️</span> Delete
                         </button>
                       </div>
                     </div>
 
                     <!-- Delete Sub-menu -->
                     @if (showDeleteMenu === msg.id) {
-                      <div class="mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-1 min-w-[180px] action-menu-enter">
-                        <p class="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase">Delete message</p>
-                        <button (click)="deleteForMe(msg)" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
-                          <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" /></svg>
-                          Delete for me
+                      <div class="mt-2 bg-white rounded-[20px] shadow-lg border-[3px] border-b-[5px] border-[#E5E5E5] py-2 min-w-[190px] action-menu-enter">
+                        <p class="px-4 py-1.5 text-[11px] font-black text-[#AFAFAF] uppercase tracking-wider">🗑️ Delete message</p>
+                        <button (click)="deleteForMe(msg)" class="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-black text-[#3C3C3C] hover:bg-[#F3EEFF] hover:text-[#7C3AED] transition-colors">
+                          👤 Delete for me
                         </button>
                         @if (msg.isMine) {
-                          <button (click)="deleteForEveryone(msg)" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197" /></svg>
-                            Delete for everyone
+                          <button (click)="deleteForEveryone(msg)" class="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-black text-[#FF4B4B] hover:bg-[#FFF0F0] transition-colors">
+                            👥 Delete for everyone
                           </button>
                         }
                       </div>
@@ -370,9 +464,9 @@
 
                     <!-- Reaction Picker -->
                     @if (showReactionPicker === msg.id) {
-                      <div class="mt-1 bg-white rounded-xl shadow-xl border border-gray-100 px-2 py-1.5 flex items-center gap-0.5 action-menu-enter">
+                      <div class="mt-2 bg-white rounded-[20px] shadow-lg border-[3px] border-b-[5px] border-[#E5E5E5] px-3 py-2.5 flex items-center gap-1 action-menu-enter">
                         @for (emoji of messageReactionEmojis; track emoji) {
-                          <button (click)="reactToMessage(msg, emoji)" class="w-8 h-8 flex items-center justify-center text-lg rounded-lg hover:bg-gray-100 hover:scale-125 transition-all">{{ emoji }}</button>
+                          <button (click)="reactToMessage(msg, emoji)" class="w-9 h-9 flex items-center justify-center text-xl rounded-xl hover:bg-[#F3EEFF] hover:scale-125 transition-all">{{ emoji }}</button>
                         }
                       </div>
                     }
@@ -384,60 +478,60 @@
 
           @if (messages.length === 0) {
             <div class="flex flex-col items-center justify-center h-full text-center">
-              <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#38a9f3]/10 to-[#a855f7]/10 flex items-center justify-center mb-5 mascot-float overflow-hidden p-1">
-                <img src="mino_images/writing_on_table-removebg-preview.png" alt="MinoLingo" class="w-full h-full object-contain drop-shadow-md" />
+              <div class="w-32 h-32 rounded-3xl bg-white flex items-center justify-center mb-6 mascot-bounce overflow-hidden p-3 border-[3px] border-b-[6px] border-[#E5E5E5]">
+                <img src="mino_images/writing_on_table-removebg-preview.png" alt="MinoLingo" class="w-full h-full object-contain" />
               </div>
-              <p class="text-base font-extrabold text-[#0f1724]">Say hello!</p>
-              <p class="text-sm text-gray-400 mt-1.5 leading-relaxed">Start practicing English with {{ selectedFriend.name }}!<br>Send a message, emoji, or GIF!</p>
-              <div class="flex items-center gap-2 mt-4">
-                <span class="text-xl mascot-bounce">👋</span>
-                <span class="text-xl mascot-bounce" style="animation-delay: 0.2s;">😊</span>
-                <span class="text-xl mascot-bounce" style="animation-delay: 0.4s;">🎉</span>
+              <p class="text-2xl font-black text-[#3C3C3C]">Say hello! 👋</p>
+              <p class="text-[15px] text-[#AFAFAF] mt-2 leading-relaxed font-bold">Start chatting with {{ selectedFriend.name }}!<br>Send a message, emoji, or GIF!</p>
+              <div class="flex items-center gap-4 mt-6">
+                <span class="text-3xl mascot-bounce">👋</span>
+                <span class="text-3xl mascot-bounce" style="animation-delay: 0.2s;">😊</span>
+                <span class="text-3xl mascot-bounce" style="animation-delay: 0.4s;">🎉</span>
               </div>
             </div>
           }
         }
       </div>
 
-      <!-- Reply Preview Bar -->
+      <!-- Reply Preview Bar - Duolingo chunky -->
       @if (replyingTo) {
-        <div class="px-6 py-2 bg-white border-t border-gray-100 flex items-center gap-3">
-          <div class="w-1 h-10 bg-[#38a9f3] rounded-full shrink-0"></div>
+        <div class="px-5 py-3 bg-white border-t-[3px] border-[#E5E5E5] flex items-center gap-3">
+          <div class="w-1.5 h-10 bg-[#7C3AED] rounded-full shrink-0"></div>
           <div class="flex-1 min-w-0">
-            <p class="text-[10px] font-bold text-[#38a9f3]">Replying to {{ replyingTo.senderName }}</p>
-            <p class="text-xs text-gray-500 truncate">{{ replyingTo.content }}</p>
+            <p class="text-[12px] font-black text-[#7C3AED]">↩️ Replying to {{ replyingTo.senderName }}</p>
+            <p class="text-[13px] text-[#AFAFAF] truncate font-bold">{{ replyingTo.content }}</p>
           </div>
-          <button (click)="cancelReply()" class="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shrink-0">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          <button (click)="cancelReply()" class="p-2 rounded-2xl text-[#AFAFAF] hover:text-[#FF4B4B] hover:bg-[#FFF0F0] transition-all border-[2px] border-[#E5E5E5] hover:border-[#FF4B4B] shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
       }
 
-      <!-- Image Preview -->
+      <!-- Image Preview - Duolingo chunky -->
       @if (imagePreview) {
-        <div class="px-6 py-2 bg-white border-t border-gray-100">
+        <div class="px-5 py-3 bg-white border-t-[3px] border-[#E5E5E5]">
           <div class="relative inline-block">
-            <img [src]="imagePreview" alt="Preview" class="h-20 rounded-lg object-cover" />
-            <button (click)="removeImagePreview()" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] hover:bg-red-600">
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            <img [src]="imagePreview" alt="Preview" class="h-20 rounded-2xl object-cover border-[3px] border-[#E5E5E5]" />
+            <button (click)="removeImagePreview()" class="absolute -top-2 -right-2 w-6 h-6 bg-[#FF4B4B] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform border-[2px] border-white">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
         </div>
       }
 
-      <!-- Emoji Picker Popup -->
+      <!-- Emoji Picker - Duolingo chunky -->
       @if (showEmojiPicker) {
-        <div class="px-6 pb-1 bg-white emoji-picker-zone" (click)="$event.stopPropagation()">
-          <div class="rounded-xl border border-gray-200 shadow-lg overflow-hidden bg-white">
-            <div class="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 overflow-x-auto">
+        <div class="px-5 pb-2 bg-white emoji-picker-zone" (click)="$event.stopPropagation()">
+          <div class="rounded-[20px] border-[3px] border-b-[5px] border-[#E5E5E5] overflow-hidden bg-white">
+            <div class="flex items-center gap-1 px-2 py-2 border-b-[3px] border-[#E5E5E5] overflow-x-auto bg-[#F7F7F7]">
               @for (cat of emojiCategories; track cat.name; let i = $index) {
-                <button (click)="activeEmojiCategory = i; $event.stopPropagation()" class="px-2 py-1 text-lg rounded-lg transition-colors shrink-0" [class.bg-[#38a9f3]/10]="activeEmojiCategory === i">{{ cat.icon }}</button>
+                <button (click)="activeEmojiCategory = i; $event.stopPropagation()" class="px-2.5 py-1.5 text-lg rounded-xl transition-colors shrink-0" [class.bg-[#7C3AED]]="activeEmojiCategory === i" [class.shadow-[0_2px_0_#5B21B6]]="activeEmojiCategory === i">{{ cat.icon }}</button>
               }
             </div>
-            <div class="p-2 h-[160px] overflow-y-auto custom-scrollbar">
+            <div class="p-2.5 h-[160px] overflow-y-auto custom-scrollbar">
               <div class="flex flex-wrap gap-0.5">
                 @for (emoji of emojiCategories[activeEmojiCategory].emojis; track emoji) {
-                  <button (click)="insertEmoji(emoji, $event)" class="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-100 rounded-lg transition-colors cursor-pointer hover:scale-110">{{ emoji }}</button>
+                  <button (click)="insertEmoji(emoji, $event)" class="w-9 h-9 flex items-center justify-center text-xl hover:bg-[#F3EEFF] rounded-xl transition-all cursor-pointer hover:scale-125">{{ emoji }}</button>
                 }
               </div>
             </div>
@@ -445,28 +539,28 @@
         </div>
       }
 
-      <!-- GIF Picker Popup -->
+      <!-- GIF Picker - Duolingo chunky -->
       @if (showGifPicker) {
-        <div class="px-6 pb-1 bg-white gif-picker-zone" (click)="$event.stopPropagation()">
-          <div class="rounded-xl border border-gray-200 shadow-lg overflow-hidden bg-white">
-            <div class="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
-              <span class="text-sm font-bold text-[#0f1724]">GIF</span>
-              <input type="text" [(ngModel)]="gifSearchQuery" (input)="onGifSearch()" placeholder="Search GIFs..." class="flex-1 text-sm bg-transparent outline-none placeholder-gray-400" />
-              <span class="text-[9px] text-gray-400 font-medium">GIPHY</span>
+        <div class="px-5 pb-2 bg-white gif-picker-zone" (click)="$event.stopPropagation()">
+          <div class="rounded-[20px] border-[3px] border-b-[5px] border-[#E5E5E5] overflow-hidden bg-white">
+            <div class="flex items-center gap-2.5 px-3.5 py-2.5 border-b-[3px] border-[#E5E5E5] bg-[#F7F7F7]">
+              <span class="text-[13px] font-black text-[#7C3AED]">🎬 GIF</span>
+              <input type="text" [(ngModel)]="gifSearchQuery" (input)="onGifSearch()" placeholder="Search GIFs..." class="flex-1 text-[13px] bg-transparent outline-none placeholder-[#AFAFAF] font-bold text-[#3C3C3C]" />
+              <span class="text-[10px] text-[#AFAFAF] font-black">GIPHY</span>
             </div>
-            <div class="p-2 h-[180px] overflow-y-auto custom-scrollbar">
+            <div class="p-2.5 h-[180px] overflow-y-auto custom-scrollbar">
               @if (gifLoading) {
                 <div class="flex items-center justify-center h-full">
-                  <div class="w-6 h-6 border-2 border-[#38a9f3] border-t-transparent rounded-full animate-spin"></div>
+                  <div class="w-8 h-8 border-[3px] border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
                 </div>
               } @else {
-                <div class="grid grid-cols-3 gap-1">
+                <div class="grid grid-cols-3 gap-1.5">
                   @for (gif of gifResults; track gif.url) {
-                    <img [src]="gif.preview || gif.url" (click)="selectGif(gif.url)" alt="GIF" loading="lazy" class="w-full h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity" />
+                    <img [src]="gif.preview || gif.url" (click)="selectGif(gif.url)" alt="GIF" loading="lazy" class="w-full h-20 object-cover rounded-xl cursor-pointer hover:scale-105 transition-transform border-[2px] border-[#E5E5E5]" />
                   }
                 </div>
                 @if (gifResults.length === 0) {
-                  <p class="text-center text-xs text-gray-400 mt-8">No GIFs found</p>
+                  <p class="text-center text-[13px] text-[#AFAFAF] font-bold mt-8">No GIFs found 😅</p>
                 }
               }
             </div>
@@ -474,99 +568,219 @@
         </div>
       }
 
-      <!-- Message Input -->
-      <div class="px-5 py-3 bg-white border-t border-gray-100 shrink-0">
-        <div class="flex items-center gap-2">
-          <!-- Attach Image -->
-          <button (click)="triggerFileInput()" class="p-2 rounded-lg text-gray-400 hover:text-[#38a9f3] hover:bg-[#38a9f3]/10 transition-all" title="Send image">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M18 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75z" /></svg>
-          </button>
-          <!-- GIF -->
-          <button (click)="toggleGifPicker($event)" class="gif-picker-zone p-2 rounded-lg transition-all" [class.text-[#38a9f3]]="showGifPicker" [class.bg-[#38a9f3]/10]="showGifPicker" [class.text-gray-400]="!showGifPicker" title="Send GIF">
-            <span class="text-xs font-extrabold tracking-tight">GIF</span>
-          </button>
-          <!-- Emoji -->
-          <button (click)="toggleEmojiPicker($event)" class="emoji-picker-zone p-2 rounded-lg transition-all" [class.text-[#38a9f3]]="showEmojiPicker" [class.bg-[#38a9f3]/10]="showEmojiPicker" [class.text-gray-400]="!showEmojiPicker" title="Emoji">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" /></svg>
-          </button>
-          <!-- Input -->
-          <div class="flex-1 relative">
-            <input #messageInput type="text" [(ngModel)]="messageText" (keydown)="onKeyDown($event)" placeholder="Type a message..." class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-[#0f1724] placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#38a9f3]/20 focus:border-[#38a9f3]/40 transition-all" />
+      <!-- Message Input - Duolingo chunky -->
+      <div class="px-5 py-4 bg-white border-t-[3px] border-[#E5E5E5] shrink-0">
+        @if (isRecording) {
+          <!-- Recording State -->
+          <div class="flex items-center gap-3">
+            <button (click)="cancelRecording()" class="p-2.5 rounded-2xl text-[#FF4B4B] hover:bg-[#FFF0F0] transition-all border-[3px] border-[#E5E5E5] hover:border-[#FF4B4B]" title="Cancel">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div class="flex-1 flex items-center gap-3 px-5 py-3 bg-[#FFF0F0] border-[3px] border-[#FF4B4B] rounded-2xl">
+              <div class="w-3 h-3 bg-[#FF4B4B] rounded-full animate-pulse"></div>
+              <span class="text-[15px] font-black text-[#FF4B4B]">🎙️ Recording...</span>
+              <span class="text-[15px] font-mono text-[#FF4B4B]/70 ml-auto font-black">{{ formatDuration(recordingDuration) }}</span>
+            </div>
+            <button (click)="stopRecording()" class="w-12 h-12 bg-[#7C3AED] rounded-2xl flex items-center justify-center text-white hover:scale-105 transition-all shrink-0 border-[3px] border-b-[5px] border-[#5B21B6] active:border-b-[3px]" title="Send voice">
+              <span class="text-xl">📤</span>
+            </button>
           </div>
-          <!-- Quick Reactions -->
-          <div class="flex items-center gap-0.5">
-            @for (emoji of quickReactions; track emoji) {
-              <button (click)="sendEmoji(emoji)" class="w-8 h-8 flex items-center justify-center text-lg rounded-lg hover:bg-gray-100 hover:scale-110 transition-all" title="Send {{ emoji }}">{{ emoji }}</button>
-            }
+        } @else {
+          <!-- Normal Input State -->
+          <div class="flex items-center gap-2.5">
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-1">
+              <button (click)="triggerFileInput()" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl hover:bg-[#F3EEFF] transition-all border-[2px] border-transparent hover:border-[#7C3AED]/30" title="Send image">📷</button>
+              <button (click)="toggleGifPicker($event)" class="gif-picker-zone w-10 h-10 rounded-2xl flex items-center justify-center transition-all border-[2px]" [class.bg-[#F3EEFF]]="showGifPicker" [class.border-[#7C3AED]]="showGifPicker" [class.border-transparent]="!showGifPicker" title="Send GIF">
+                <span class="text-[11px] font-black" [class.text-[#7C3AED]]="showGifPicker" [class.text-[#AFAFAF]]="!showGifPicker">GIF</span>
+              </button>
+              <button (click)="toggleEmojiPicker($event)" class="emoji-picker-zone w-10 h-10 rounded-2xl flex items-center justify-center text-xl transition-all border-[2px]" [class.bg-[#F3EEFF]]="showEmojiPicker" [class.border-[#7C3AED]]="showEmojiPicker" [class.border-transparent]="!showEmojiPicker" title="Emoji">😊</button>
+              <button (click)="startRecording()" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl hover:bg-[#F3EEFF] transition-all border-[2px] border-transparent hover:border-[#7C3AED]/30" title="Voice message">🎤</button>
+            </div>
+            <!-- Input -->
+            <div class="flex-1 relative">
+              <input #messageInput type="text" [(ngModel)]="messageText" (keydown)="onKeyDown($event)" placeholder="Type a message..." class="w-full px-5 py-3.5 bg-[#F7F7F7] border-[3px] border-[#E5E5E5] border-b-[5px] rounded-2xl text-[15px] font-bold text-[#3C3C3C] placeholder-[#AFAFAF] outline-none focus:border-[#7C3AED] focus:bg-white transition-all" />
+            </div>
+            <!-- Quick Reactions -->
+            <div class="flex items-center gap-0.5">
+              @for (emoji of quickReactions; track emoji) {
+                <button (click)="sendEmoji(emoji)" class="w-9 h-9 flex items-center justify-center text-xl rounded-xl hover:bg-[#F3EEFF] hover:scale-125 transition-all" title="Send {{ emoji }}">{{ emoji }}</button>
+              }
+            </div>
+            <!-- Send Button - Duolingo chunky -->
+            <button (click)="sendMessage()" class="w-12 h-12 bg-[#58CC02] rounded-2xl flex items-center justify-center text-white hover:scale-105 transition-all shrink-0 disabled:opacity-40 disabled:hover:scale-100 border-[3px] border-b-[5px] border-[#46A302] active:border-b-[3px] active:mt-[2px]" [disabled]="!messageText.trim() && !imagePreview">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+            </button>
           </div>
-          <!-- Send -->
-          <button (click)="sendMessage()" class="w-10 h-10 bg-gradient-to-br from-[#38a9f3] to-[#6366f1] rounded-xl flex items-center justify-center text-white hover:shadow-lg hover:scale-105 transition-all shrink-0 disabled:opacity-50" [disabled]="!messageText.trim() && !imagePreview">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
-          </button>
-        </div>
+        }
       </div>
     } @else {
-      <!-- No Chat Selected -->
-      <div class="flex-1 flex flex-col items-center justify-center relative overflow-hidden" style="background: linear-gradient(135deg, #f0f9ff 0%, #fef3f2 25%, #fefce8 50%, #ecfdf5 75%, #f0f9ff 100%);">
-        <div class="absolute top-10 left-10 text-2xl float-bubble opacity-30">💬</div>
-        <div class="absolute top-20 right-16 text-xl float-bubble-delay opacity-25">✨</div>
-        <div class="absolute bottom-16 left-20 text-lg sparkle opacity-20">⭐</div>
-        <div class="absolute bottom-10 right-10 text-xl float-bubble opacity-20">🌟</div>
-        <div class="w-32 h-32 rounded-3xl bg-gradient-to-br from-[#38a9f3]/15 to-[#a855f7]/15 flex items-center justify-center mb-6 mascot-float overflow-hidden p-2">
-          <img src="mino_images/writing_on_board-removebg-preview.png" alt="MinoLingo" class="w-full h-full object-contain drop-shadow-xl" />
+      <!-- No Chat Selected - Duolingo fun style -->
+      <div class="flex-1 flex flex-col items-center justify-center relative overflow-hidden bg-[#F7F7F7]">
+        <div class="absolute top-12 left-12 text-3xl float-bubble opacity-20">💬</div>
+        <div class="absolute top-24 right-20 text-2xl float-bubble-delay opacity-15">✨</div>
+        <div class="absolute bottom-20 left-24 text-2xl sparkle opacity-15">⭐</div>
+        <div class="absolute bottom-12 right-12 text-2xl float-bubble opacity-15">�</div>
+        <div class="w-40 h-40 rounded-3xl bg-white flex items-center justify-center mb-8 mascot-bounce overflow-hidden p-4 border-[3px] border-b-[8px] border-[#E5E5E5]">
+          <img src="mino_images/writing_on_board-removebg-preview.png" alt="MinoLingo" class="w-full h-full object-contain" />
         </div>
-        <h2 class="text-xl font-extrabold text-[#0f1724] mb-2">Hey there, friend!</h2>
-        <p class="text-sm text-gray-400 text-center max-w-xs leading-relaxed">Pick a buddy from the list to start chatting!<br>Share photos, GIFs, and practice English together!</p>
-        <div class="flex items-center gap-3 mt-5">
-          <span class="text-2xl mascot-bounce">📸</span>
-          <span class="text-2xl mascot-bounce" style="animation-delay: 0.3s;">🎭</span>
-          <span class="text-2xl mascot-bounce" style="animation-delay: 0.6s;">🎮</span>
+        <h2 class="text-2xl font-black text-[#3C3C3C] mb-2">Hey there, friend! 👋</h2>
+        <p class="text-[16px] text-[#AFAFAF] text-center max-w-sm leading-relaxed font-bold">Pick a buddy from the list to start chatting!<br>Share photos, GIFs, and practice together!</p>
+        <div class="flex items-center gap-5 mt-8">
+          <span class="text-3xl mascot-bounce">📸</span>
+          <span class="text-3xl mascot-bounce" style="animation-delay: 0.3s;">🎭</span>
+          <span class="text-3xl mascot-bounce" style="animation-delay: 0.6s;">🎮</span>
         </div>
       </div>
     }
   </div>
 
-  <!-- ═══════════════ RIGHT PANEL ═══════════════ -->
+  <!-- ═══════════════ RIGHT PANEL - Duolingo chunky ═══════════════ -->
   @if (selectedFriend && showFriendInfo) {
-    <div class="w-[280px] bg-white border-l border-gray-100 flex flex-col shrink-0">
-      <div class="flex flex-col items-center pt-8 pb-4 px-5">
-        <div class="relative mb-3">
-          <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-200 ring-4 ring-[#38a9f3]/10">
+    <div class="w-[300px] bg-white border-l-[3px] border-[#E5E5E5] flex flex-col shrink-0">
+      <!-- Profile Hero -->
+      <div class="relative">
+        <div class="h-24 bg-[#7C3AED] border-b-[3px] border-[#5B21B6]">
+          <div class="absolute top-3 right-4 text-lg float-bubble opacity-30">✨</div>
+          <div class="absolute bottom-3 left-5 text-sm float-bubble-delay opacity-25">🌟</div>
+        </div>
+        <div class="absolute -bottom-12 left-1/2 -translate-x-1/2">
+          <div class="w-[80px] h-[80px] rounded-full overflow-hidden bg-white border-[4px]" [class.border-[#58CC02]]="selectedFriend.online" [class.border-[#E5E5E5]]="!selectedFriend.online">
             <img [src]="selectedFriend.avatar" [alt]="selectedFriend.name" class="w-full h-full object-cover" />
           </div>
           @if (selectedFriend.online) {
-            <div class="absolute bottom-1 right-1 w-4 h-4 bg-[#56c416] rounded-full border-3 border-white"></div>
+            <div class="absolute bottom-0 right-0 w-5 h-5 bg-[#58CC02] rounded-full border-[3px] border-white"></div>
           }
         </div>
-        <h3 class="text-base font-bold text-[#0f1724]">{{ selectedFriend.name }}</h3>
-        <p class="text-xs mt-0.5" [class.text-[#56c416]]="selectedFriend.online" [class.text-gray-400]="!selectedFriend.online">{{ getLastSeenText(selectedFriend) }}</p>
+      </div>
+      <div class="flex flex-col items-center pt-16 pb-4 px-5">
+        <h3 class="text-[18px] font-black text-[#3C3C3C]">{{ selectedFriend.name }}</h3>
+        <p class="text-[13px] mt-1 font-bold" [class.text-[#58CC02]]="selectedFriend.online" [class.text-[#AFAFAF]]="!selectedFriend.online">{{ getLastSeenText(selectedFriend) }}</p>
       </div>
 
-      <div class="px-5 py-3 border-t border-gray-100 space-y-2">
-        <button (click)="removeFriend(selectedFriend)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 transition-colors text-sm">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>
-          Remove Friend
+      <div class="px-5 py-4 border-t-[3px] border-[#E5E5E5] space-y-2.5">
+        <button (click)="openProfileModal(selectedFriend.id, selectedFriend.name, selectedFriend.avatar)" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#7C3AED] hover:bg-[#F3EEFF] transition-all text-[13px] font-black border-[3px] border-[#E5E5E5] hover:border-[#7C3AED]">
+          👤 View Profile
+        </button>
+        <button (click)="removeFriend(selectedFriend)" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#FF4B4B] hover:bg-[#FFF0F0] transition-all text-[13px] font-black border-[3px] border-[#E5E5E5] hover:border-[#FF4B4B]">
+          ❌ Remove Friend
+        </button>
+        <button (click)="blockFriend(selectedFriend)" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#FF4B4B] hover:bg-[#FFF0F0] transition-all text-[13px] font-black border-[3px] border-[#E5E5E5] hover:border-[#FF4B4B]">
+          🚫 Block User
         </button>
       </div>
 
       <!-- Online Friends Quick List -->
-      <div class="px-5 py-3 border-t border-gray-100">
-        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Online Friends</h4>
+      <div class="px-5 py-4 border-t-[3px] border-[#E5E5E5]">
+        <h4 class="text-[13px] font-black text-[#AFAFAF] uppercase tracking-wider mb-3">🟢 Online Friends</h4>
         @for (f of onlineFriends; track f.id) {
-          <div (click)="selectFriend(f)" class="flex items-center gap-2.5 py-2 cursor-pointer hover:bg-gray-50 rounded-lg px-2 transition-colors">
+          <div (click)="selectFriend(f)" class="flex items-center gap-3 py-2.5 cursor-pointer hover:bg-[#F3EEFF] rounded-2xl px-3 transition-all group">
             <div class="relative shrink-0">
-              <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+              <div class="w-9 h-9 rounded-full overflow-hidden border-[2px] border-[#58CC02]">
                 <img [src]="f.avatar" [alt]="f.name" class="w-full h-full object-cover" />
               </div>
-              <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#56c416] rounded-full border-2 border-white"></div>
+              <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#58CC02] rounded-full border-[2px] border-white"></div>
             </div>
-            <span class="text-xs font-medium text-[#0f1724]">{{ f.name }}</span>
+            <span class="text-[13px] font-black text-[#3C3C3C] group-hover:text-[#7C3AED] transition-colors">{{ f.name }}</span>
           </div>
         }
         @if (onlineFriends.length === 0) {
-          <p class="text-xs text-gray-300 italic">No friends online</p>
+          <p class="text-[13px] text-[#AFAFAF] font-bold">No friends online 😴</p>
         }
       </div>
     </div>
   }
 </div>
+
+<!-- Forward Message Modal - Duolingo chunky -->
+@if (showForwardModal && messageToForward) {
+  <div class="fixed inset-0 z-[998] flex items-center justify-center bg-black/40 backdrop-blur-sm" (click)="closeForwardModal()">
+    <div class="bg-white rounded-[24px] shadow-2xl w-[380px] max-h-[500px] flex flex-col overflow-hidden border-[3px] border-b-[6px] border-[#E5E5E5]" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="px-5 py-4 border-b-[3px] border-[#E5E5E5] flex items-center justify-between shrink-0">
+        <h3 class="text-[16px] font-black text-[#3C3C3C]">📤 Forward Message</h3>
+        <button (click)="closeForwardModal()" class="p-2 rounded-2xl text-[#AFAFAF] hover:text-[#FF4B4B] hover:bg-[#FFF0F0] transition-all border-[2px] border-[#E5E5E5] hover:border-[#FF4B4B]">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- Message Preview -->
+      <div class="px-5 py-3.5 bg-[#F7F7F7] border-b-[3px] border-[#E5E5E5] shrink-0">
+        <p class="text-[11px] font-black text-[#AFAFAF] uppercase tracking-wider mb-1">💬 Message</p>
+        @if (messageToForward.messageType === 'VOICE') {
+          <p class="text-[13px] text-[#777] font-bold truncate">🎤 Voice message</p>
+        } @else if (messageToForward.messageType === 'IMAGE') {
+          <p class="text-[13px] text-[#777] font-bold truncate">📷 Photo</p>
+        } @else if (messageToForward.messageType === 'GIF') {
+          <p class="text-[13px] text-[#777] font-bold truncate">🎬 GIF</p>
+        } @else {
+          <p class="text-[13px] text-[#777] font-bold truncate">{{ messageToForward.content }}</p>
+        }
+      </div>
+
+      <!-- Friend List -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar">
+        <p class="px-5 pt-4 pb-2 text-[11px] font-black text-[#AFAFAF] uppercase tracking-wider">📨 Send to</p>
+        @for (friend of friends; track friend.id) {
+          <button (click)="forwardMessageTo(friend)" class="w-full flex items-center gap-3.5 px-5 py-3 hover:bg-[#F3EEFF] transition-all group">
+            <div class="relative shrink-0">
+              <div class="w-10 h-10 rounded-full overflow-hidden border-[2px]" [class.border-[#58CC02]]="friend.online" [class.border-[#E5E5E5]]="!friend.online">
+                <img [src]="friend.avatar" [alt]="friend.name" class="w-full h-full object-cover" />
+              </div>
+              @if (friend.online) {
+                <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#58CC02] rounded-full border-[2px] border-white"></div>
+              }
+            </div>
+            <span class="text-[15px] font-black text-[#3C3C3C] group-hover:text-[#7C3AED] transition-colors">{{ friend.name }}</span>
+            <span class="ml-auto text-lg group-hover:scale-125 transition-transform">📤</span>
+          </button>
+        }
+        @if (friends.length === 0) {
+          <p class="text-center text-[13px] text-[#AFAFAF] font-bold py-8">No friends to forward to 😅</p>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- User Profile Modal - Duolingo chunky -->
+@if (showProfileModal && profileUser) {
+  <div class="fixed inset-0 z-[998] flex items-center justify-center bg-black/40 backdrop-blur-sm" (click)="closeProfileModal()">
+    <div class="bg-white rounded-[24px] shadow-2xl w-[360px] overflow-hidden border-[3px] border-b-[6px] border-[#E5E5E5]" (click)="$event.stopPropagation()">
+      <!-- Profile Header -->
+      <div class="relative h-28 bg-[#7C3AED] border-b-[3px] border-[#5B21B6]">
+        <div class="absolute top-3 left-5 text-lg float-bubble opacity-30">✨</div>
+        <div class="absolute bottom-4 right-7 text-sm float-bubble-delay opacity-25">🌟</div>
+        <button (click)="closeProfileModal()" class="absolute top-3 right-3 p-2 rounded-2xl bg-white/20 text-white hover:bg-white/40 transition-all">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <div class="absolute -bottom-12 left-1/2 -translate-x-1/2">
+          <div class="w-[84px] h-[84px] rounded-full overflow-hidden bg-white border-[4px]" [class.border-[#58CC02]]="profileUser.online" [class.border-[#E5E5E5]]="!profileUser.online">
+            <img [src]="profileUser.avatar" [alt]="profileUser.name" class="w-full h-full object-cover" />
+          </div>
+          @if (profileUser.online) {
+            <div class="absolute bottom-1 right-1 w-5 h-5 bg-[#58CC02] rounded-full border-[3px] border-white"></div>
+          }
+        </div>
+      </div>
+
+      <!-- Profile Info -->
+      <div class="pt-16 pb-4 px-6 text-center">
+        <h3 class="text-xl font-black text-[#3C3C3C]">{{ profileUser.name }}</h3>
+        <p class="text-[13px] mt-1 font-bold" [class.text-[#58CC02]]="profileUser.online" [class.text-[#AFAFAF]]="!profileUser.online">
+          {{ profileUser.online ? '🟢 Online now' : (profileUser.lastSeen ? 'Last seen ' + getTimeAgo(profileUser.lastSeen) + ' ago' : '⚫ Offline') }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-6 pb-6 flex gap-3">
+        <button (click)="startChatFromProfile()" class="flex-1 py-3.5 bg-[#7C3AED] text-white text-[14px] font-black rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 border-[3px] border-b-[5px] border-[#5B21B6] active:border-b-[3px] active:mt-[2px]">
+          💬 Message
+        </button>
+        <button (click)="closeProfileModal()" class="flex-1 py-3.5 bg-white text-[#AFAFAF] text-[14px] font-black rounded-2xl transition-all border-[3px] border-b-[5px] border-[#E5E5E5] active:border-b-[3px] active:mt-[2px] hover:text-[#3C3C3C]">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+}

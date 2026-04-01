@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService, AuthUser } from '../../../shared/services/auth.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { UserService } from '../../user/services/user.service';
 import { FriendsService } from '../services/friends.service';
 import { Friend, FriendRequest, Friendship, ChatMessage, DisplayMessage, UserStatus } from '../models/friend.model';
@@ -34,7 +36,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
   chatLoading = false;
 
   // Tabs
-  activeTab: 'chats' | 'friends' | 'requests' | 'explore' = 'chats';
+  activeTab: 'chats' | 'friends' | 'requests' | 'explore' | 'suggestions' | 'blocked' = 'chats';
 
   // Search
   searchQuery = '';
@@ -89,6 +91,36 @@ export class FriendsComponent implements OnInit, OnDestroy {
   messageReactionEmojis = ['❤️', '😂', '😮', '😢', '👍', '👎'];
   quickReactions = ['👋', '❤️', '😂', '👍'];
 
+  // Typing indicator
+  friendIsTyping = false;
+  private typingTimeout: any;
+  private typingPollInterval: any;
+
+  // Voice message
+  isRecording = false;
+  recordingDuration = 0;
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: Blob[] = [];
+  private recordingTimer: any;
+
+  // Forwarding
+  showForwardModal = false;
+  messageToForward: DisplayMessage | null = null;
+
+  // Block/Unblock
+  blockedUsers: { id: number; friendshipId: number; name: string; avatar: string }[] = [];
+
+  // Friend Suggestions
+  friendSuggestions: { id: number; name: string; avatar: string; mutualCount: number }[] = [];
+
+  // User Profile Modal
+  showProfileModal = false;
+  profileUser: { id: number; name: string; avatar: string; online: boolean; lastSeen?: string } | null = null;
+
+  // Push Notifications
+  notificationsEnabled = false;
+  private lastMessageCount = 0;
+
   constructor(
     private friendsService: FriendsService,
     private authService: AuthService,
@@ -101,10 +133,13 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.user = this.authService.currentUser;
     if (!this.user) return;
 
+    // Load everything in parallel immediately
+    this.startHeartbeat();
     this.loadFriends();
     this.loadPendingRequests();
     this.loadAllUsers();
-    this.startHeartbeat();
+    this.loadBlockedUsers();
+    this.requestNotificationPermission();
 
     // Poll messages every 3s
     this.messagePollInterval = setInterval(() => {
@@ -113,16 +148,23 @@ export class FriendsComponent implements OnInit, OnDestroy {
       }
     }, 3000);
 
-    // Poll statuses every 10s
-    this.statusPollInterval = setInterval(() => this.pollFriendStatuses(), 10000);
+    // Poll statuses every 5s
+    this.statusPollInterval = setInterval(() => this.pollFriendStatuses(), 5000);
+
+    // Poll typing indicator every 2s
+    this.typingPollInterval = setInterval(() => this.pollTypingStatus(), 2000);
   }
 
   ngOnDestroy(): void {
     if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
     if (this.messagePollInterval) clearInterval(this.messagePollInterval);
     if (this.statusPollInterval) clearInterval(this.statusPollInterval);
-    // Set offline
+    if (this.typingPollInterval) clearInterval(this.typingPollInterval);
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    if (this.recordingTimer) clearInterval(this.recordingTimer);
+    // Set offline + clear typing
     if (this.user) {
+      this.friendsService.clearTyping(this.user.id).subscribe();
       this.friendsService.setOffline(this.user.id).subscribe();
     }
   }
@@ -147,12 +189,13 @@ export class FriendsComponent implements OnInit, OnDestroy {
       error: (err) => console.error('Load friends error:', err),
       next: (friendships) => {
         this.friends = friendships.map(f => this.mapFriendshipToFriend(f));
-        this.pollFriendStatuses();
-        // Load last messages
-        for (const friend of this.friends) {
-          this.loadLastMessageForFriend(friend);
-        }
         this.cdr.detectChanges();
+
+        // Load statuses + last messages + unread counts all in parallel
+        if (this.friends.length > 0) {
+          this.pollFriendStatuses();
+          this.loadAllLastMessages();
+        }
       }
     });
   }
@@ -171,18 +214,24 @@ export class FriendsComponent implements OnInit, OnDestroy {
     };
   }
 
-  private loadLastMessageForFriend(friend: Friend): void {
+  private loadAllLastMessages(): void {
     if (!this.user) return;
-    this.friendsService.getConversation(this.user.id, friend.id).subscribe({
-      next: (msgs) => {
-        if (msgs.length > 0) {
-          const last = msgs[msgs.length - 1];
-          friend.lastMessage = this.getMessagePreview(last);
-          friend.lastMessageTime = this.getTimeAgo(last.createdAt || '');
-          friend.unreadCount = msgs.filter(m => m.receiverId === this.user!.id && !m.isRead).length;
+    for (const friend of this.friends) {
+      // Use lightweight endpoints instead of full conversation
+      forkJoin({
+        lastMsg: this.friendsService.getLastMessage(this.user!.id, friend.id).pipe(catchError(() => of(null))),
+        unread: this.friendsService.getUnreadMessageCount(friend.id, this.user!.id).pipe(catchError(() => of({ count: 0 })))
+      }).subscribe({
+        next: ({ lastMsg, unread }) => {
+          if (lastMsg) {
+            friend.lastMessage = this.getMessagePreview(lastMsg);
+            friend.lastMessageTime = this.getTimeAgo(lastMsg.createdAt || '');
+          }
+          friend.unreadCount = unread?.count || 0;
+          this.cdr.detectChanges();
         }
-      }
-    });
+      });
+    }
   }
 
   private getMessagePreview(msg: ChatMessage): string {
@@ -191,6 +240,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
       case 'GIF': return 'GIF';
       case 'EMOJI': return msg.content || '😊';
       case 'SHARED_POST': return '📋 Shared a post';
+      case 'VOICE': return '🎤 Voice message';
       default: return msg.content?.substring(0, 40) + (msg.content && msg.content.length > 40 ? '...' : '') || '';
     }
   }
@@ -228,6 +278,8 @@ export class FriendsComponent implements OnInit, OnDestroy {
           avatar: (u as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.name
         }));
         this.cdr.detectChanges();
+        // Load suggestions once we have both friends and users
+        setTimeout(() => this.loadFriendSuggestions(), 500);
       }
     });
   }
@@ -363,7 +415,18 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.friendsService.getConversation(this.user.id, this.selectedFriend.id).subscribe({
       next: (msgs) => {
         const filtered = this.filterDeletedMessages(msgs);
-        if (filtered.length !== this.messages.length) {
+        if (filtered.length > this.messages.length) {
+          // Check for new incoming messages for push notification
+          const newMsgs = filtered.slice(this.messages.length);
+          for (const m of newMsgs) {
+            if (m.senderId !== this.user!.id) {
+              this.sendBrowserNotification(
+                m.senderName || 'New message',
+                m.messageType === 'VOICE' ? '🎤 Voice message' : (m.content?.substring(0, 60) || 'New message'),
+                m.senderAvatar
+              );
+            }
+          }
           this.messages = filtered.map(m => this.mapToDisplayMessage(m));
           this.scrollToBottom();
           this.friendsService.markConversationRead(this.selectedFriend!.id, this.user!.id).subscribe();
@@ -398,7 +461,13 @@ export class FriendsComponent implements OnInit, OnDestroy {
       time: this.formatMessageTime(m.createdAt || ''),
       isMine: m.senderId === this.user!.id,
       senderAvatar: m.senderAvatar,
-      senderName: m.senderName
+      senderName: m.senderName,
+      isRead: m.isRead,
+      readAt: m.readAt,
+      voiceUrl: m.voiceUrl,
+      voiceDuration: m.voiceDuration,
+      isForwarded: m.isForwarded,
+      forwardedFromName: m.forwardedFromName
     };
   }
 
@@ -433,6 +502,10 @@ export class FriendsComponent implements OnInit, OnDestroy {
       msg.replyToContent = this.replyingTo.content?.substring(0, 100) || '';
       msg.replyToSenderName = this.replyingTo.senderName;
     }
+
+    // Clear typing indicator on send
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    this.friendsService.clearTyping(this.user.id).subscribe();
 
     this.friendsService.sendMessage(msg).subscribe({
       next: (saved) => {
@@ -526,6 +599,8 @@ export class FriendsComponent implements OnInit, OnDestroy {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.sendMessage();
+    } else {
+      this.onTyping();
     }
   }
 
@@ -852,6 +927,359 @@ export class FriendsComponent implements OnInit, OnDestroy {
       count: data.count,
       userReacted: data.userReacted
     }));
+  }
+
+  // ── Typing Indicator ──
+
+  onTyping(): void {
+    if (!this.user || !this.selectedFriend) return;
+    this.friendsService.setTyping(this.user.id, this.selectedFriend.id).subscribe();
+    // Clear typing after 3s of no input
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    this.typingTimeout = setTimeout(() => {
+      if (this.user) {
+        this.friendsService.clearTyping(this.user.id).subscribe();
+      }
+    }, 3000);
+  }
+
+  private pollTypingStatus(): void {
+    if (!this.user || !this.selectedFriend) {
+      this.friendIsTyping = false;
+      return;
+    }
+    this.friendsService.isTyping(this.selectedFriend.id, this.user.id).subscribe({
+      next: (res) => {
+        this.friendIsTyping = res.typing;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.friendIsTyping = false; }
+    });
+  }
+
+  // ── Voice Messages ──
+
+  private recordingCancelled = false;
+
+  async startRecording(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Use low bitrate to keep base64 small
+      const options: MediaRecorderOptions = {};
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        options.mimeType = 'audio/webm;codecs=opus';
+      }
+      options.audioBitsPerSecond = 16000;
+
+      this.mediaRecorder = new MediaRecorder(stream, options);
+      this.audioChunks = [];
+      this.recordingDuration = 0;
+      this.isRecording = true;
+      this.recordingCancelled = false;
+
+      this.mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          this.audioChunks.push(event.data);
+        }
+      };
+
+      this.mediaRecorder.onstop = () => {
+        // Stop all tracks first
+        stream.getTracks().forEach(track => track.stop());
+        // Only send if not cancelled
+        if (this.recordingCancelled || this.audioChunks.length === 0) {
+          this.recordingCancelled = false;
+          return;
+        }
+        const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
+        const audioBlob = new Blob(this.audioChunks, { type: mimeType });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result as string;
+          this.sendVoiceMessage(base64, this.recordingDuration);
+        };
+        reader.readAsDataURL(audioBlob);
+      };
+
+      // Collect data every 1s for smaller chunks
+      this.mediaRecorder.start(1000);
+      this.recordingTimer = setInterval(() => {
+        this.recordingDuration++;
+        this.cdr.detectChanges();
+        if (this.recordingDuration >= 30) {
+          this.stopRecording();
+        }
+      }, 1000);
+
+      this.cdr.detectChanges();
+    } catch (err) {
+      this.addToast('Microphone access denied', 'warning');
+    }
+  }
+
+  stopRecording(): void {
+    if (this.mediaRecorder && this.isRecording) {
+      this.recordingCancelled = false;
+      this.mediaRecorder.stop();
+      this.isRecording = false;
+      if (this.recordingTimer) {
+        clearInterval(this.recordingTimer);
+        this.recordingTimer = null;
+      }
+      this.cdr.detectChanges();
+    }
+  }
+
+  cancelRecording(): void {
+    if (this.mediaRecorder && this.isRecording) {
+      this.recordingCancelled = true;
+      this.mediaRecorder.stop();
+      this.isRecording = false;
+      this.audioChunks = [];
+      if (this.recordingTimer) {
+        clearInterval(this.recordingTimer);
+        this.recordingTimer = null;
+      }
+      this.cdr.detectChanges();
+    }
+  }
+
+  private sendVoiceMessage(base64Audio: string, duration: number): void {
+    if (!this.user || !this.selectedFriend) return;
+    const msg: ChatMessage = {
+      senderId: this.user.id,
+      senderName: this.user.name,
+      senderAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      receiverId: this.selectedFriend.id,
+      receiverName: this.selectedFriend.name,
+      content: '',
+      messageType: 'VOICE',
+      voiceUrl: base64Audio,
+      voiceDuration: duration,
+      isRead: false
+    };
+    this.friendsService.sendMessage(msg).subscribe({
+      next: (saved) => {
+        this.messages.push(this.mapToDisplayMessage(saved));
+        this.scrollToBottom();
+        this.selectedFriend!.lastMessage = '🎤 Voice message';
+        this.selectedFriend!.lastMessageTime = 'now';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Voice send error:', err);
+        this.addToast('Failed to send voice message', 'warning');
+      }
+    });
+  }
+
+  formatDuration(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  // ── Message Forwarding ──
+
+  openForwardModal(msg: DisplayMessage): void {
+    this.messageToForward = msg;
+    this.showForwardModal = true;
+    this.activeMessageId = null;
+  }
+
+  closeForwardModal(): void {
+    this.showForwardModal = false;
+    this.messageToForward = null;
+  }
+
+  forwardMessageTo(friend: Friend): void {
+    if (!this.user || !this.messageToForward) return;
+    const original = this.messageToForward;
+
+    const msg: ChatMessage = {
+      senderId: this.user.id,
+      senderName: this.user.name,
+      senderAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      receiverId: friend.id,
+      receiverName: friend.name,
+      content: original.content,
+      messageType: original.messageType,
+      imageUrl: original.imageUrl,
+      gifUrl: original.gifUrl,
+      voiceUrl: original.voiceUrl,
+      voiceDuration: original.voiceDuration,
+      isRead: false,
+      isForwarded: true,
+      forwardedFromName: original.senderName
+    };
+
+    this.friendsService.sendMessage(msg).subscribe({
+      next: (saved) => {
+        if (this.selectedFriend?.id === friend.id) {
+          this.messages.push(this.mapToDisplayMessage(saved));
+          this.scrollToBottom();
+        }
+        this.addToast(`Message forwarded to ${friend.name}`, 'success');
+        this.closeForwardModal();
+        this.cdr.detectChanges();
+      },
+      error: () => this.addToast('Failed to forward message', 'warning')
+    });
+  }
+
+  // ── Block / Unblock ──
+
+  loadBlockedUsers(): void {
+    if (!this.user) return;
+    this.friendsService.getBlockedUsers(this.user.id).subscribe({
+      next: (blocked) => {
+        this.blockedUsers = blocked.map(f => {
+          const isUser = f.userId === this.user!.id;
+          return {
+            id: isUser ? f.friendId : f.userId,
+            friendshipId: f.id!,
+            name: isUser ? f.friendName : f.userName,
+            avatar: isUser ? f.friendAvatar : f.userAvatar
+          };
+        });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  blockFriend(friend: Friend): void {
+    this.friendsService.blockUser(friend.friendshipId).subscribe({
+      next: () => {
+        this.friends = this.friends.filter(f => f.id !== friend.id);
+        if (this.selectedFriend?.id === friend.id) {
+          this.selectedFriend = null;
+          this.messages = [];
+        }
+        this.blockedUsers.push({ id: friend.id, friendshipId: friend.friendshipId, name: friend.name, avatar: friend.avatar });
+        this.addToast(`${friend.name} has been blocked`, 'info');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  unblockUser(blocked: { id: number; friendshipId: number; name: string; avatar: string }): void {
+    this.friendsService.unblockUser(blocked.friendshipId).subscribe({
+      next: () => {
+        this.blockedUsers = this.blockedUsers.filter(b => b.id !== blocked.id);
+        this.loadFriends();
+        this.addToast(`${blocked.name} has been unblocked`, 'success');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ── Friend Suggestions ──
+
+  loadFriendSuggestions(): void {
+    if (!this.user) return;
+    const friendIds = new Set(this.friends.map(f => f.id));
+    friendIds.add(this.user.id);
+    const blockedIds = new Set(this.blockedUsers.map(b => b.id));
+
+    const suggestions = this.allUsers
+      .filter(u => !friendIds.has(u.id) && !blockedIds.has(u.id) && !this.sentRequests.includes(u.id))
+      .slice(0, 8);
+
+    // Load mutual friends count for each suggestion
+    this.friendSuggestions = suggestions.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, mutualCount: 0 }));
+    this.cdr.detectChanges();
+
+    for (const s of this.friendSuggestions) {
+      this.friendsService.getMutualFriendsCount(this.user.id, s.id).pipe(
+        catchError(() => of({ count: 0 }))
+      ).subscribe({
+        next: (res) => {
+          s.mutualCount = res.count;
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
+  sendSuggestionRequest(suggestion: { id: number; name: string; avatar: string; mutualCount: number }): void {
+    if (!this.user) return;
+    const friendship: Friendship = {
+      userId: this.user.id,
+      userName: this.user.name,
+      userAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      friendId: suggestion.id,
+      friendName: suggestion.name,
+      friendAvatar: suggestion.avatar,
+      status: 'PENDING'
+    };
+    this.friendsService.sendFriendRequest(friendship).subscribe({
+      next: () => {
+        this.friendSuggestions = this.friendSuggestions.filter(s => s.id !== suggestion.id);
+        this.sentRequests.push(suggestion.id);
+        this.addToast(`Friend request sent to ${suggestion.name}!`, 'success');
+        this.cdr.detectChanges();
+      },
+      error: () => this.addToast('Failed to send request', 'warning')
+    });
+  }
+
+  // ── User Profile Modal ──
+
+  openProfileModal(userId: number, name: string, avatar: string): void {
+    const friend = this.friends.find(f => f.id === userId);
+    this.profileUser = {
+      id: userId,
+      name: name,
+      avatar: avatar,
+      online: friend?.online || false,
+      lastSeen: friend?.lastSeen
+    };
+    this.showProfileModal = true;
+    this.cdr.detectChanges();
+  }
+
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+    this.profileUser = null;
+  }
+
+  startChatFromProfile(): void {
+    if (!this.profileUser) return;
+    const friend = this.friends.find(f => f.id === this.profileUser!.id);
+    if (friend) {
+      this.selectFriend(friend);
+      this.closeProfileModal();
+    }
+  }
+
+  // ── Push Notifications ──
+
+  requestNotificationPermission(): void {
+    if ('Notification' in window) {
+      if (Notification.permission === 'granted') {
+        this.notificationsEnabled = true;
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(perm => {
+          this.notificationsEnabled = perm === 'granted';
+        });
+      }
+    }
+  }
+
+  private sendBrowserNotification(title: string, body: string, icon?: string): void {
+    if (!this.notificationsEnabled || !('Notification' in window)) return;
+    if (document.hasFocus()) return; // Don't notify if tab is focused
+    const notif = new Notification(title, {
+      body,
+      icon: icon || 'https://api.dicebear.com/7.x/avataaars/svg?seed=MinoLingo',
+      tag: 'minolingo-chat'
+    });
+    notif.onclick = () => {
+      window.focus();
+      notif.close();
+    };
+    setTimeout(() => notif.close(), 5000);
   }
 
 }
