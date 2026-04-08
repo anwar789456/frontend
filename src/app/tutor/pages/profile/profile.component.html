@@ -1,99 +1,397 @@
-<div class="p-8">
-  <div class="flex items-center justify-between mb-6">
+<!-- Loading State -->
+@if (isLoading) {
+<div class="flex items-center justify-center h-[60vh]">
+  <div class="flex flex-col items-center gap-4">
+    <div class="w-12 h-12 rounded-full border-4 border-[#38a9f3]/20 border-t-[#38a9f3] animate-spin"></div>
+    <p class="text-[14px] text-[#9ca3af] font-medium">Loading profile...</p>
+  </div>
+</div>
+}
+
+@if (!isLoading && user) {
+<div class="p-8 max-w-[1100px] mx-auto" style="font-family: 'Nunito', sans-serif;">
+
+  <!-- Success Toast -->
+  @if (successMessage) {
+    <div class="fixed top-6 right-6 z-50 flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 px-5 py-3.5 rounded-2xl shadow-xl"
+      style="animation: slideInRight 0.4s ease-out;">
+      <div class="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center shrink-0">
+        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </div>
+      <span class="text-[14px] font-semibold">{{ successMessage }}</span>
+    </div>
+  }
+
+  <!-- Error Toast -->
+  @if (errorMessage) {
+    <div class="fixed top-6 right-6 z-50 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-3.5 rounded-2xl shadow-xl"
+      style="animation: slideInRight 0.4s ease-out;">
+      <div class="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center shrink-0">
+        <span class="text-lg">⚠️</span>
+      </div>
+      <span class="text-[14px] font-semibold">{{ errorMessage }}</span>
+    </div>
+  }
+
+  <!-- Page Header -->
+  <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-[#0f1419]">My Profile</h1>
-      <p class="text-sm text-[#536471]">Manage your personal information and specialization settings.</p>
+      <h1 class="text-[26px] font-extrabold text-[#0f1419] tracking-tight">My Profile</h1>
+      <p class="text-[14px] text-[#536471] mt-0.5">Manage your personal and professional information.</p>
     </div>
     <div class="flex gap-3">
-      <button class="px-4 py-2.5 text-sm font-medium text-[#0f1419] bg-white border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Public View</button>
-      <button class="px-4 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3]">Save Changes</button>
+      @if (!isEditing) {
+        <button (click)="toggleEdit()"
+          class="flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3] transition-all duration-200 shadow-sm shadow-[#38a9f3]/30">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+          </svg>
+          Edit Profile
+        </button>
+      } @else {
+        <button (click)="cancelEdit()"
+          class="px-5 py-2.5 text-[13px] font-medium text-[#536471] bg-white border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa] transition-colors">
+          Cancel
+        </button>
+        <button (click)="saveProfile()" [disabled]="isSaving"
+          class="flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3] transition-all duration-200 shadow-sm shadow-[#38a9f3]/30 disabled:opacity-60">
+          @if (isSaving) {
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Saving...
+          } @else {
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            Save Changes
+          }
+        </button>
+      }
     </div>
   </div>
 
   <div class="flex gap-6">
-    <!-- Left Panel - Avatar -->
-    <div class="w-[280px] shrink-0">
-      <div class="bg-white rounded-xl border border-[#eef1f4] p-6 text-center">
-        <div class="w-24 h-24 rounded-full bg-[#e6f6ff] mx-auto mb-3 flex items-center justify-center text-4xl">👩</div>
-        <h3 class="text-lg font-bold text-[#0f1419]">{{ profile.fullName }}</h3>
-        <p class="text-sm text-[#38a9f3]">{{ profile.username }}</p>
-        <div class="flex items-center justify-center gap-1.5 mt-2 text-[11px] text-[#536471]">
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
-          Certified Tutor &bull; 6 Yrs
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- LEFT COLUMN — Avatar Card                              -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="w-[280px] shrink-0 space-y-4">
+
+      <!-- Avatar Card -->
+      <div class="bg-white rounded-2xl border border-[#eef1f4] p-6 text-center relative overflow-hidden">
+        <!-- Decorative gradient top -->
+        <div class="absolute top-0 left-0 right-0 h-20 bg-gradient-to-br from-[#38a9f3]/10 via-[#6366f1]/5 to-transparent"></div>
+
+        <div class="relative">
+          <!-- Avatar -->
+          <div class="relative mx-auto mb-4 w-24 h-24">
+            <img
+              [src]="displayAvatar"
+              [alt]="user.name"
+              (error)="onAvatarError($event)"
+              class="w-24 h-24 rounded-full object-cover border-3 border-white shadow-lg"
+            />
+            <!-- Online badge -->
+            <div class="absolute bottom-1 right-1 w-5 h-5 bg-green-400 rounded-full border-[3px] border-white"></div>
+          </div>
+
+          <!-- Name & username -->
+          <h3 class="text-[18px] font-bold text-[#0f1419]">{{ user.name || 'Unnamed' }}</h3>
+          <p class="text-[14px] text-[#38a9f3] font-medium mt-0.5">{{ '@' + (user.username || 'unknown') }}</p>
+
+          <!-- Role badge -->
+          <div class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-gradient-to-r from-[#38a9f3]/10 to-[#6366f1]/10 rounded-full">
+            <svg class="w-3.5 h-3.5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+            </svg>
+            <span class="text-[11px] font-bold text-[#536471] tracking-wide">CERTIFIED TUTOR</span>
+            @if (user.yearsOfExperience) {
+              <span class="text-[11px] text-[#9ca3af]">&bull; {{ experienceLabel }}</span>
+            }
+          </div>
+
+          <!-- Change Avatar (edit mode) -->
+          @if (isEditing) {
+            <div class="mt-4">
+              <label for="avatarUpload"
+                class="flex items-center justify-center gap-2 w-full py-2.5 text-[13px] font-medium text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa] cursor-pointer transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
+                Change Avatar
+              </label>
+              <input id="avatarUpload" type="file" accept="image/*" class="hidden" (change)="onAvatarSelected($event)" />
+            </div>
+          }
         </div>
-        <button class="mt-4 w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-          Change Avatar
-        </button>
       </div>
 
-      <!-- Stats -->
-      <div class="grid grid-cols-3 gap-3 mt-4">
-        @for (stat of profileStats; track stat.label) {
-          <div class="bg-white rounded-xl border border-[#eef1f4] p-3 text-center">
-            <p class="text-[9px] font-semibold text-[#9ca3af] uppercase tracking-wide">{{ stat.label }}</p>
-            <p class="text-xl font-bold text-[#0f1419] mt-1">{{ stat.value }}</p>
+      <!-- Quick Stats -->
+      <div class="bg-white rounded-2xl border border-[#eef1f4] p-5">
+        <h4 class="text-[11px] font-bold text-[#9ca3af] tracking-wider mb-3">QUICK INFO</h4>
+
+        <!-- Email -->
+        <div class="flex items-center gap-3 py-2.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] text-[#9ca3af] font-medium">Email</p>
+            <p class="text-[13px] text-[#0f1419] font-semibold truncate">{{ user.email }}</p>
+          </div>
+        </div>
+
+        <!-- Phone -->
+        @if (user.numTel) {
+          <div class="flex items-center gap-3 py-2.5 border-t border-[#f3f4f6]">
+            <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-[11px] text-[#9ca3af] font-medium">Phone</p>
+              <p class="text-[13px] text-[#0f1419] font-semibold">{{ user.numTel }}</p>
+            </div>
+          </div>
+        }
+
+        <!-- Join Date -->
+        <div class="flex items-center gap-3 py-2.5 border-t border-[#f3f4f6]">
+          <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[11px] text-[#9ca3af] font-medium">Member Since</p>
+            <p class="text-[13px] text-[#0f1419] font-semibold">{{ joinDateFormatted }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- RIGHT COLUMN — Details                                 -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="flex-1 space-y-5">
+
+      <!-- ====================== Personal Information ====================== -->
+      <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <div class="w-7 h-7 rounded-lg bg-[#38a9f3]/10 flex items-center justify-center">
+            <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </div>
+          <h2 class="text-[15px] font-bold text-[#0f1419]">Personal Information</h2>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Full Name -->
+          <div>
+            <label class="block text-[12px] font-semibold text-[#9ca3af] mb-1.5 tracking-wide">FULL NAME</label>
+            @if (isEditing) {
+              <input type="text" [(ngModel)]="editName"
+                class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#eef1f4] rounded-xl text-[14px] text-[#0f1419] outline-none focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/10 transition-all" />
+            } @else {
+              <p class="px-4 py-2.5 bg-[#f7f9fa] rounded-xl text-[14px] text-[#0f1419] font-medium">{{ user.name || '—' }}</p>
+            }
+          </div>
+
+          <!-- Username -->
+          <div>
+            <label class="block text-[12px] font-semibold text-[#9ca3af] mb-1.5 tracking-wide">USERNAME</label>
+            @if (isEditing) {
+              <input type="text" [(ngModel)]="editUsername"
+                class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#eef1f4] rounded-xl text-[14px] text-[#0f1419] outline-none focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/10 transition-all" />
+            } @else {
+              <p class="px-4 py-2.5 bg-[#f7f9fa] rounded-xl text-[14px] text-[#0f1419] font-medium">{{ user.username || '—' }}</p>
+            }
+          </div>
+
+          <!-- Email (read-only) -->
+          <div>
+            <label class="block text-[12px] font-semibold text-[#9ca3af] mb-1.5 tracking-wide">EMAIL ADDRESS</label>
+            <p class="px-4 py-2.5 bg-[#f7f9fa] rounded-xl text-[14px] text-[#0f1419] font-medium flex items-center gap-2">
+              {{ user.email }}
+              @if (user.emailVerified) {
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Verified
+                </span>
+              }
+            </p>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-[12px] font-semibold text-[#9ca3af] mb-1.5 tracking-wide">PHONE NUMBER</label>
+            <p class="px-4 py-2.5 bg-[#f7f9fa] rounded-xl text-[14px] text-[#0f1419] font-medium">{{ user.numTel || '—' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================== Professional Details ====================== -->
+      <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <div class="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
+            <svg class="w-4 h-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <h2 class="text-[15px] font-bold text-[#0f1419]">Professional Details</h2>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <!-- Specialization -->
+          <div class="col-span-1">
+            <label class="block text-[12px] font-semibold text-[#9ca3af] mb-1.5 tracking-wide">SPECIALIZATION</label>
+            <div class="px-4 py-2.5 bg-[#f7f9fa] rounded-xl">
+              @if (user.specialization) {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#e6f6ff] text-[#38a9f3] text-[13px] font-semibold rounded-lg">
+                  {{ user.specialization }}
+                </span>
+              } @else {
+                <p class="text-[14px] text-[#9ca3af]">Not specified</p>
+              }
+            </div>
+          </div>
+
+          <!-- Years of Experience -->
+          <div>
+            <label class="block text-[12px] font-semibold text-[#9ca3af] mb-1.5 tracking-wide">EXPERIENCE</label>
+            <div class="px-4 py-2.5 bg-[#f7f9fa] rounded-xl flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              <p class="text-[14px] text-[#0f1419] font-medium">{{ experienceLabel }}</p>
+            </div>
+          </div>
+
+          <!-- CIN -->
+          <div>
+            <label class="block text-[12px] font-semibold text-[#9ca3af] mb-1.5 tracking-wide">CIN (National ID)</label>
+            <div class="px-4 py-2.5 bg-[#f7f9fa] rounded-xl flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
+              </svg>
+              <p class="text-[14px] text-[#0f1419] font-medium">{{ user.CIN || '—' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================== Bio ====================== -->
+      <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            </svg>
+          </div>
+          <h2 class="text-[15px] font-bold text-[#0f1419]">Bio</h2>
+        </div>
+
+        @if (isEditing) {
+          <textarea [(ngModel)]="editBio" rows="4" placeholder="Tell students about yourself, your teaching style, and what makes your lessons unique..."
+            class="w-full px-4 py-3 bg-[#f7f9fa] border border-[#eef1f4] rounded-xl text-[14px] text-[#0f1419] outline-none focus:border-[#38a9f3] focus:ring-2 focus:ring-[#38a9f3]/10 resize-y leading-relaxed transition-all"></textarea>
+        } @else {
+          <div class="px-4 py-3 bg-[#f7f9fa] rounded-xl">
+            @if (user.bio) {
+              <p class="text-[14px] text-[#374151] leading-relaxed">{{ user.bio }}</p>
+            } @else {
+              <p class="text-[14px] text-[#9ca3af] italic">No bio added yet. Click "Edit Profile" to add one.</p>
+            }
           </div>
         }
       </div>
-    </div>
 
-    <!-- Right Panel - Forms -->
-    <div class="flex-1 space-y-5">
-      <!-- Personal Information -->
-      <div class="bg-white rounded-xl border border-[#eef1f4] p-6">
-        <h2 class="text-[15px] font-bold text-[#0f1419] mb-4">Personal Information</h2>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-xs font-medium text-[#536471] mb-1.5">Full Name</label>
-            <input type="text" [(ngModel)]="profile.fullName" class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm text-[#0f1419] outline-none focus:border-[#38a9f3]" />
+      <!-- ====================== Account Status ====================== -->
+      <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <div class="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center">
+            <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+            </svg>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#536471] mb-1.5">Username</label>
-            <input type="text" [(ngModel)]="profile.username" class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm text-[#0f1419] outline-none focus:border-[#38a9f3]" />
-          </div>
+          <h2 class="text-[15px] font-bold text-[#0f1419]">Account Status</h2>
         </div>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-xs font-medium text-[#536471] mb-1.5">Email Address</label>
-            <input type="email" [(ngModel)]="profile.email" class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm text-[#0f1419] outline-none focus:border-[#38a9f3]" />
+
+        <div class="grid grid-cols-3 gap-4">
+          <!-- Email Status -->
+          <div class="p-4 bg-[#f7f9fa] rounded-xl text-center">
+            @if (user.emailVerified) {
+              <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-green-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p class="text-[12px] font-bold text-green-600">Email Verified</p>
+            } @else {
+              <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-amber-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+              </div>
+              <p class="text-[12px] font-bold text-amber-600">Not Verified</p>
+            }
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#536471] mb-1.5">Phone Number</label>
-            <input type="tel" [(ngModel)]="profile.phone" class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm text-[#0f1419] outline-none focus:border-[#38a9f3]" />
+
+          <!-- Role -->
+          <div class="p-4 bg-[#f7f9fa] rounded-xl text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-[#e6f6ff] flex items-center justify-center">
+              <svg class="w-5 h-5 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347" />
+              </svg>
+            </div>
+            <p class="text-[12px] font-bold text-[#38a9f3]">Tutor</p>
           </div>
-        </div>
-        <div class="w-1/2">
-          <label class="block text-xs font-medium text-[#536471] mb-1.5">CIN (National ID)</label>
-          <input type="text" [(ngModel)]="profile.cin" class="w-full px-4 py-2.5 bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm text-[#0f1419] outline-none focus:border-[#38a9f3]" />
+
+          <!-- Member Duration -->
+          <div class="p-4 bg-[#f7f9fa] rounded-xl text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-purple-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p class="text-[12px] font-bold text-purple-600">{{ memberSinceDays }} Days</p>
+            <p class="text-[10px] text-[#9ca3af]">as member</p>
+          </div>
         </div>
       </div>
 
-      <!-- Specialization -->
-      <div class="bg-white rounded-xl border border-[#eef1f4] p-6">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="text-[15px] font-bold text-[#0f1419]">Specialization</h2>
-          <button class="text-[13px] text-[#38a9f3] font-medium hover:underline">+ Add New</button>
+      <!-- ====================== Face Recognition ====================== -->
+      <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-[#38a9f3]/10 to-[#6366f1]/10 flex items-center justify-center">
+            <svg class="w-4 h-4 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </div>
+          <h2 class="text-[15px] font-bold text-[#0f1419]">Face Recognition</h2>
         </div>
-        <p class="text-xs text-[#9ca3af] mb-4">These tags appear on your public profile and help students find you.</p>
-        <div class="flex flex-wrap gap-2">
-          @for (tag of specializations; track tag) {
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e6f6ff] text-[#38a9f3] text-sm font-medium rounded-lg">
-              {{ tag }}
-              <button (click)="removeSpecialization(tag)" class="hover:text-red-500">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </span>
-          }
-          <button class="px-3 py-1.5 text-sm text-[#9ca3af] border border-dashed border-[#d1d9e0] rounded-lg hover:border-[#38a9f3] hover:text-[#38a9f3]">+ Add Tag</button>
-        </div>
+        <app-face-recognition
+          mode="register"
+          [userId]="user.id">
+        </app-face-recognition>
       </div>
 
-      <!-- Bio -->
-      <div class="bg-white rounded-xl border border-[#eef1f4] p-6">
-        <h2 class="text-[15px] font-bold text-[#0f1419] mb-4">Bio</h2>
-        <textarea [(ngModel)]="profile.bio" rows="4" class="w-full px-4 py-3 bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm text-[#0f1419] outline-none focus:border-[#38a9f3] resize-y leading-relaxed"></textarea>
-      </div>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+</style>
+}

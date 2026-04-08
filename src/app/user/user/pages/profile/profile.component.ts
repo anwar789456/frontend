@@ -6,11 +6,12 @@ import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { OnboardingComponent, OnboardingStep } from '../../../../shared/components/onboarding/onboarding.component';
+import { FaceRecognitionComponent } from '../../../../shared/components/face-recognition/face-recognition.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, OnboardingComponent],
+  imports: [CommonModule, FormsModule, RouterLink, OnboardingComponent, FaceRecognitionComponent],
   templateUrl: './profile.component.html',
   changeDetection: ChangeDetectionStrategy.Default
 })

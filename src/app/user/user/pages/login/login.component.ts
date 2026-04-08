@@ -1,4 +1,4 @@
-import { Component, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,7 +13,7 @@ import { OnboardingComponent, OnboardingStep } from '../../../../shared/componen
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.Default
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit, AfterViewInit {
   @ViewChild('captchaRef') captchaRef!: ImageCaptchaComponent;
 
   email = '';
@@ -68,6 +68,26 @@ export class LoginComponent {
     private cdr: ChangeDetectorRef
   ) { }
 
+  ngOnInit(): void {
+    // Initialize component and ensure UI updates
+    this.cdr.markForCheck();
+    
+    // Start with captcha hidden (user needs to click to show)
+    this.showCaptcha = false;
+    this.cdr.markForCheck();
+  }
+
+  ngAfterViewInit(): void {
+    // Pre-load captcha component in background (but keep it hidden)
+    if (this.captchaRef) {
+      // Auto-refresh captcha to ensure images are loaded when shown
+      setTimeout(() => {
+        this.captchaRef.refresh();
+        this.cdr.markForCheck();
+      }, 100);
+    }
+  }
+
   get emailError(): string {
     if (!this.emailTouched) return '';
     if (!this.email.trim()) return 'Email is required.';
@@ -84,8 +104,7 @@ export class LoginComponent {
 
   get isFormValid(): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const captchaValid = !this.showCaptcha || this.captchaResult !== null;
-    return emailRegex.test(this.email) && this.password.length > 0 && captchaValid;
+    return emailRegex.test(this.email) && this.password.length > 0 && this.captchaResult !== null;
   }
 
   get formattedBanExpiry(): string {
@@ -103,20 +122,40 @@ export class LoginComponent {
 
   onCaptchaSolved(result: CaptchaResult): void {
     this.captchaResult = result;
+    this.cdr.markForCheck(); // Ensure UI updates immediately
   }
 
   onCaptchaCleared(): void {
     this.captchaResult = null;
+    this.cdr.markForCheck(); // Ensure UI updates immediately
   }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
+    this.cdr.markForCheck(); // Ensure UI updates immediately
   }
 
   toggleCaptcha(): void {
+    // If already solved, don't toggle — the captcha stays completed
+    if (this.captchaResult) return;
+
     this.showCaptcha = !this.showCaptcha;
-    if (!this.showCaptcha) {
+
+    // Force immediate change detection
+    this.cdr.detectChanges();
+
+    if (this.showCaptcha) {
+      // Use requestAnimationFrame to ensure DOM is ready, then refresh captcha
+      requestAnimationFrame(() => {
+        if (this.captchaRef) {
+          this.captchaRef.refresh();
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      // Captcha is being hidden — clear the result
       this.captchaResult = null;
+      this.cdr.detectChanges();
     }
   }
 

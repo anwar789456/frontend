@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 
@@ -36,7 +36,10 @@ export class ImageCaptchaComponent implements OnInit {
   loadError = false;
   imageLoaded: boolean[] = [false, false, false, false];
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadChallenge();
@@ -48,15 +51,19 @@ export class ImageCaptchaComponent implements OnInit {
     this.selectedIndex = null;
     this.imageLoaded = [false, false, false, false];
     this.cleared.emit();
+    this.cdr.detectChanges();
 
     this.http.get<CaptchaChallenge>(`${this.apiUrl}/generate`).subscribe({
       next: (challenge) => {
         this.challenge = challenge;
         this.isLoading = false;
+        // Force change detection immediately so images start loading
+        this.cdr.detectChanges();
       },
       error: () => {
         this.isLoading = false;
         this.loadError = true;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -69,14 +76,17 @@ export class ImageCaptchaComponent implements OnInit {
         selectedIndex: index
       });
     }
+    this.cdr.detectChanges();
   }
 
   onImageLoad(index: number): void {
     this.imageLoaded[index] = true;
+    this.cdr.detectChanges();
   }
 
   onImageError(index: number): void {
     this.imageLoaded[index] = true;
+    this.cdr.detectChanges();
   }
 
   get allImagesLoaded(): boolean {
