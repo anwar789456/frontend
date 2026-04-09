@@ -43,7 +43,7 @@ export interface ChatMessage {
   receiverId: number;
   receiverName: string;
   content: string;
-  messageType: 'TEXT' | 'IMAGE' | 'GIF' | 'EMOJI' | 'SHARED_POST' | 'VOICE';
+  messageType: 'TEXT' | 'IMAGE' | 'GIF' | 'EMOJI' | 'SHARED_POST';
   imageUrl?: string;
   gifUrl?: string;
   sharedPostId?: number;
@@ -54,8 +54,6 @@ export interface ChatMessage {
   deletedForUsers?: string;
   isRead?: boolean;
   readAt?: string;
-  voiceUrl?: string;
-  voiceDuration?: number;
   isForwarded?: boolean;
   forwardedFromName?: string;
   createdAt?: string;
@@ -66,7 +64,7 @@ export interface DisplayMessage {
   id: number;
   senderId: number;
   content: string;
-  messageType: 'TEXT' | 'IMAGE' | 'GIF' | 'EMOJI' | 'SHARED_POST' | 'VOICE';
+  messageType: 'TEXT' | 'IMAGE' | 'GIF' | 'EMOJI' | 'SHARED_POST';
   imageUrl?: string;
   gifUrl?: string;
   sharedPostId?: number;
@@ -82,8 +80,6 @@ export interface DisplayMessage {
   senderName: string;
   isRead?: boolean;
   readAt?: string;
-  voiceUrl?: string;
-  voiceDuration?: number;
   isForwarded?: boolean;
   forwardedFromName?: string;
 }

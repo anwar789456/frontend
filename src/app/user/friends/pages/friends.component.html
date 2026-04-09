@@ -377,18 +377,6 @@
                     </div>
                   </div>
                 }
-                <!-- Voice Message -->
-                @if (msg.messageType === 'VOICE') {
-                  <div (click)="toggleMessageActions(msg.id, $event)" class="px-4 py-3 rounded-[20px] cursor-pointer flex items-center gap-3 border-[3px] border-b-[5px]" [class.bg-[#7C3AED]]="msg.isMine" [class.border-[#5B21B6]]="msg.isMine" [class.bg-white]="!msg.isMine" [class.border-[#E5E5E5]]="!msg.isMine" [class.rounded-br-lg]="msg.isMine" [class.rounded-bl-lg]="!msg.isMine">
-                    <span class="text-xl shrink-0">🎤</span>
-                    <div class="flex-1 min-w-0">
-                      <audio [src]="msg.voiceUrl" controls class="w-full h-8 voice-audio" style="max-width: 200px;"></audio>
-                    </div>
-                    @if (msg.voiceDuration) {
-                      <span class="text-[11px] shrink-0 font-bold" [class.text-white/70]="msg.isMine" [class.text-[#AFAFAF]]="!msg.isMine">{{ formatDuration(msg.voiceDuration) }}</span>
-                    }
-                  </div>
-                }
 
                 <!-- Translation -->
                 @if (msg.showTranslation && msg.translatedContent) {
@@ -568,22 +556,46 @@
         </div>
       }
 
+      <!-- AI Correction Banner -->
+      @if (aiCorrection) {
+        <div class="px-5 py-0 bg-white shrink-0">
+          <div class="ai-correction-banner flex items-start gap-3 px-4 py-3 bg-gradient-to-r from-[#F3EEFF] to-[#FFF7ED] border-[3px] border-[#7C3AED]/30 rounded-2xl">
+            <span class="text-2xl shrink-0 mt-0.5">🤖</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-[#7C3AED] uppercase tracking-wider mb-1">AI Suggestion</p>
+              <p class="text-[14px] font-bold text-[#3C3C3C] mb-1">Did you mean: <span class="text-[#7C3AED] font-black">"{{ aiCorrection.correctedText }}"</span>?</p>
+              @if (aiCorrection.explanation) {
+                <p class="text-[12px] text-[#AFAFAF] font-bold">💡 {{ aiCorrection.explanation }}</p>
+              }
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button (click)="acceptAiCorrection()" class="px-3.5 py-2 bg-[#58CC02] text-white text-[12px] font-black rounded-xl border-[2px] border-b-[4px] border-[#46A302] hover:scale-105 active:border-b-[2px] transition-all" title="Use correction">✓ Use</button>
+              <button (click)="dismissAiCorrection()" class="px-3 py-2 bg-white text-[#AFAFAF] text-[12px] font-black rounded-xl border-[2px] border-b-[4px] border-[#E5E5E5] hover:text-[#FF4B4B] hover:border-[#FF4B4B]/30 active:border-b-[2px] transition-all" title="Keep original">✗</button>
+            </div>
+          </div>
+        </div>
+      }
+      @if (aiCorrectionLoading) {
+        <div class="px-5 py-0 bg-white shrink-0">
+          <div class="flex items-center gap-2 px-4 py-2.5 bg-[#F3EEFF] border-[3px] border-[#7C3AED]/20 rounded-2xl">
+            <span class="text-lg animate-spin">🤖</span>
+            <span class="text-[13px] font-black text-[#7C3AED]">AI is checking your text...</span>
+          </div>
+        </div>
+      }
+
       <!-- Message Input - Duolingo chunky -->
       <div class="px-5 py-4 bg-white border-t-[3px] border-[#E5E5E5] shrink-0">
-        @if (isRecording) {
-          <!-- Recording State -->
+        @if (isSpeechListening) {
+          <!-- Speech Listening State -->
           <div class="flex items-center gap-3">
-            <button (click)="cancelRecording()" class="p-2.5 rounded-2xl text-[#FF4B4B] hover:bg-[#FFF0F0] transition-all border-[3px] border-[#E5E5E5] hover:border-[#FF4B4B]" title="Cancel">
+            <button (click)="toggleSpeechToText()" class="p-2.5 rounded-2xl text-[#FF4B4B] hover:bg-[#FFF0F0] transition-all border-[3px] border-[#E5E5E5] hover:border-[#FF4B4B]" title="Stop listening">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-            <div class="flex-1 flex items-center gap-3 px-5 py-3 bg-[#FFF0F0] border-[3px] border-[#FF4B4B] rounded-2xl">
-              <div class="w-3 h-3 bg-[#FF4B4B] rounded-full animate-pulse"></div>
-              <span class="text-[15px] font-black text-[#FF4B4B]">🎙️ Recording...</span>
-              <span class="text-[15px] font-mono text-[#FF4B4B]/70 ml-auto font-black">{{ formatDuration(recordingDuration) }}</span>
+            <div class="speech-pulse flex-1 flex items-center gap-3 px-5 py-3 bg-[#F3EEFF] border-[3px] border-[#7C3AED] rounded-2xl">
+              <div class="w-3 h-3 bg-[#7C3AED] rounded-full animate-pulse"></div>
+              <span class="text-[15px] font-black text-[#7C3AED]">🗣️ Listening... Speak now!</span>
             </div>
-            <button (click)="stopRecording()" class="w-12 h-12 bg-[#7C3AED] rounded-2xl flex items-center justify-center text-white hover:scale-105 transition-all shrink-0 border-[3px] border-b-[5px] border-[#5B21B6] active:border-b-[3px]" title="Send voice">
-              <span class="text-xl">📤</span>
-            </button>
           </div>
         } @else {
           <!-- Normal Input State -->
@@ -595,7 +607,9 @@
                 <span class="text-[11px] font-black" [class.text-[#7C3AED]]="showGifPicker" [class.text-[#AFAFAF]]="!showGifPicker">GIF</span>
               </button>
               <button (click)="toggleEmojiPicker($event)" class="emoji-picker-zone w-10 h-10 rounded-2xl flex items-center justify-center text-xl transition-all border-[2px]" [class.bg-[#F3EEFF]]="showEmojiPicker" [class.border-[#7C3AED]]="showEmojiPicker" [class.border-transparent]="!showEmojiPicker" title="Emoji">😊</button>
-              <button (click)="startRecording()" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl hover:bg-[#F3EEFF] transition-all border-[2px] border-transparent hover:border-[#7C3AED]/30" title="Voice message">🎤</button>
+              @if (speechSupported) {
+                <button (click)="toggleSpeechToText()" class="w-10 h-10 rounded-2xl flex items-center justify-center text-[13px] font-black transition-all border-[2px] border-transparent hover:border-[#7C3AED]/30 hover:bg-[#F3EEFF]" [class.bg-[#F3EEFF]]="isSpeechListening" [class.border-[#7C3AED]]="isSpeechListening" title="AI Speech-to-Text">🗣️</button>
+              }
             </div>
             <!-- Input -->
             <div class="flex-1 relative">
@@ -707,9 +721,7 @@
       <!-- Message Preview -->
       <div class="px-5 py-3.5 bg-[#F7F7F7] border-b-[3px] border-[#E5E5E5] shrink-0">
         <p class="text-[11px] font-black text-[#AFAFAF] uppercase tracking-wider mb-1">💬 Message</p>
-        @if (messageToForward.messageType === 'VOICE') {
-          <p class="text-[13px] text-[#777] font-bold truncate">🎤 Voice message</p>
-        } @else if (messageToForward.messageType === 'IMAGE') {
+        @if (messageToForward.messageType === 'IMAGE') {
           <p class="text-[13px] text-[#777] font-bold truncate">📷 Photo</p>
         } @else if (messageToForward.messageType === 'GIF') {
           <p class="text-[13px] text-[#777] font-bold truncate">🎬 GIF</p>

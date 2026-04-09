@@ -169,16 +169,6 @@ input {
   30% { opacity: 1; }
 }
 
-/* ── Voice Audio Player ── */
-.voice-audio {
-  filter: hue-rotate(200deg) saturate(1.5);
-}
-.voice-audio::-webkit-media-controls-panel {
-  background: transparent;
-}
-.voice-audio::-webkit-media-controls-enclosure {
-  border-radius: 16px;
-}
 
 /* ── No Scrollbar ── */
 .no-scrollbar::-webkit-scrollbar {
@@ -194,4 +184,22 @@ input {
   0% { opacity: 0; transform: translateY(10px) scale(0.95); }
   60% { transform: translateY(-3px) scale(1.01); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── AI Correction Banner ── */
+@keyframes aiSlideUp {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.ai-correction-banner {
+  animation: aiSlideUp 0.3s ease-out;
+}
+
+/* ── Speech Listening Pulse ── */
+@keyframes speechPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(124, 58, 237, 0); }
+}
+.speech-pulse {
+  animation: speechPulse 1.5s infinite;
 }

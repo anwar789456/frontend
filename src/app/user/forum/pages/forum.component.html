@@ -1,4 +1,4 @@
-<div class="forum-container flex gap-3 px-3 py-3 min-h-screen transition-all w-full" style="overflow-x:hidden;" [class.forum-dark]="darkMode">
+<div class="forum-container flex gap-1 pl-0 pr-1 py-1 min-h-screen transition-all w-full" style="overflow-x:hidden;" [class.forum-dark]="darkMode">
   <!-- Hidden file input -->
   <input type="file" #fileInput class="hidden" accept="image/*,video/*" (change)="onFileSelected($event)" />
 
@@ -16,27 +16,29 @@
   </div>
 
   <!-- ═══ LEFT SIDEBAR (sticky) ═══ -->
-  <div class="w-56 shrink-0 hidden lg:flex lg:flex-col">
-    <div class="sticky top-6 flex flex-col gap-4 max-h-[calc(100vh-48px)] overflow-y-auto pb-4 scrollbar-thin">
+  <div class="w-48 shrink-0 hidden lg:flex lg:flex-col">
+    <div class="sticky top-1 flex flex-col gap-1.5 max-h-[calc(100vh-8px)] overflow-y-auto pb-2 scrollbar-thin">
 
       <!-- Profile Card -->
       @if (user) {
-        <div class="sidebar-section dm-card p-4">
-          <div class="flex flex-col items-center text-center mb-3">
-            <div class="w-16 h-16 avatar-ring shrink-0 mb-2">
+        <div class="sidebar-section dm-card p-3">
+          <div class="flex items-center gap-2.5 mb-2">
+            <div class="w-11 h-11 avatar-ring shrink-0">
               <div class="w-full h-full rounded-full overflow-hidden" [class.bg-white]="!darkMode" [class.bg-[#1e293b]]="darkMode">
                 <img [src]="$any(user).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" [alt]="user.name" class="w-full h-full object-cover" />
               </div>
             </div>
-            <div class="flex items-center gap-1">
-              <p class="text-sm font-extrabold dm-text truncate" [class.text-[#1E293B]]="!darkMode">{{ user.name }}</p>
-              @if (getEquippedBadge()) {
-                <span class="text-sm" [title]="getEquippedBadge()!.name">{{ getEquippedBadge()!.icon }}</span>
-              }
+            <div class="min-w-0">
+              <div class="flex items-center gap-1">
+                <p class="text-xs font-extrabold dm-text truncate" [class.text-[#1E293B]]="!darkMode">{{ user.name }}</p>
+                @if (getEquippedBadge()) {
+                  <span class="text-xs" [title]="getEquippedBadge()!.name">{{ getEquippedBadge()!.icon }}</span>
+                }
+              </div>
+              <p class="text-[10px] text-[#94A3B8] truncate">{{'@' + user.name.replace(' ', '_').toLowerCase()}}</p>
             </div>
-            <p class="text-[11px] text-[#94A3B8] truncate">{{'@' + user.name.replace(' ', '_').toLowerCase()}}</p>
           </div>
-          <div class="flex items-center justify-center gap-3 mb-3">
+          <div class="flex items-center justify-center gap-2 mb-2">
             <div class="flex flex-col items-center px-2">
               <span class="text-xs font-extrabold text-[#7C3AED]">Lv.{{ userXP.level }}</span>
               <span class="text-[9px] font-bold text-[#94A3B8] uppercase">Level</span>
@@ -52,21 +54,21 @@
               <span class="text-[9px] font-bold text-[#94A3B8] uppercase">Streak</span>
             </div>
           </div>
-          <a href="/user/profile" class="w-full block text-center py-2.5 text-xs font-extrabold text-[#7C3AED] bg-[#EDE9FE] rounded-xl border-2 border-[#7C3AED]/20 border-b-4 border-b-[#7C3AED]/30 hover:bg-[#ddd6fe] transition active:translate-y-0.5 active:border-b-2 uppercase tracking-wide">View Profile</a>
+          <a href="/user/profile" class="w-full block text-center py-1.5 text-[11px] font-extrabold text-[#7C3AED] bg-[#EDE9FE] rounded-lg border-2 border-[#7C3AED]/20 border-b-3 border-b-[#7C3AED]/30 hover:bg-[#ddd6fe] transition active:translate-y-0.5 active:border-b-2 uppercase tracking-wide">View Profile</a>
         </div>
       }
 
       <!-- Feed Tabs: Saved / Favorites -->
-      <div class="sidebar-section dm-card p-3">
-        <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-[#94A3B8] mb-2 px-1">Quick Access</h3>
-        <button (click)="switchTab(activeTab === 'saved' ? 'all' : 'saved')" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition-all mb-1 border-2 border-transparent" [class.bg-[#EDE9FE]]="activeTab === 'saved'" [class.border-[#7C3AED]]="activeTab === 'saved'" [class.text-[#7C3AED]]="activeTab === 'saved'" [class.text-[#94A3B8]]="activeTab !== 'saved'" [class.hover:bg-[#F8FAFC]]="activeTab !== 'saved' && !darkMode">
+      <div class="sidebar-section dm-card p-2.5">
+        <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-[#94A3B8] mb-1.5 px-1">Quick Access</h3>
+        <button (click)="switchTab(activeTab === 'saved' ? 'all' : 'saved')" class="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-bold transition-all mb-0.5 border-2 border-transparent" [class.bg-[#EDE9FE]]="activeTab === 'saved'" [class.border-[#7C3AED]]="activeTab === 'saved'" [class.text-[#7C3AED]]="activeTab === 'saved'" [class.text-[#94A3B8]]="activeTab !== 'saved'" [class.hover:bg-[#F8FAFC]]="activeTab !== 'saved' && !darkMode">
           <span class="text-base">📚</span>
           Saved
           @if (getSavedCount() > 0) {
             <span class="ml-auto w-5 h-5 rounded-full text-[10px] font-extrabold flex items-center justify-center bg-[#7C3AED] text-white">{{ getSavedCount() }}</span>
           }
         </button>
-        <button (click)="switchTab(activeTab === 'favorites' ? 'all' : 'favorites')" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition-all border-2 border-transparent" [class.bg-[#FEF3C7]]="activeTab === 'favorites'" [class.border-[#F59E0B]]="activeTab === 'favorites'" [class.text-[#F59E0B]]="activeTab === 'favorites'" [class.text-[#94A3B8]]="activeTab !== 'favorites'" [class.hover:bg-[#F8FAFC]]="activeTab !== 'favorites' && !darkMode">
+        <button (click)="switchTab(activeTab === 'favorites' ? 'all' : 'favorites')" class="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-bold transition-all border-2 border-transparent" [class.bg-[#FEF3C7]]="activeTab === 'favorites'" [class.border-[#F59E0B]]="activeTab === 'favorites'" [class.text-[#F59E0B]]="activeTab === 'favorites'" [class.text-[#94A3B8]]="activeTab !== 'favorites'" [class.hover:bg-[#F8FAFC]]="activeTab !== 'favorites' && !darkMode">
           <span class="text-base">⭐</span>
           Favorites
           @if (getFavoriteCount() > 0) {
@@ -111,14 +113,11 @@
 
       <!-- Chat Link (Premium) -->
       <div class="sidebar-section dm-card overflow-hidden">
-        <div class="p-4">
-          <div class="flex items-center gap-2 mb-3">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#EC4899] to-[#F43F5E] flex items-center justify-center border-b-2 border-[#d63384] shadow-sm">
-              <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
-            </div>
-            <h3 class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Friends & Chat</h3>
-          </div>
-          <a href="/user/friends" class="w-full block text-center py-2.5 text-xs font-extrabold text-white bg-gradient-to-r from-[#EC4899] to-[#F43F5E] rounded-xl border-b-4 border-[#d63384] hover:from-[#F43F5E] hover:to-[#EC4899] transition-all active:translate-y-0.5 active:border-b-0 uppercase tracking-wide shadow-sm">Open Chat</a>
+        <div class="p-2.5">
+          <a href="/user/friends" class="w-full flex items-center justify-center gap-2 py-2 text-[11px] font-extrabold text-white bg-gradient-to-r from-[#EC4899] to-[#F43F5E] rounded-lg border-b-2 border-[#d63384] hover:from-[#F43F5E] hover:to-[#EC4899] transition-all active:translate-y-0.5 active:border-b-0 uppercase tracking-wide">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+            Friends & Chat
+          </a>
         </div>
       </div>
 
@@ -135,42 +134,39 @@
   </div>
 
   <!-- ═══ CENTER CONTENT (scrollable) ═══ -->
-  <div class="flex-1 min-w-0 overflow-y-auto" style="max-height: calc(100vh - 24px);">
+  <div class="flex-1 min-w-0 overflow-y-auto" style="max-height: calc(100vh - 8px);">
     <!-- MinoLingo Welcome Banner -->
-    <div class="relative overflow-hidden rounded-2xl mb-6 p-6 border-2 border-[#6025c4] border-b-4" [class.bg-[#7C3AED]]="!darkMode" [class.bg-[#2d5016]]="darkMode">
-      <div class="absolute top-2 right-16 text-3xl float-bubble opacity-70">✨</div>
-      <div class="absolute top-10 right-8 text-xl float-bubble-delay opacity-60">🌟</div>
-      <div class="absolute bottom-2 right-32 text-2xl float-bubble opacity-50">💬</div>
-      <div class="absolute bottom-1 left-[40%] text-lg sparkle opacity-40">⭐</div>
-      <div class="absolute top-1 left-[20%] text-sm float-bubble-delay opacity-30">🎯</div>
-      <div class="flex items-center gap-5">
-        <div class="w-20 h-20 rounded-2xl bg-white/25 backdrop-blur-sm flex items-center justify-center shrink-0 mascot-bounce overflow-hidden border-2 border-white/30">
-          <img src="mino_images/1770148246099.png" alt="MinoLingo Mascot" class="w-16 h-16 object-contain drop-shadow-lg" />
+    <div class="relative overflow-hidden rounded-xl mb-2 px-3 py-2.5 border-2 border-[#6025c4] border-b-3" [class.bg-[#7C3AED]]="!darkMode" [class.bg-[#2d5016]]="darkMode">
+      <div class="absolute top-1 right-12 text-xl float-bubble opacity-50">✨</div>
+      <div class="absolute bottom-1 right-6 text-sm float-bubble-delay opacity-40">�</div>
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-white/25 backdrop-blur-sm flex items-center justify-center shrink-0 mascot-bounce overflow-hidden border-2 border-white/30">
+          <img src="mino_images/1770148246099.png" alt="MinoLingo Mascot" class="w-10 h-10 object-contain drop-shadow-lg" />
         </div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <h1 class="text-2xl font-extrabold text-white tracking-tight drop-shadow-sm">MinoLingo Community</h1>
-            <img src="mino_images/mino_with_pen.png" alt="" class="w-8 h-8 object-contain mascot-wave" />
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-lg font-extrabold text-white tracking-tight drop-shadow-sm">MinoLingo Community</h1>
+            <img src="mino_images/mino_with_pen.png" alt="" class="w-5 h-5 object-contain mascot-wave" />
           </div>
-          <p class="text-white/90 text-sm mt-1 font-bold">Share your English adventures, help friends, and earn XP! 🚀</p>
+          <p class="text-white/80 text-xs font-bold">Share your English adventures, help friends, and earn XP! 🚀</p>
         </div>
-        <div class="hidden md:flex items-center gap-3 shrink-0">
-          <div class="bg-white rounded-2xl px-4 py-2.5 text-center border-b-4 border-[#E2E8F0]">
-            <p class="text-[#7C3AED] text-2xl font-extrabold leading-tight">{{ posts.length }}</p>
-            <p class="text-[#94A3B8] text-[10px] font-extrabold uppercase tracking-wider">Posts</p>
+        <div class="hidden md:flex items-center gap-2 shrink-0">
+          <div class="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 text-center">
+            <p class="text-white text-lg font-extrabold leading-tight">{{ posts.length }}</p>
+            <p class="text-white/70 text-[9px] font-extrabold uppercase">Posts</p>
           </div>
-          <div class="bg-white rounded-2xl px-4 py-2.5 text-center border-b-4 border-[#E2E8F0]">
-            <p class="text-[#7C3AED] text-2xl font-extrabold leading-tight">{{ trendingTopics.length }}</p>
-            <p class="text-[#94A3B8] text-[10px] font-extrabold uppercase tracking-wider">Topics</p>
+          <div class="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 text-center">
+            <p class="text-white text-lg font-extrabold leading-tight">{{ trendingTopics.length }}</p>
+            <p class="text-white/70 text-[9px] font-extrabold uppercase">Topics</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Create Post -->
-    <div class="forum-card dm-card p-5 mb-5" [class.bg-white]="!darkMode">
-      <div class="flex items-start gap-3 mb-3">
-        <div class="w-12 h-12 avatar-ring shrink-0">
+    <div class="forum-card dm-card p-3 mb-2" [class.bg-white]="!darkMode">
+      <div class="flex items-start gap-2.5 mb-2">
+        <div class="w-10 h-10 avatar-ring shrink-0">
           <div class="w-full h-full rounded-full overflow-hidden" [class.bg-white]="!darkMode" [class.bg-[#1e293b]]="darkMode">
             @if (user) {
               <img [src]="$any(user).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" [alt]="user.name" class="w-full h-full object-cover" />
@@ -387,7 +383,7 @@
 
     <!-- Posts -->
     @for (post of filteredPosts; track post.id) {
-      <div [id]="'post-' + post.id" class="forum-card post-card dm-card p-5 mb-4 transition-all duration-500" [class.bg-white]="!darkMode" [class.ring-2]="highlightedPostId === post.id" [class.ring-[#7C3AED]]="highlightedPostId === post.id" [class.bg-[#EDE9FE]/30]="highlightedPostId === post.id && !darkMode">
+      <div [id]="'post-' + post.id" class="forum-card post-card dm-card p-3 mb-1.5 transition-all duration-500" [class.bg-white]="!darkMode" [class.ring-2]="highlightedPostId === post.id" [class.ring-[#7C3AED]]="highlightedPostId === post.id" [class.bg-[#EDE9FE]/30]="highlightedPostId === post.id && !darkMode">
         <div class="flex items-start gap-3 mb-3">
           <div class="w-11 h-11 rounded-full overflow-hidden bg-[#E2E8F0] shrink-0 border-2 border-[#E2E8F0] hover:border-[#7C3AED] transition-colors cursor-pointer">
             <img [src]="post.avatar" [alt]="post.author" class="w-full h-full object-cover" />
@@ -669,8 +665,8 @@
   </div>
 
   <!-- ═══ RIGHT SIDEBAR (sticky) ═══ -->
-  <div class="hidden lg:block lg:w-80 lg:shrink-0">
-    <div class="sticky top-6 flex flex-col gap-3 overflow-y-auto pb-6 pr-1" style="max-height: calc(100vh - 48px); scrollbar-width: thin;">
+  <div class="hidden lg:block lg:w-64 lg:shrink-0">
+    <div class="sticky top-1 flex flex-col gap-1.5 overflow-y-auto pb-2 pr-0.5" style="max-height: calc(100vh - 8px); scrollbar-width: thin;">
     <!-- Top Bar: Theme + Notifications -->
     <div class="flex items-center justify-between px-1">
       <span class="text-xs font-extrabold dm-text-sec uppercase tracking-wider" [class.text-[#94A3B8]]="!darkMode">Theme</span>
@@ -770,115 +766,107 @@
       <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
       </svg>
-      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search posts... 🔍" class="search-input w-full pl-9 pr-4 py-2.5 text-sm font-bold placeholder-[#94A3B8] outline-none dm-input" />
+      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search posts... 🔍" class="search-input w-full pl-9 pr-3 py-2 text-xs font-bold placeholder-[#94A3B8] outline-none dm-input" />
     </div>
 
     <!-- XP & Level Card -->
     @if (user) {
-      <div class="sidebar-section dm-card p-4 relative">
+      <div class="sidebar-section dm-card p-2.5 relative">
         @if (xpGainAnimation) {
-          <div class="absolute top-2 right-3 text-sm font-extrabold text-[#7C3AED] animate-bounce">+{{ xpGainAnimation.amount }} XP ✨</div>
+          <div class="absolute top-1 right-2 text-xs font-extrabold text-[#7C3AED] animate-bounce">+{{ xpGainAnimation.amount }} XP ✨</div>
         }
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-12 h-12 rounded-2xl bg-[#7C3AED] flex items-center justify-center text-white text-lg font-extrabold border-b-4 border-[#6025c4]">{{ userXP.level }}</div>
-          <div>
-            <p class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Level {{ userXP.level }}</p>
-            <p class="text-[10px] font-bold text-[#94A3B8]">{{ userXP.xp }} XP total</p>
-          </div>
-          <div class="ml-auto text-right">
-            <p class="text-[10px] font-bold text-[#94A3B8] uppercase">Next</p>
-            <p class="text-sm font-extrabold text-[#7C3AED]">{{ getXPToNextLevel() }} XP</p>
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-9 h-9 rounded-xl bg-[#7C3AED] flex items-center justify-center text-white text-sm font-extrabold border-b-2 border-[#6025c4]">{{ userXP.level }}</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Level {{ userXP.level }}</p>
+            <p class="text-[10px] font-bold text-[#94A3B8]">{{ userXP.xp }} / {{ userXP.xp + getXPToNextLevel() }} XP</p>
           </div>
         </div>
-        <div class="w-full h-3 bg-[#E2E8F0] rounded-full overflow-hidden" [class.bg-gray-700]="darkMode">
+        <div class="w-full h-2 bg-[#E2E8F0] rounded-full overflow-hidden" [class.bg-gray-700]="darkMode">
           <div class="xp-bar h-full bg-[#7C3AED] rounded-full transition-all duration-500" [style.width.%]="getXPProgress()"></div>
         </div>
-        <div class="flex items-center justify-between mt-2.5 text-[10px] font-bold text-[#94A3B8]">
-          <span>📝 {{ userXP.postsCount }} posts</span>
-          <span>💬 {{ userXP.commentsCount }} comments</span>
-          <span>❤️ {{ userXP.likesGivenCount }} reactions</span>
+        <div class="flex items-center justify-between mt-1.5 text-[9px] font-bold text-[#94A3B8]">
+          <span>📝 {{ userXP.postsCount }}</span>
+          <span>💬 {{ userXP.commentsCount }}</span>
+          <span>❤️ {{ userXP.likesGivenCount }}</span>
         </div>
       </div>
     }
 
     <!-- Streak Tracker -->
-    <div class="sidebar-section dm-card p-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-[#F59E0B] flex items-center justify-center border-b-4 border-[#d97706]">
-            <span [class]="getStreakFlameSize()" [class.animate-bounce]="showStreakAnimation">🔥</span>
-          </div>
-          <div>
-            <p class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ userStreak.currentStreak }} day streak!</p>
-            <p class="text-[10px] font-bold text-[#94A3B8]">Best: {{ userStreak.longestStreak }} days 🏆</p>
-          </div>
+    <div class="sidebar-section dm-card p-2.5">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-[#F59E0B] flex items-center justify-center border-b-2 border-[#d97706]">
+          <span class="text-sm" [class.animate-bounce]="showStreakAnimation">🔥</span>
         </div>
-        <div class="flex gap-1">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ userStreak.currentStreak }} day streak!</p>
+          <p class="text-[9px] font-bold text-[#94A3B8]">Best: {{ userStreak.longestStreak }} 🏆</p>
+        </div>
+        <div class="flex gap-0.5">
           @for (i of [1,2,3,4,5,6,7]; track i) {
-            <div class="w-3.5 h-3.5 rounded-md transition-all border" [class.bg-[#F59E0B]]="i <= userStreak.currentStreak" [class.border-[#e68600]]="i <= userStreak.currentStreak" [class.bg-[#E2E8F0]]="i > userStreak.currentStreak" [class.border-[#CBD5E1]]="i > userStreak.currentStreak" [class.bg-gray-700]="i > userStreak.currentStreak && darkMode"></div>
+            <div class="w-2.5 h-2.5 rounded-sm transition-all border" [class.bg-[#F59E0B]]="i <= userStreak.currentStreak" [class.border-[#e68600]]="i <= userStreak.currentStreak" [class.bg-[#E2E8F0]]="i > userStreak.currentStreak" [class.border-[#CBD5E1]]="i > userStreak.currentStreak" [class.bg-gray-700]="i > userStreak.currentStreak && darkMode"></div>
           }
         </div>
       </div>
     </div>
 
     <!-- Word of the Day -->
-    <div class="sidebar-section dm-card p-4 relative" [class.ring-2]="showWotdCelebration" [class.ring-[#F59E0B]]="showWotdCelebration">
+    <div class="sidebar-section dm-card p-2.5 relative" [class.ring-2]="showWotdCelebration" [class.ring-[#F59E0B]]="showWotdCelebration">
       @if (showWotdCelebration) {
-        <div class="absolute inset-0 flex items-center justify-center bg-[#FEF3C7]/90 rounded-2xl z-10">
+        <div class="absolute inset-0 flex items-center justify-center bg-[#FEF3C7]/90 rounded-xl z-10">
           <div class="text-center">
-            <p class="text-4xl mb-2">🎯</p>
-            <p class="text-base font-extrabold text-[#F59E0B]">Word Used!</p>
-            <p class="text-sm font-bold text-[#F59E0B]">+{{ 15 }} XP bonus! ✨</p>
+            <p class="text-2xl mb-1">🎯</p>
+            <p class="text-sm font-extrabold text-[#F59E0B]">Word Used! +15 XP ✨</p>
           </div>
         </div>
       }
-      <div class="flex items-center gap-2 mb-3">
-        <div class="w-8 h-8 rounded-xl bg-[#F59E0B] flex items-center justify-center border-b-2 border-[#d97706]">
-          <span class="text-sm">📖</span>
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-7 h-7 rounded-lg bg-[#F59E0B] flex items-center justify-center border-b-2 border-[#d97706]">
+          <span class="text-xs">📖</span>
         </div>
-        <h3 class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Word of the Day</h3>
+        <h3 class="text-xs font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Word of the Day</h3>
         @if (wotdUsedToday) {
-          <span class="ml-auto text-[9px] font-extrabold bg-[#EDE9FE] text-[#7C3AED] px-2 py-0.5 rounded-lg">Used ✓</span>
+          <span class="ml-auto text-[8px] font-extrabold bg-[#EDE9FE] text-[#7C3AED] px-1.5 py-0.5 rounded">Used ✓</span>
         } @else {
-          <span class="ml-auto text-[9px] font-extrabold bg-[#FEF3C7] text-[#F59E0B] px-2 py-0.5 rounded-lg border border-[#F59E0B]">+15 XP</span>
+          <span class="ml-auto text-[8px] font-extrabold bg-[#FEF3C7] text-[#F59E0B] px-1.5 py-0.5 rounded border border-[#F59E0B]">+15 XP</span>
         }
       </div>
-      <div class="rounded-2xl p-5 border-2" [class.bg-[#FEF3C7]]="!darkMode" [class.border-[#F59E0B]/30]="!darkMode" [class.bg-gray-800]="darkMode" [class.border-gray-700]="darkMode">
-        <p class="text-2xl font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ wordOfTheDay.word }}</p>
-        <p class="text-sm font-semibold text-[#94A3B8] mt-2 italic leading-relaxed">{{ wordOfTheDay.definition }}</p>
-        <p class="text-sm font-semibold text-[#F59E0B] mt-3 leading-relaxed">"{{ wordOfTheDay.example }}"</p>
+      <div class="rounded-xl p-2.5 border-2" [class.bg-[#FEF3C7]]="!darkMode" [class.border-[#F59E0B]/30]="!darkMode" [class.bg-gray-800]="darkMode" [class.border-gray-700]="darkMode">
+        <p class="text-lg font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ wordOfTheDay.word }}</p>
+        <p class="text-xs font-semibold text-[#94A3B8] mt-1 italic leading-snug">{{ wordOfTheDay.definition }}</p>
+        <p class="text-xs font-semibold text-[#F59E0B] mt-1.5 leading-snug">"{{ wordOfTheDay.example }}"</p>
       </div>
       @if (!wotdUsedToday) {
-        <button (click)="insertWotd()" class="mt-3 w-full py-2.5 text-sm font-extrabold text-white bg-[#F59E0B] rounded-xl border-b-4 border-[#d97706] hover:bg-[#ffd633] active:translate-y-0.5 active:border-b-0 transition uppercase">Use in your post →</button>
+        <button (click)="insertWotd()" class="mt-2 w-full py-1.5 text-xs font-extrabold text-white bg-[#F59E0B] rounded-lg border-b-2 border-[#d97706] hover:bg-[#ffd633] active:translate-y-0.5 active:border-b-0 transition uppercase">Use in your post →</button>
       }
     </div>
 
     <!-- Badges -->
-    <div class="sidebar-section dm-card p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <div class="w-8 h-8 rounded-xl bg-[#EC4899] flex items-center justify-center border-b-2 border-[#d63384]">
-          <span class="text-sm">🏆</span>
+    <div class="sidebar-section dm-card p-2.5">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-7 h-7 rounded-lg bg-[#EC4899] flex items-center justify-center border-b-2 border-[#d63384]">
+          <span class="text-xs">🏆</span>
         </div>
-        <h3 class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Badges</h3>
-        <span class="ml-auto text-[10px] font-extrabold text-[#94A3B8]">{{ getUserBadges().length }}/{{ allBadges.length }}</span>
+        <h3 class="text-xs font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Badges</h3>
+        <span class="ml-auto text-[9px] font-extrabold text-[#94A3B8]">{{ getUserBadges().length }}/{{ allBadges.length }}</span>
       </div>
       @if (equippedBadgeId) {
-        <div class="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl border-2 border-[#EC4899]/30" [class.bg-[#EC4899]/10]="!darkMode" [class.bg-purple-900/20]="darkMode">
-          <span class="text-lg">{{ getEquippedBadge()?.icon }}</span>
-          <span class="text-[10px] font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ getEquippedBadge()?.name }}</span>
-          <span class="ml-auto text-[9px] text-[#7C3AED] font-extrabold uppercase">Equipped</span>
+        <div class="flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg border-2 border-[#EC4899]/30" [class.bg-[#EC4899]/10]="!darkMode" [class.bg-purple-900/20]="darkMode">
+          <span class="text-base">{{ getEquippedBadge()?.icon }}</span>
+          <span class="text-[9px] font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">{{ getEquippedBadge()?.name }}</span>
+          <span class="ml-auto text-[8px] text-[#7C3AED] font-extrabold uppercase">Equipped</span>
         </div>
       }
-      <p class="text-[10px] font-bold text-[#94A3B8] mb-2">Tap an unlocked badge to equip it</p>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-1.5">
         @for (badge of getUserBadges(); track badge.id) {
-          <div (click)="toggleEquipBadge(badge)" class="group relative w-10 h-10 rounded-xl flex items-center justify-center text-lg cursor-pointer transition-all hover:scale-110 border-2" [class.border-[#7C3AED]]="equippedBadgeId === badge.id" [class.bg-[#EDE9FE]]="equippedBadgeId === badge.id" [class.border-[#E2E8F0]]="equippedBadgeId !== badge.id && !darkMode" [class.bg-[#F8FAFC]]="equippedBadgeId !== badge.id && !darkMode" [class.bg-gray-700]="darkMode" [title]="badge.name + ': ' + badge.description + (equippedBadgeId === badge.id ? ' (equipped - click to unequip)' : ' (click to equip)')">
+          <div (click)="toggleEquipBadge(badge)" class="group relative w-8 h-8 rounded-lg flex items-center justify-center text-base cursor-pointer transition-all hover:scale-110 border-2" [class.border-[#7C3AED]]="equippedBadgeId === badge.id" [class.bg-[#EDE9FE]]="equippedBadgeId === badge.id" [class.border-[#E2E8F0]]="equippedBadgeId !== badge.id && !darkMode" [class.bg-[#F8FAFC]]="equippedBadgeId !== badge.id && !darkMode" [class.bg-gray-700]="darkMode" [title]="badge.name + ': ' + badge.description + (equippedBadgeId === badge.id ? ' (equipped - click to unequip)' : ' (click to equip)')">
             {{ badge.icon }}
-            <span class="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-[#1E293B] text-white text-[8px] font-bold px-2 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">{{ equippedBadgeId === badge.id ? 'Unequip' : 'Equip' }}</span>
+            <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-[#1E293B] text-white text-[7px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">{{ equippedBadgeId === badge.id ? 'Unequip' : 'Equip' }}</span>
           </div>
         }
         @for (badge of getLockedBadges(); track badge.id) {
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg opacity-20 grayscale cursor-default border-2" [class.bg-[#F8FAFC]]="!darkMode" [class.border-[#E2E8F0]]="!darkMode" [class.bg-gray-800]="darkMode" [title]="badge.name + ' (locked): ' + badge.description">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base opacity-20 grayscale cursor-default border-2" [class.bg-[#F8FAFC]]="!darkMode" [class.border-[#E2E8F0]]="!darkMode" [class.bg-gray-800]="darkMode" [title]="badge.name + ' (locked): ' + badge.description">
             {{ badge.icon }}
           </div>
         }
@@ -911,15 +899,15 @@
     }
 
     <!-- Trending Topics -->
-    <div class="sidebar-section dm-card p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <div class="w-8 h-8 rounded-xl bg-[#F43F5E] flex items-center justify-center border-b-2 border-[#e11d48]">
-          <span class="text-sm">🔥</span>
+    <div class="sidebar-section dm-card p-2.5">
+      <div class="flex items-center gap-2 mb-1.5">
+        <div class="w-7 h-7 rounded-lg bg-[#F43F5E] flex items-center justify-center border-b-2 border-[#e11d48]">
+          <span class="text-xs">🔥</span>
         </div>
-        <h3 class="text-sm font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Trending Topics</h3>
-        <span class="ml-auto text-[10px] font-extrabold bg-[#F43F5E] text-white px-2 py-0.5 rounded-lg">{{ trendingTopics.length }}</span>
+        <h3 class="text-xs font-extrabold dm-text" [class.text-[#1E293B]]="!darkMode">Trending Topics</h3>
+        <span class="ml-auto text-[9px] font-extrabold bg-[#F43F5E] text-white px-1.5 py-0.5 rounded">{{ trendingTopics.length }}</span>
       </div>
-      <div class="space-y-1.5">
+      <div class="space-y-1">
         @for (topic of trendingTopics; track topic.id; let i = $index) {
           <div (click)="selectTopic(topic)" class="topic-item" [class.active]="selectedTopicId === topic.id">
             <p class="text-[10px] font-bold text-[#94A3B8] dm-text-muted uppercase tracking-wider">{{ topic.category }}</p>

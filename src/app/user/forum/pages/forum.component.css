@@ -15,6 +15,8 @@
 
 /* ── MinoLingo Color Palette ── */
 :host {
+  display: block;
+  width: 100%;
   --mino-primary: #7C3AED;
   --mino-primary-dark: #6025c4;
   --mino-primary-light: #EDE9FE;
@@ -43,9 +45,9 @@
   --mino-border: #E2E8F0;
   --mino-border-dark: #CBD5E1;
   --mino-bg: #F8FAFC;
-  --mino-card-shadow: 0 4px 0 #E2E8F0;
-  --mino-radius: 16px;
-  --mino-radius-lg: 20px;
+  --mino-card-shadow: 0 2px 0 #E2E8F0;
+  --mino-radius: 12px;
+  --mino-radius-lg: 14px;
 }
 
 /* ── Mascot Animations ── */
@@ -72,13 +74,12 @@
 .forum-card {
   background: #fff;
   border: 2px solid var(--mino-border);
-  border-radius: var(--mino-radius-lg);
+  border-radius: var(--mino-radius);
   transition: all .25s cubic-bezier(.36,.07,.19,.97);
-  box-shadow: 0 4px 0 var(--mino-border);
+  box-shadow: 0 2px 0 var(--mino-border);
 }
 .forum-card:hover {
-  box-shadow: 0 6px 0 var(--mino-border-dark), 0 8px 25px var(--mino-primary-glow);
-  transform: translateY(-2px);
+  box-shadow: 0 3px 0 var(--mino-border-dark), 0 4px 12px var(--mino-primary-glow);
   border-color: var(--mino-primary);
 }
 
@@ -97,7 +98,6 @@
 }
 .btn-primary:hover {
   background: #8b5cf6;
-  transform: translateY(-1px);
   border-bottom-width: 5px;
   box-shadow: 0 6px 20px var(--mino-primary-glow);
 }
@@ -121,10 +121,10 @@
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 14px;
-  font-size: 13px;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
   font-weight: 700;
   transition: all .2s cubic-bezier(.36,.07,.19,.97);
   color: var(--mino-text-muted);
@@ -251,8 +251,8 @@
 
 /* ── Topics — Purple accent ── */
 .topic-item {
-  padding: 12px 16px;
-  margin: 4px -8px;
+  padding: 6px 10px;
+  margin: 2px -4px;
   border-radius: var(--mino-radius);
   cursor: pointer;
   transition: all .2s cubic-bezier(.36,.07,.19,.97);
@@ -283,7 +283,7 @@
   transition: all .2s;
   background: #fff;
   font-weight: 600;
-  box-shadow: 0 2px 0 var(--mino-border);
+  box-shadow: none;
 }
 .search-input:focus {
   border-color: var(--mino-primary);
@@ -295,14 +295,13 @@
 .sidebar-section {
   background: #fff;
   border: 2px solid var(--mino-border);
-  border-radius: var(--mino-radius-lg);
-  box-shadow: 0 4px 0 var(--mino-border);
+  border-radius: var(--mino-radius);
+  box-shadow: 0 2px 0 var(--mino-border);
   transition: all .25s cubic-bezier(.36,.07,.19,.97);
 }
 .sidebar-section:hover {
   border-color: var(--mino-border-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 var(--mino-border-dark), 0 8px 20px rgba(124,58,237,.08);
+  box-shadow: 0 2px 0 var(--mino-border-dark), 0 4px 12px rgba(124,58,237,.08);
 }
 
 /* ── Dark Mode — Premium Dark ── */

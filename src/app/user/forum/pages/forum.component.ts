@@ -109,14 +109,14 @@ export class ForumComponent implements OnInit, OnDestroy {
   reportSubmitting = false;
   reportReasons = REPORT_REASONS;
 
-  // Reactions (Educational)
+  // Reactions (Kid-friendly)
   reactionEmojis = [
-    { emoji: '🌟', label: 'Great English!' },
-    { emoji: '🤔', label: 'Interesting!' },
-    { emoji: '�', label: 'I learned something!' },
+    { emoji: '⭐', label: 'Super Star!' },
     { emoji: '❤️', label: 'Love it!' },
-    { emoji: '🔥', label: 'Amazing!' },
-    { emoji: '👏', label: 'Well done!' }
+    { emoji: '😄', label: 'Makes me happy!' },
+    { emoji: '👏', label: 'Well done!' },
+    { emoji: '🎉', label: 'Awesome!' },
+    { emoji: '�', label: 'I learned something!' }
   ];
   showReactionsPostId: number | null = null;
   userReactions: Map<number, string> = new Map();
@@ -264,10 +264,10 @@ export class ForumComponent implements OnInit, OnDestroy {
       this.toggleNewTopicForm();
     });
 
-    // Poll for new posts every 10 seconds
-    this.postsPollInterval = setInterval(() => this.pollNewPosts(), 10000);
-    // Poll for new notifications every 15 seconds
-    this.notifPollInterval = setInterval(() => this.pollNotifications(), 15000);
+    // Poll for new posts every 3 seconds
+    this.postsPollInterval = setInterval(() => this.pollNewPosts(), 3000);
+    // Poll for new notifications every 5 seconds
+    this.notifPollInterval = setInterval(() => this.pollNotifications(), 5000);
   }
 
   ngOnDestroy(): void {
@@ -339,14 +339,13 @@ export class ForumComponent implements OnInit, OnDestroy {
   private pollNewPosts(): void {
     this.forumService.getAllPosts().subscribe({
       next: (all) => {
-        if (all.length !== this.allPosts.length) {
-          this.allPosts = all;
-          this.posts = all.filter(p => !p.parentPostId);
-          this.countCommentsFromAll();
-          this.resolveSharedPosts();
-          this.applyFilter();
-          this.cdRef.detectChanges();
-        }
+        // Always sync — catches new posts, edits, reactions, replies, deletions
+        this.allPosts = all;
+        this.posts = all.filter(p => !p.parentPostId);
+        this.countCommentsFromAll();
+        this.resolveSharedPosts();
+        this.applyFilter();
+        this.cdRef.detectChanges();
       }
     });
   }
@@ -393,6 +392,12 @@ export class ForumComponent implements OnInit, OnDestroy {
         p.username.toLowerCase().includes(q)
       );
     }
+    // Sort by date: newest first
+    result.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
     this.filteredPosts = result;
   }
 

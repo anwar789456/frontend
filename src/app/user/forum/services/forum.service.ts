@@ -8,7 +8,7 @@ import { ForumReport } from '../models/forum-report.model';
   providedIn: 'root'
 })
 export class ForumService {
-  private readonly apiUrl = 'https://minolingo.online/api/forums';
+  private readonly apiUrl = '/api/forums';
 
   private newTopicSubject = new Subject<void>();
   newTopic$ = this.newTopicSubject.asObservable();
@@ -348,7 +348,7 @@ export class ForumService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post(
-      'https://minolingo.online/api/cours/file/upload',
+      '/api/cours/file/upload',
       formData,
       { responseType: 'text' }
     ).pipe(map(url => url.trim()));

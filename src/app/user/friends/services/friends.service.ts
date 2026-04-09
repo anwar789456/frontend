@@ -7,7 +7,7 @@ import { Friendship, ChatMessage, UserStatus } from '../models/friend.model';
   providedIn: 'root'
 })
 export class FriendsService {
-  private readonly apiUrl = 'https://minolingo.online/api/forums';
+  private readonly apiUrl = '/api/forums';
 
   constructor(private http: HttpClient) {}
 
@@ -137,5 +137,13 @@ export class FriendsService {
 
   isTyping(typerId: number, receiverId: number): Observable<{ typing: boolean }> {
     return this.http.get<{ typing: boolean }>(`${this.apiUrl}/is-typing/${typerId}/${receiverId}`);
+  }
+
+  // ── AI Speech Correction ──
+
+  correctText(text: string): Observable<{ originalText: string; correctedText: string; hasCorrections: boolean; explanation: string }> {
+    return this.http.post<{ originalText: string; correctedText: string; hasCorrections: boolean; explanation: string }>(
+      `${this.apiUrl}/ai/correct-text`, { text }
+    );
   }
 }

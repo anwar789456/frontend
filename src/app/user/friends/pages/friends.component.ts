@@ -75,6 +75,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
   private heartbeatInterval: any;
   private messagePollInterval: any;
   private statusPollInterval: any;
+  private friendsListPollInterval: any;
 
   // Toasts
   toasts: { id: number; message: string; type: 'success' | 'info' | 'warning'; exiting?: boolean }[] = [];
@@ -96,13 +97,6 @@ export class FriendsComponent implements OnInit, OnDestroy {
   private typingTimeout: any;
   private typingPollInterval: any;
 
-  // Voice message
-  isRecording = false;
-  recordingDuration = 0;
-  private mediaRecorder: MediaRecorder | null = null;
-  private audioChunks: Blob[] = [];
-  private recordingTimer: any;
-
   // Forwarding
   showForwardModal = false;
   messageToForward: DisplayMessage | null = null;
@@ -120,6 +114,13 @@ export class FriendsComponent implements OnInit, OnDestroy {
   // Push Notifications
   notificationsEnabled = false;
   private lastMessageCount = 0;
+
+  // AI Speech-to-Text
+  isSpeechListening = false;
+  speechSupported = false;
+  private speechRecognition: any = null;
+  aiCorrection: { originalText: string; correctedText: string; hasCorrections: boolean; explanation: string } | null = null;
+  aiCorrectionLoading = false;
 
   constructor(
     private friendsService: FriendsService,
@@ -140,19 +141,26 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.loadAllUsers();
     this.loadBlockedUsers();
     this.requestNotificationPermission();
+    this.initSpeechRecognition();
 
-    // Poll messages every 3s
+    // Poll messages every 1.5s
     this.messagePollInterval = setInterval(() => {
       if (this.selectedFriend) {
         this.pollMessages();
       }
-    }, 3000);
+    }, 1500);
 
-    // Poll statuses every 5s
-    this.statusPollInterval = setInterval(() => this.pollFriendStatuses(), 5000);
+    // Poll statuses every 3s
+    this.statusPollInterval = setInterval(() => this.pollFriendStatuses(), 3000);
 
-    // Poll typing indicator every 2s
-    this.typingPollInterval = setInterval(() => this.pollTypingStatus(), 2000);
+    // Poll typing indicator every 1.5s
+    this.typingPollInterval = setInterval(() => this.pollTypingStatus(), 1500);
+
+    // Poll friends list & requests every 5s
+    this.friendsListPollInterval = setInterval(() => {
+      this.loadFriends();
+      this.loadPendingRequests();
+    }, 5000);
   }
 
   ngOnDestroy(): void {
@@ -160,8 +168,9 @@ export class FriendsComponent implements OnInit, OnDestroy {
     if (this.messagePollInterval) clearInterval(this.messagePollInterval);
     if (this.statusPollInterval) clearInterval(this.statusPollInterval);
     if (this.typingPollInterval) clearInterval(this.typingPollInterval);
+    if (this.friendsListPollInterval) clearInterval(this.friendsListPollInterval);
     if (this.typingTimeout) clearTimeout(this.typingTimeout);
-    if (this.recordingTimer) clearInterval(this.recordingTimer);
+    if (this.speechRecognition) { try { this.speechRecognition.abort(); } catch(_){} }
     // Set offline + clear typing
     if (this.user) {
       this.friendsService.clearTyping(this.user.id).subscribe();
@@ -240,7 +249,6 @@ export class FriendsComponent implements OnInit, OnDestroy {
       case 'GIF': return 'GIF';
       case 'EMOJI': return msg.content || '😊';
       case 'SHARED_POST': return '📋 Shared a post';
-      case 'VOICE': return '🎤 Voice message';
       default: return msg.content?.substring(0, 40) + (msg.content && msg.content.length > 40 ? '...' : '') || '';
     }
   }
@@ -415,23 +423,29 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.friendsService.getConversation(this.user.id, this.selectedFriend.id).subscribe({
       next: (msgs) => {
         const filtered = this.filterDeletedMessages(msgs);
-        if (filtered.length > this.messages.length) {
-          // Check for new incoming messages for push notification
-          const newMsgs = filtered.slice(this.messages.length);
+        const oldLen = this.messages.length;
+
+        // Check for new incoming messages for push notification
+        if (filtered.length > oldLen) {
+          const newMsgs = filtered.slice(oldLen);
           for (const m of newMsgs) {
             if (m.senderId !== this.user!.id) {
               this.sendBrowserNotification(
                 m.senderName || 'New message',
-                m.messageType === 'VOICE' ? '🎤 Voice message' : (m.content?.substring(0, 60) || 'New message'),
+                m.content?.substring(0, 60) || 'New message',
                 m.senderAvatar
               );
             }
           }
-          this.messages = filtered.map(m => this.mapToDisplayMessage(m));
+        }
+
+        // Always sync — catches new messages, reactions, deletions, edits
+        this.messages = filtered.map(m => this.mapToDisplayMessage(m));
+        if (filtered.length > oldLen) {
           this.scrollToBottom();
           this.friendsService.markConversationRead(this.selectedFriend!.id, this.user!.id).subscribe();
-          this.cdr.detectChanges();
         }
+        this.cdr.detectChanges();
       }
     });
   }
@@ -464,8 +478,6 @@ export class FriendsComponent implements OnInit, OnDestroy {
       senderName: m.senderName,
       isRead: m.isRead,
       readAt: m.readAt,
-      voiceUrl: m.voiceUrl,
-      voiceDuration: m.voiceDuration,
       isForwarded: m.isForwarded,
       forwardedFromName: m.forwardedFromName
     };
@@ -957,129 +969,6 @@ export class FriendsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Voice Messages ──
-
-  private recordingCancelled = false;
-
-  async startRecording(): Promise<void> {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // Use low bitrate to keep base64 small
-      const options: MediaRecorderOptions = {};
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        options.mimeType = 'audio/webm;codecs=opus';
-      }
-      options.audioBitsPerSecond = 16000;
-
-      this.mediaRecorder = new MediaRecorder(stream, options);
-      this.audioChunks = [];
-      this.recordingDuration = 0;
-      this.isRecording = true;
-      this.recordingCancelled = false;
-
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.audioChunks.push(event.data);
-        }
-      };
-
-      this.mediaRecorder.onstop = () => {
-        // Stop all tracks first
-        stream.getTracks().forEach(track => track.stop());
-        // Only send if not cancelled
-        if (this.recordingCancelled || this.audioChunks.length === 0) {
-          this.recordingCancelled = false;
-          return;
-        }
-        const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
-        const audioBlob = new Blob(this.audioChunks, { type: mimeType });
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result as string;
-          this.sendVoiceMessage(base64, this.recordingDuration);
-        };
-        reader.readAsDataURL(audioBlob);
-      };
-
-      // Collect data every 1s for smaller chunks
-      this.mediaRecorder.start(1000);
-      this.recordingTimer = setInterval(() => {
-        this.recordingDuration++;
-        this.cdr.detectChanges();
-        if (this.recordingDuration >= 30) {
-          this.stopRecording();
-        }
-      }, 1000);
-
-      this.cdr.detectChanges();
-    } catch (err) {
-      this.addToast('Microphone access denied', 'warning');
-    }
-  }
-
-  stopRecording(): void {
-    if (this.mediaRecorder && this.isRecording) {
-      this.recordingCancelled = false;
-      this.mediaRecorder.stop();
-      this.isRecording = false;
-      if (this.recordingTimer) {
-        clearInterval(this.recordingTimer);
-        this.recordingTimer = null;
-      }
-      this.cdr.detectChanges();
-    }
-  }
-
-  cancelRecording(): void {
-    if (this.mediaRecorder && this.isRecording) {
-      this.recordingCancelled = true;
-      this.mediaRecorder.stop();
-      this.isRecording = false;
-      this.audioChunks = [];
-      if (this.recordingTimer) {
-        clearInterval(this.recordingTimer);
-        this.recordingTimer = null;
-      }
-      this.cdr.detectChanges();
-    }
-  }
-
-  private sendVoiceMessage(base64Audio: string, duration: number): void {
-    if (!this.user || !this.selectedFriend) return;
-    const msg: ChatMessage = {
-      senderId: this.user.id,
-      senderName: this.user.name,
-      senderAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
-      receiverId: this.selectedFriend.id,
-      receiverName: this.selectedFriend.name,
-      content: '',
-      messageType: 'VOICE',
-      voiceUrl: base64Audio,
-      voiceDuration: duration,
-      isRead: false
-    };
-    this.friendsService.sendMessage(msg).subscribe({
-      next: (saved) => {
-        this.messages.push(this.mapToDisplayMessage(saved));
-        this.scrollToBottom();
-        this.selectedFriend!.lastMessage = '🎤 Voice message';
-        this.selectedFriend!.lastMessageTime = 'now';
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Voice send error:', err);
-        this.addToast('Failed to send voice message', 'warning');
-      }
-    });
-  }
-
-  formatDuration(seconds: number): string {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
-  }
-
   // ── Message Forwarding ──
 
   openForwardModal(msg: DisplayMessage): void {
@@ -1107,8 +996,6 @@ export class FriendsComponent implements OnInit, OnDestroy {
       messageType: original.messageType,
       imageUrl: original.imageUrl,
       gifUrl: original.gifUrl,
-      voiceUrl: original.voiceUrl,
-      voiceDuration: original.voiceDuration,
       isRead: false,
       isForwarded: true,
       forwardedFromName: original.senderName
@@ -1280,6 +1167,126 @@ export class FriendsComponent implements OnInit, OnDestroy {
       notif.close();
     };
     setTimeout(() => notif.close(), 5000);
+  }
+
+  // ── AI Speech-to-Text ──
+
+  private initSpeechRecognition(): void {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      this.speechSupported = false;
+      return;
+    }
+    this.speechSupported = true;
+
+    this.speechRecognition = new SpeechRecognition();
+    this.speechRecognition.lang = 'en-US';
+    this.speechRecognition.interimResults = false;
+    this.speechRecognition.maxAlternatives = 1;
+    this.speechRecognition.continuous = false;
+
+    this.speechRecognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      this.messageText = transcript;
+      this.isSpeechListening = false;
+      this.cdr.detectChanges();
+
+      // Send to AI for correction
+      this.checkAiCorrection(transcript);
+    };
+
+    this.speechRecognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      this.isSpeechListening = false;
+      if (event.error === 'not-allowed') {
+        this.addToast('Microphone access denied. Please allow it in browser settings.', 'warning');
+      } else if (event.error === 'no-speech') {
+        this.addToast('No speech detected. Try again!', 'info');
+      } else {
+        this.addToast('Speech recognition error: ' + event.error, 'warning');
+      }
+      this.cdr.detectChanges();
+    };
+
+    this.speechRecognition.onend = () => {
+      this.isSpeechListening = false;
+      this.cdr.detectChanges();
+    };
+  }
+
+  toggleSpeechToText(): void {
+    if (!this.speechSupported) {
+      this.addToast('Speech recognition is not supported in your browser. Try Chrome or Edge.', 'warning');
+      return;
+    }
+
+    if (this.isSpeechListening) {
+      this.stopSpeechToText();
+    } else {
+      this.startSpeechToText();
+    }
+  }
+
+  private startSpeechToText(): void {
+    if (!this.speechRecognition) return;
+    this.aiCorrection = null;
+    this.isSpeechListening = true;
+    this.cdr.detectChanges();
+
+    try {
+      this.speechRecognition.start();
+    } catch (e) {
+      // Already started
+      this.isSpeechListening = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private stopSpeechToText(): void {
+    if (!this.speechRecognition) return;
+    this.speechRecognition.stop();
+    this.isSpeechListening = false;
+    this.cdr.detectChanges();
+  }
+
+  private checkAiCorrection(text: string): void {
+    if (!text || text.trim().length < 2) return;
+    this.aiCorrectionLoading = true;
+    this.cdr.detectChanges();
+
+    this.friendsService.correctText(text).subscribe({
+      next: (result) => {
+        this.aiCorrectionLoading = false;
+        if (result.hasCorrections) {
+          this.aiCorrection = result;
+        } else {
+          this.aiCorrection = null;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('AI correction error:', err);
+        this.aiCorrectionLoading = false;
+        this.aiCorrection = null;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  acceptAiCorrection(): void {
+    if (this.aiCorrection) {
+      this.messageText = this.aiCorrection.correctedText;
+      this.aiCorrection = null;
+      this.cdr.detectChanges();
+      // Focus the input
+      setTimeout(() => this.messageInput?.nativeElement?.focus(), 50);
+    }
+  }
+
+  dismissAiCorrection(): void {
+    this.aiCorrection = null;
+    this.cdr.detectChanges();
+    setTimeout(() => this.messageInput?.nativeElement?.focus(), 50);
   }
 
 }
