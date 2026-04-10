@@ -3,4 +3,7 @@
   <main class="ml-64 flex-1 overflow-hidden">
     <router-outlet></router-outlet>
   </main>
+  @if (showFloatingAvatar) {
+    <app-ai-avatar></app-ai-avatar>
+  }
 </div>

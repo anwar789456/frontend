@@ -81,6 +81,10 @@ export const routes: Routes = [
       {
         path: 'subscriptions',
         loadChildren: () => import('./user/subscription/subscription.routes').then(m => m.SUBSCRIPTION_ROUTES)
+      },
+      {
+        path: 'ai-tutor',
+        loadComponent: () => import('./user/ai-tutor/ai-tutor.component').then(m => m.AiTutorComponent)
       }
     ]
   },

@@ -25,6 +25,7 @@ export class SidebarComponent {
   }
 
   navItems = [
+    { label: 'Ask Lingo', icon: 'ai-tutor', route: '/ai-tutor' },
     { label: 'Courses', icon: 'courses', route: '/courses' },
     { label: 'Friends', icon: 'friends', route: '/friends' },
     { label: 'Sessions', icon: 'sessions', route: '/sessions' },
