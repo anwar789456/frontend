@@ -50,10 +50,6 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'analytics',
         loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsDashboardComponent)
-      },
-      {
-        path: 'churn',
-        loadComponent: () => import('./pages/subscriptions/churn/churn.component').then(m => m.ChurnComponent)
       }
     ]
   }

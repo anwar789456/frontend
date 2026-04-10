@@ -76,8 +76,9 @@ export class DiscountsComponent implements OnInit {
 
     this.http.post<DiscountCode>(this.apiUrl + '/discounts', payload)
       .subscribe({
-        next: () => {
+        next: (response) => {
           this.successMessage = `Discount code "${this.newCode.code}" created successfully!`;
+          this.isLoading = false; // Reset loading state immediately
           this.loadDiscounts();
           this.resetForm();
         },
@@ -94,14 +95,20 @@ export class DiscountsComponent implements OnInit {
       return;
     }
 
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+
     this.http.delete(this.apiUrl + `/discounts/${id}`)
       .subscribe({
         next: () => {
           this.successMessage = `Discount code "${code}" deactivated successfully!`;
+          this.isLoading = false; // Reset loading state immediately
           this.loadDiscounts();
         },
         error: (err) => {
           this.errorMessage = 'Failed to deactivate discount code.';
+          this.isLoading = false;
           console.error('Error deactivating discount:', err);
         }
       });

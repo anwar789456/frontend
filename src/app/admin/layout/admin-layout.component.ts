@@ -33,8 +33,7 @@ export class AdminLayoutComponent {
         { label: 'Donations', icon: 'donations', route: '/admin/donations' },
         { label: 'Subscriptions', icon: 'subscriptions', route: '/admin/subscriptions' },
         { label: 'Discount Codes', icon: 'discounts', route: '/admin/discounts' },
-        { label: 'Analytics', icon: 'analytics', route: '/admin/analytics' },
-        { label: 'Churn Predictor', icon: 'churn', route: '/admin/churn' }
+        { label: 'Analytics', icon: 'analytics', route: '/admin/analytics' }
       ]
     }
   ];
