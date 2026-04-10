@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
 import { CourseService } from '../services/course.service';
 import { Cours, ContenuPedagogique } from '../models/course.model';
 import { AuthService } from '../../../shared/services/auth.service';
@@ -86,8 +87,8 @@ export class CoursesComponent implements OnInit {
     { bg: '#ec4899', icon: '🎨' }
   ];
 
-  bgImage = 'https://www.figma.com/api/mcp/asset/ad0c3be3-3572-4818-9705-6cee1d518352';
-  bannerImage = 'https://www.figma.com/api/mcp/asset/6145994e-91f6-4f36-acfd-6b4274630d7e';
+  bgImage = '/mino_images/bg.png';
+  bannerImage = '/mino_images/content.png';
 
   constructor(
     private courseService: CourseService,
@@ -95,7 +96,8 @@ export class CoursesComponent implements OnInit {
     private userService: UserService,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private route: ActivatedRoute
   ) {}
 
   get isTutor(): boolean {
@@ -196,6 +198,7 @@ export class CoursesComponent implements OnInit {
         this.courses = data.filter(c => !c.archived);
         this.isLoading = false;
         this.cdr.detectChanges();
+        this.openCourseFromQueryParam();
       },
       error: (err) => {
         console.error('Failed to load courses:', err);
@@ -204,6 +207,20 @@ export class CoursesComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private openCourseFromQueryParam(): void {
+    const openId = Number(this.route.snapshot.queryParamMap.get('open'));
+    if (!openId) return;
+    // Use Number() on both sides — the API may return id as string at runtime
+    const course = this.courses.find(c => Number(c.id) === openId);
+    if (!course) return;
+    // setTimeout defers until after all initial render cycles
+    // (loadCurrentUser + loadLeaderboard also call cdr.detectChanges asynchronously)
+    setTimeout(() => {
+      this.openCourseDetail(course);
+      this.cdr.detectChanges();
+    }, 0);
   }
 
   getContentCount(course: Cours): number {

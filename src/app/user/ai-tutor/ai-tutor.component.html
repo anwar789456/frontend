@@ -1,0 +1,343 @@
+<div class="flex flex-col h-screen overflow-hidden relative"
+  style="background: linear-gradient(135deg, #fdf4ff 0%, #ede9fe 35%, #dbeafe 70%, #e0f2fe 100%);">
+
+  <!-- ── Soft ambient blobs ──────────────────────────────────────────────── -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute w-80 h-80 rounded-full opacity-30"
+      style="background:radial-gradient(circle,#c084fc,transparent); top:-60px; left:-60px; filter:blur(50px);"></div>
+    <div class="absolute w-96 h-96 rounded-full opacity-20"
+      style="background:radial-gradient(circle,#818cf8,transparent); bottom:-80px; right:-80px; filter:blur(60px);"></div>
+    <div class="absolute w-64 h-64 rounded-full opacity-20"
+      style="background:radial-gradient(circle,#38bdf8,transparent); top:40%; left:30%; filter:blur(50px);"></div>
+  </div>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="relative z-10 flex items-center px-6 py-3 bg-white/60 backdrop-blur-sm border-b border-violet-200/60 shadow-sm">
+    <button (click)="goBack()"
+      class="flex items-center gap-1.5 text-violet-500 hover:text-violet-700 transition-colors text-sm font-semibold">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+
+    <div class="flex-1 text-center">
+      <h1 class="text-violet-800 font-extrabold text-lg tracking-tight">Ask Lingo! 🦉</h1>
+      <p class="text-violet-400 text-xs font-medium">Your personal English tutor</p>
+    </div>
+
+    <button (click)="toggleMute()"
+      class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border-2 font-semibold transition-all"
+      [class]="isMuted
+        ? 'border-red-300 text-red-500 bg-red-50 hover:bg-red-100'
+        : 'border-violet-300 text-violet-600 bg-violet-50 hover:bg-violet-100'">
+      @if (!isMuted) {
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        Voice on
+      } @else {
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        Muted
+      }
+    </button>
+  </header>
+
+  <!-- ── Main ────────────────────────────────────────────────────────────── -->
+  <div class="relative z-10 flex flex-1 overflow-hidden">
+
+    <!-- ── LEFT: Avatar stage ──────────────────────────────────────────── -->
+    <div class="flex flex-col items-center justify-center flex-1 px-6 py-4 min-w-0 gap-3">
+
+      <!-- Speech bubble -->
+      @if (displayedReply) {
+        <div class="speech-bubble relative bg-white rounded-3xl rounded-bl-sm px-5 py-3.5 max-w-sm shadow-xl border border-violet-100">
+          <!-- Tail -->
+          <div class="absolute -bottom-3 left-8 w-0 h-0"
+            style="border-left:12px solid transparent;border-right:6px solid transparent;border-top:14px solid white;">
+          </div>
+          <p class="text-violet-900 text-sm leading-relaxed font-medium">
+            {{ displayedReply
+            }}@if (isStreaming) {<span class="cursor-blink inline-block w-0.5 h-4 bg-violet-500 align-middle ml-0.5"></span>}
+          </p>
+        </div>
+      }
+
+      <!-- Avatar wrapper with glow -->
+      <div class="relative flex items-center justify-center">
+        @if (isSpeaking || isListening || isStreaming) {
+          <div class="mic-ripple absolute rounded-full border-2 w-52 h-52"
+            [style.borderColor]="glowColor" style="opacity:.4;"></div>
+          <div class="mic-ripple absolute rounded-full border-2 w-52 h-52"
+            [style.borderColor]="glowColor" style="opacity:.25;animation-delay:.55s;"></div>
+        }
+
+        <!-- The drop shadow on the svg gives a nice grounded feeling on light bg -->
+        <svg [class]="avatarClass" viewBox="0 0 200 260" width="230" height="299"
+          style="filter:drop-shadow(0 12px 28px rgba(109,40,217,.25)) drop-shadow(0 3px 8px rgba(0,0,0,.1));">
+
+          <!-- Wings (behind body) -->
+          <ellipse cx="42" cy="186" rx="25" ry="42" fill="#6D28D9" transform="rotate(-22 42 186)"/>
+          <ellipse cx="158" cy="186" rx="25" ry="42" fill="#6D28D9" transform="rotate(22 158 186)"/>
+          <ellipse cx="47" cy="175" rx="11" ry="27" fill="#7C3AED" opacity=".5" transform="rotate(-22 47 175)"/>
+          <ellipse cx="153" cy="175" rx="11" ry="27" fill="#7C3AED" opacity=".5" transform="rotate(22 153 175)"/>
+
+          <!-- Body -->
+          <ellipse cx="100" cy="192" rx="52" ry="54" fill="#7C3AED"/>
+          <ellipse cx="83"  cy="182" rx="17" ry="24" fill="#6D28D9" opacity=".35"/>
+
+          <!-- Belly -->
+          <ellipse cx="100" cy="200" rx="32" ry="35" fill="#EDE9FE"/>
+          <path d="M 80 186 Q 100 182 120 186" stroke="#C4B5FD" stroke-width="1.5" fill="none"/>
+          <path d="M 76 198 Q 100 194 124 198" stroke="#C4B5FD" stroke-width="1.5" fill="none"/>
+          <path d="M 78 210 Q 100 206 122 210" stroke="#C4B5FD" stroke-width="1.5" fill="none"/>
+          <path d="M 82 222 Q 100 218 118 222" stroke="#C4B5FD" stroke-width="1.5" fill="none"/>
+
+          <!-- Neck -->
+          <ellipse cx="100" cy="146" rx="28" ry="16" fill="#7C3AED"/>
+
+          <!-- Head -->
+          <circle cx="100" cy="90" r="58" fill="#7C3AED"/>
+          <ellipse cx="82" cy="78" rx="22" ry="26" fill="#6D28D9" opacity=".3"/>
+          <ellipse cx="118" cy="72" rx="14" ry="12" fill="#8B5CF6" opacity=".28"/>
+
+          <!-- Ear tufts -->
+          <polygon points="62,50 50,24 77,46"  fill="#5B21B6"/>
+          <polygon points="64,49 54,30 74,45"  fill="#7C3AED"/>
+          <polygon points="138,50 150,24 123,46" fill="#5B21B6"/>
+          <polygon points="136,49 146,30 126,45" fill="#7C3AED"/>
+          <polygon points="65,47 57,31 72,44"   fill="#8B5CF6" opacity=".55"/>
+          <polygon points="135,47 143,31 128,44" fill="#8B5CF6" opacity=".55"/>
+
+          <!-- Forehead marking -->
+          <path d="M 74 60 Q 100 53 126 60" stroke="#5B21B6" stroke-width="2.5" fill="none"/>
+
+          <!-- Eye sockets -->
+          <circle cx="76"  cy="84" r="24" fill="#2E1065"/>
+          <circle cx="124" cy="84" r="24" fill="#2E1065"/>
+
+          <!-- Eye whites -->
+          <circle cx="76"  cy="84" r="20" fill="#F8FAFC"/>
+          <circle cx="124" cy="84" r="20" fill="#F8FAFC"/>
+
+          <!-- Pupils -->
+          <circle [attr.cx]="leftPupilX"  [attr.cy]="leftPupilY"  r="10" fill="#1E1B4B"/>
+          <circle [attr.cx]="rightPupilX" [attr.cy]="rightPupilY" r="10" fill="#1E1B4B"/>
+          <circle [attr.cx]="leftPupilX"  [attr.cy]="leftPupilY"  r="6"  fill="#3730A3"/>
+          <circle [attr.cx]="rightPupilX" [attr.cy]="rightPupilY" r="6"  fill="#3730A3"/>
+          <circle [attr.cx]="leftPupilX  - 3" [attr.cy]="leftPupilY  - 3" r="2.5" fill="white"/>
+          <circle [attr.cx]="rightPupilX - 3" [attr.cy]="rightPupilY - 3" r="2.5" fill="white"/>
+          <circle [attr.cx]="leftPupilX  + 1" [attr.cy]="leftPupilY  + 2" r="1"   fill="white" opacity=".5"/>
+          <circle [attr.cx]="rightPupilX + 1" [attr.cy]="rightPupilY + 2" r="1"   fill="white" opacity=".5"/>
+
+          <!-- Blink covers -->
+          <ellipse cx="76"  cy="84" rx="20" ry="20" fill="#7C3AED" class="blink-l"/>
+          <ellipse cx="124" cy="84" rx="20" ry="20" fill="#7C3AED" class="blink-r"/>
+
+          <!-- Eyebrows -->
+          <path [attr.d]="leftBrowD"  stroke="#1E1B4B" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path [attr.d]="rightBrowD" stroke="#1E1B4B" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+          <!-- Upper beak (fixed) -->
+          <path d="M 88 108 L 100 97 L 112 108 Z" fill="#F59E0B"/>
+          <path d="M 91 107 L 100 99 L 109 107" stroke="#FCD34D" stroke-width="1.2" fill="none"/>
+
+          <!-- Lower beak (animated) -->
+          <path [attr.d]="lowerBeakD" fill="#D97706"/>
+
+          <!-- Mouth interior -->
+          @if (mouthOpen) {
+            <ellipse cx="100" [attr.cy]="mouthInnerY" rx="11" [attr.ry]="mouthInnerRy" fill="#1a0533"/>
+            @if (mouthState === 'open3') {
+              <ellipse cx="100" cy="131" rx="7" ry="3" fill="#F87171" opacity=".75"/>
+            }
+          }
+
+          <!-- Feet -->
+          <rect x="74" y="228" width="12" height="12" rx="3" fill="#F59E0B"/>
+          <rect x="114" y="228" width="12" height="12" rx="3" fill="#F59E0B"/>
+          <path d="M 80 236 L 71 248 M 80 236 L 80 249 M 80 236 L 89 248"
+            stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M 120 236 L 111 248 M 120 236 L 120 249 M 120 236 L 129 248"
+            stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round"/>
+
+          <!-- Thinking dots -->
+          @if (mood === 'thinking') {
+            <circle cx="132" cy="50" r="5" fill="#7C3AED" opacity=".8">
+              <animate attributeName="opacity" values=".8;.2;.8" dur=".7s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="146" cy="40" r="4" fill="#7C3AED" opacity=".6">
+              <animate attributeName="opacity" values=".6;.15;.6" dur=".7s" begin=".18s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="158" cy="31" r="3" fill="#7C3AED" opacity=".4">
+              <animate attributeName="opacity" values=".4;.1;.4" dur=".7s" begin=".36s" repeatCount="indefinite"/>
+            </circle>
+          }
+
+          <!-- Listening pulse -->
+          @if (isListening) {
+            <circle cx="100" cy="253" r="5" fill="#6366F1">
+              <animate attributeName="r" values="4;7;4" dur=".55s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="100" cy="253" r="11" fill="none" stroke="#6366F1" stroke-width="2" opacity=".4">
+              <animate attributeName="r" values="10;16;10" dur=".55s" repeatCount="indefinite"/>
+            </circle>
+          }
+        </svg>
+      </div>
+
+      <!-- State label -->
+      <div class="h-6">
+        @if (isListening) {
+          <div class="flex items-center gap-2 text-indigo-600 text-sm font-semibold">
+            <span class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></span>
+            Listening...
+          </div>
+        } @else if (isStreaming) {
+          <div class="flex items-center gap-1.5 text-violet-600 text-sm font-medium">
+            <span class="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style="animation-delay:0ms"></span>
+            <span class="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style="animation-delay:120ms"></span>
+            <span class="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style="animation-delay:240ms"></span>
+            <span class="ml-1">Lingo is speaking...</span>
+          </div>
+        } @else if (isSpeaking) {
+          <div class="flex items-center gap-1.5 text-violet-600 text-sm font-medium">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Speaking...
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Interaction panel ──────────────────────────────────────── -->
+    <div class="flex flex-col w-96 bg-white/70 backdrop-blur-md border-l border-violet-200/60 shadow-xl">
+
+      <!-- Real-time STT transcript -->
+      <div class="px-5 pt-4 pb-3">
+        <p class="text-xs font-bold text-violet-400 uppercase tracking-widest mb-2">You're saying</p>
+        <div class="rounded-2xl border-2 p-3 min-h-[54px] flex items-center gap-2.5 transition-all duration-300"
+          [class]="isListening ? 'border-indigo-400 bg-indigo-50' : 'border-violet-200 bg-violet-50/50'">
+          <div class="flex-shrink-0">
+            @if (isListening) {
+              <div class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center animate-pulse">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/></svg>
+              </div>
+            } @else {
+              <div class="w-5 h-5 rounded-full bg-violet-200 flex items-center justify-center">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/></svg>
+              </div>
+            }
+          </div>
+          <div class="flex-1 min-w-0">
+            @if (isListening && !interimText) {
+              <p class="text-indigo-400 text-sm italic">Say something...</p>
+            } @else if (interimText) {
+              <p class="text-indigo-700 text-sm font-medium leading-relaxed">
+                {{ interimText
+                }}<span class="cursor-blink inline-block w-0.5 h-3.5 bg-indigo-500 align-middle ml-0.5"></span>
+              </p>
+            } @else {
+              <p class="text-violet-300 text-xs">Tap mic and speak in English</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggestion chips -->
+      @if (suggestions.length > 0) {
+        <div class="px-5 pb-3 flex flex-wrap gap-2">
+          @for (s of suggestions; track s.route) {
+            <button (click)="navigateTo(s.route)"
+              class="pop-in px-3 py-1.5 rounded-full text-xs font-bold border-2 border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all flex items-center gap-1">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              {{ s.label }}
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Conversation header -->
+      <div class="px-5 pb-1.5 flex items-center justify-between">
+        <p class="text-xs font-bold text-violet-400 uppercase tracking-widest">Conversation</p>
+        <span class="text-xs text-violet-300">{{ messages.length }} msg</span>
+      </div>
+
+      <!-- Messages -->
+      <div #historyEl class="flex-1 overflow-y-auto px-4 pb-3 space-y-2.5">
+        @if (messages.length === 0) {
+          <p class="text-center text-violet-300 text-xs py-6 italic">Say hi to start!</p>
+        }
+        @for (msg of messages; track $index) {
+          @if (msg.sender === 'user') {
+            <div class="flex justify-end">
+              <div class="max-w-[85%] bg-violet-600 text-white rounded-2xl rounded-tr-sm px-3.5 py-2 text-sm leading-relaxed shadow-sm">
+                {{ msg.text }}
+              </div>
+            </div>
+          } @else {
+            <div class="flex items-start gap-2">
+              <div class="w-6 h-6 rounded-full bg-violet-200 flex-shrink-0 flex items-center justify-center mt-0.5">
+                <svg width="13" height="13" viewBox="0 0 64 64">
+                  <ellipse cx="32" cy="42" rx="20" ry="18" fill="#7C3AED"/>
+                  <circle cx="22" cy="28" r="7"   fill="white"/>
+                  <circle cx="22" cy="28" r="3.5" fill="#1E1B4B"/>
+                  <circle cx="42" cy="28" r="7"   fill="white"/>
+                  <circle cx="42" cy="28" r="3.5" fill="#1E1B4B"/>
+                  <polygon points="32,35 26,42 38,42" fill="#F59E0B"/>
+                </svg>
+              </div>
+              <div class="max-w-[85%] bg-white text-violet-900 rounded-2xl rounded-tl-sm px-3.5 py-2 text-sm leading-relaxed shadow-sm border border-violet-100">
+                {{ msg.text }}
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Controls -->
+      <div class="px-4 pb-5 pt-3 border-t border-violet-200/60 space-y-3 bg-white/50">
+
+        <!-- Mic button -->
+        <div class="flex justify-center">
+          <div class="relative">
+            @if (isListening) {
+              <div class="mic-ripple absolute inset-0 rounded-full bg-indigo-400 opacity-25"></div>
+              <div class="mic-ripple absolute inset-0 rounded-full bg-indigo-400 opacity-15" style="animation-delay:.45s"></div>
+            }
+            <button (click)="toggleListening()"
+              [disabled]="!speechSupported || isStreaming"
+              class="relative w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              [class]="isListening
+                ? 'bg-indigo-500 hover:bg-indigo-600 scale-105'
+                : 'bg-violet-600 hover:bg-violet-700'">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8"  y1="23" x2="16" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        @if (!speechSupported) {
+          <p class="text-amber-500 text-xs text-center font-medium">Voice works best in Chrome / Edge</p>
+        }
+
+        <!-- Text input -->
+        <div class="flex gap-2">
+          <input #textInput
+            [(ngModel)]="userMessage"
+            (keyup.enter)="sendMessage(userMessage)"
+            placeholder="Or type here..."
+            [disabled]="isStreaming"
+            class="flex-1 bg-white border-2 border-violet-200 text-violet-900 placeholder-violet-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition-colors"/>
+          <button (click)="sendMessage(userMessage)"
+            [disabled]="isStreaming || !userMessage.trim()"
+            class="w-10 h-10 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors flex-shrink-0 shadow-sm">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
