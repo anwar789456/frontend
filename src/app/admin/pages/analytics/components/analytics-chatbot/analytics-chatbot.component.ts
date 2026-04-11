@@ -100,15 +100,31 @@ export class AnalyticsChatbotComponent implements OnInit {
       },
       error: (error) => {
         this.isTyping = false;
+        console.error('Full error details:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        console.error('Error response:', error.error);
+        
+        let errorText = 'Sorry, I encountered an error. Please try again.';
+        
+        if (error.status === 401) {
+          errorText = 'Authentication error. Please check API key configuration.';
+        } else if (error.status === 403) {
+          errorText = 'Access denied. Please contact support.';
+        } else if (error.status === 500) {
+          errorText = 'Server error. The team has been notified.';
+        } else if (error.status === 0) {
+          errorText = 'Network error. Please check your connection.';
+        }
+        
         const errorMessage: Message = {
           id: this.generateMessageId(),
           type: 'system',
-          text: 'Sorry, I encountered an error. Please try again.',
+          text: errorText,
           timestamp: new Date()
         };
         this.messages.push(errorMessage);
         this.scrollToBottom();
-        console.error('Chat error:', error);
       }
     });
   }
