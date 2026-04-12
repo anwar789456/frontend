@@ -5,11 +5,12 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService, BanErrorInfo } from '../../../../shared/services/auth.service';
 import { ImageCaptchaComponent, CaptchaResult } from '../../../../shared/components/image-captcha/image-captcha.component';
 import { OnboardingComponent, OnboardingStep } from '../../../../shared/components/onboarding/onboarding.component';
+import { FaceRecognitionComponent, FaceResult } from '../../../../shared/components/face-recognition/face-recognition.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ImageCaptchaComponent, OnboardingComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ImageCaptchaComponent, OnboardingComponent, FaceRecognitionComponent],
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.Default
 })
@@ -29,6 +30,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   emailTouched = false;
   passwordTouched = false;
+
+  // Face login
+  showFaceLogin = false;
+  isFaceProcessing = false;
 
   // Onboarding steps for login page
   loginOnboardingSteps: OnboardingStep[] = [
@@ -197,6 +202,56 @@ export class LoginComponent implements OnInit, AfterViewInit {
         } else {
           this.banInfo = null;
           this.errorMessage = typeof err === 'string' ? err : (err?.message || 'An unexpected error occurred.');
+        }
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  // ── Face Login ─────────────────────────────────────────────
+
+  toggleFaceLogin(): void {
+    this.showFaceLogin = !this.showFaceLogin;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.banInfo = null;
+    this.cdr.markForCheck();
+  }
+
+  onFaceCapture(result: FaceResult): void {
+    if (result.capturedImage) {
+      this.submitFaceLogin(result.capturedImage);
+    }
+  }
+
+  submitFaceLogin(base64Image: string): void {
+    if (!base64Image) return;
+
+    this.isFaceProcessing = true;
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.banInfo = null;
+    this.cdr.markForCheck();
+
+    this.authService.faceIdentifyLogin(base64Image).subscribe({
+      next: (user) => {
+        this.isFaceProcessing = false;
+        this.isLoading = false;
+        this.successMessage = 'Face recognized! Redirecting...';
+        this.cdr.markForCheck();
+        const redirectUrl = this.authService.getRedirectUrlForRole(user.role);
+        setTimeout(() => this.router.navigate([redirectUrl]), 1200);
+      },
+      error: (err: any) => {
+        this.isFaceProcessing = false;
+        this.isLoading = false;
+        if (err?.type === 'ban') {
+          this.banInfo = err as BanErrorInfo;
+          this.errorMessage = '';
+        } else {
+          this.banInfo = null;
+          this.errorMessage = typeof err === 'string' ? err : (err?.message || 'Face not recognized. Please try again or use password login.');
         }
         this.cdr.markForCheck();
       }
