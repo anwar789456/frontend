@@ -1,8 +1,10 @@
-import { Component, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+
+declare var google: any;
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService, BanErrorInfo } from '../../../../shared/services/auth.service';
+import { AuthService, AuthUser, BanErrorInfo } from '../../../../shared/services/auth.service';
 import { ImageCaptchaComponent, CaptchaResult } from '../../../../shared/components/image-captcha/image-captcha.component';
 import { OnboardingComponent, OnboardingStep } from '../../../../shared/components/onboarding/onboarding.component';
 import { FaceRecognitionComponent, FaceResult } from '../../../../shared/components/face-recognition/face-recognition.component';
@@ -14,8 +16,13 @@ import { FaceRecognitionComponent, FaceResult } from '../../../../shared/compone
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.Default
 })
-export class LoginComponent implements OnInit, AfterViewInit {
+export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
+  private destroyed = false;
+  private static googleInitialized = false;
   @ViewChild('captchaRef') captchaRef!: ImageCaptchaComponent;
+  @ViewChild('googleBtnRef') googleBtnRef!: ElementRef<HTMLDivElement>;
+
+  private readonly GOOGLE_CLIENT_ID = '123823672043-vs1f3hv4qts4j48rq0sst9rh46i8v3uf.apps.googleusercontent.com';
 
   email = '';
   password = '';
@@ -34,6 +41,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   // Face login
   showFaceLogin = false;
   isFaceProcessing = false;
+  faceCheckDone = false;
+  faceLoginAvailable = false;
+  googleLoading = false;
 
   // Onboarding steps for login page
   loginOnboardingSteps: OnboardingStep[] = [
@@ -85,12 +95,74 @@ export class LoginComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     // Pre-load captcha component in background (but keep it hidden)
     if (this.captchaRef) {
-      // Auto-refresh captcha to ensure images are loaded when shown
       setTimeout(() => {
         this.captchaRef.refresh();
         this.cdr.markForCheck();
       }, 100);
     }
+
+    // Initialize Google Sign-In button — wait for GSI script to be ready
+    this.initGoogleSignIn();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    LoginComponent.googleInitialized = false;
+  }
+
+  private initGoogleSignIn(): void {
+    const tryInit = () => {
+      if (this.destroyed) return;
+      if (typeof google !== 'undefined' && google?.accounts?.id) {
+        if (!LoginComponent.googleInitialized) {
+          LoginComponent.googleInitialized = true;
+          google.accounts.id.initialize({
+            client_id: this.GOOGLE_CLIENT_ID,
+            callback: (response: any) => this.handleGoogleCredential(response)
+          });
+        }
+        google.accounts.id.renderButton(
+          this.googleBtnRef.nativeElement,
+          { theme: 'outline', size: 'large', width: 320, text: 'signin_with', shape: 'rectangular' }
+        );
+        this.cdr.markForCheck();
+      } else {
+        setTimeout(tryInit, 200);
+      }
+    };
+    tryInit();
+  }
+
+  private handleGoogleCredential(response: any): void {
+    const idToken = response?.credential;
+    if (!idToken) return;
+
+    this.googleLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.banInfo = null;
+    this.cdr.markForCheck();
+
+    this.authService.googleLogin(idToken).subscribe({
+      next: (user: AuthUser) => {
+        this.googleLoading = false;
+        this.successMessage = 'Signed in with Google! Redirecting...';
+        this.cdr.markForCheck();
+        const redirectUrl = this.authService.getRedirectUrlForRole(user.role);
+        setTimeout(() => this.router.navigate([redirectUrl]), 1200);
+      },
+      error: (err: any) => {
+        this.googleLoading = false;
+        if (err?.type === 'ban') {
+          this.banInfo = err as BanErrorInfo;
+          this.errorMessage = '';
+        } else {
+          this.banInfo = null;
+          this.errorMessage = typeof err === 'string' ? err : (err?.message || 'Google sign-in failed. Please try again.');
+        }
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   get emailError(): string {
@@ -215,7 +287,31 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.errorMessage = '';
     this.successMessage = '';
     this.banInfo = null;
-    this.cdr.markForCheck();
+
+    if (this.showFaceLogin) {
+      // Reset check state and query whether this email has face registered
+      this.faceCheckDone = false;
+      this.faceLoginAvailable = false;
+      this.cdr.markForCheck();
+
+      this.authService.checkFaceStatus(this.email).subscribe({
+        next: (res) => {
+          this.faceCheckDone = true;
+          this.faceLoginAvailable = !!res.faceRegistered;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.faceCheckDone = true;
+          this.faceLoginAvailable = false;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      // Reset when panel is closed so next open starts fresh
+      this.faceCheckDone = false;
+      this.faceLoginAvailable = false;
+      this.cdr.markForCheck();
+    }
   }
 
   onFaceCapture(result: FaceResult): void {
@@ -235,7 +331,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.cdr.markForCheck();
 
     this.authService.faceIdentifyLogin(base64Image).subscribe({
-      next: (user) => {
+      next: (user: AuthUser) => {
         this.isFaceProcessing = false;
         this.isLoading = false;
         this.successMessage = 'Face recognized! Redirecting...';

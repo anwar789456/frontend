@@ -16,11 +16,9 @@ export interface OnboardingStep {
   template: `
     <!-- Onboarding Overlay -->
     @if (isVisible) {
-    <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-opacity duration-300"
-         [class.opacity-100]="isAnimating" [class.opacity-0]="!isAnimating"
-         style="background: linear-gradient(135deg, rgba(56, 169, 243, 0.95), rgba(99, 102, 241, 0.95));"
-         (mousedown)="$event.preventDefault()">
-
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4" 
+         style="background: linear-gradient(135deg, rgba(56, 169, 243, 0.95), rgba(99, 102, 241, 0.95));">
+      
       <!-- Animated background elements -->
       <div class="absolute inset-0 overflow-hidden pointer-events-none">
         <!-- Floating circles -->
@@ -146,7 +144,6 @@ export interface OnboardingStep {
     }
   `,
   styles: [`
-    :host { display: contents; }
     @keyframes confetti {
       0% { transform: translateY(0) rotate(0deg); opacity: 1; }
       100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
@@ -216,9 +213,8 @@ export class OnboardingComponent implements OnInit {
     this.isAnimating = false;
     setTimeout(() => {
       this.isVisible = false;
-      window.getSelection()?.removeAllRanges();
       this.completed.emit();
-    }, 350);
+    }, 300);
   }
 
   skip(): void {
@@ -226,9 +222,8 @@ export class OnboardingComponent implements OnInit {
     this.isAnimating = false;
     setTimeout(() => {
       this.isVisible = false;
-      window.getSelection()?.removeAllRanges();
       this.skipped.emit();
-    }, 350);
+    }, 300);
   }
 
   getRandomPosition(index: number, axis: 'x' | 'y'): number {
