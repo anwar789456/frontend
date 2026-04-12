@@ -30,6 +30,7 @@ export class SidebarComponent {
     { label: 'Friends', icon: 'friends', route: '/friends' },
     { label: 'Sessions', icon: 'sessions', route: '/sessions' },
     { label: 'Quiz', icon: 'quiz', route: '/quiz' },
+    { label: 'Writing', icon: 'writing', route: '/writing' },
     { label: 'Forums', icon: 'forums', route: '/forums' },
     { label: 'Events', icon: 'events', route: '/events' },
     { label: 'Profile', icon: 'profile', route: '/profile' },

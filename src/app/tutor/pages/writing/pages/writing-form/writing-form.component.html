@@ -1,0 +1,82 @@
+<div class="min-h-screen bg-[#f8fafc]">
+  <div class="p-8 max-w-[720px] mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-8">
+      <a routerLink="/tutor/writing" class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e5e7eb] hover:bg-[#f3f4f6] transition-colors text-[#6b7280]">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+      </a>
+      <div>
+        <h1 class="text-[22px] font-bold text-[#0f1419] leading-tight">{{ isEditMode ? 'Edit' : 'Create' }} Writing Prompt</h1>
+        <p class="text-xs text-[#9ca3af] mt-0.5">{{ isEditMode ? 'Update this writing exercise.' : 'Set up a new writing exercise for your students.' }}</p>
+      </div>
+    </div>
+
+    @if (isLoading) {
+      <div class="text-center py-20 text-[#9ca3af]">Loading...</div>
+    } @else {
+
+      <div class="bg-white rounded-2xl border border-[#e5e7eb]/70 p-6 space-y-6">
+
+        <!-- Title -->
+        <div>
+          <label class="block text-sm font-semibold text-[#374151] mb-1.5">Title</label>
+          <input type="text" [(ngModel)]="title" placeholder="e.g. Describe your favourite teacher"
+            class="w-full px-4 py-3 border border-[#e5e7eb] rounded-xl text-sm outline-none focus:border-[#8b5cf6] transition-colors" />
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-semibold text-[#374151] mb-1.5">Description / Instructions</label>
+          <textarea [(ngModel)]="description" rows="4" placeholder="Tell the student what to write about and any specific instructions..."
+            class="w-full px-4 py-3 border border-[#e5e7eb] rounded-xl text-sm outline-none focus:border-[#8b5cf6] transition-colors resize-none"></textarea>
+        </div>
+
+        <!-- Difficulty + XP Row -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-[#374151] mb-1.5">Difficulty</label>
+            <select [(ngModel)]="difficulty" class="w-full px-4 py-3 border border-[#e5e7eb] rounded-xl text-sm outline-none focus:border-[#8b5cf6] cursor-pointer">
+              @for (d of difficulties; track d) {
+                <option [value]="d">{{ d }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#374151] mb-1.5">XP Reward</label>
+            <input type="number" [(ngModel)]="xpReward" min="10" max="500"
+              class="w-full px-4 py-3 border border-[#e5e7eb] rounded-xl text-sm outline-none focus:border-[#8b5cf6] transition-colors" />
+          </div>
+        </div>
+
+        <!-- Word Count Row -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-[#374151] mb-1.5">Minimum Words</label>
+            <input type="number" [(ngModel)]="minWords" min="10" max="1000"
+              class="w-full px-4 py-3 border border-[#e5e7eb] rounded-xl text-sm outline-none focus:border-[#8b5cf6] transition-colors" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#374151] mb-1.5">Maximum Words</label>
+            <input type="number" [(ngModel)]="maxWords" min="20" max="2000"
+              class="w-full px-4 py-3 border border-[#e5e7eb] rounded-xl text-sm outline-none focus:border-[#8b5cf6] transition-colors" />
+          </div>
+        </div>
+
+        @if (maxWords <= minWords && minWords > 0) {
+          <p class="text-xs text-red-500">Maximum words must be greater than minimum words.</p>
+        }
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#f3f4f6]">
+          <a routerLink="/tutor/writing" class="px-5 py-2.5 text-sm font-semibold text-[#374151] border border-[#e5e7eb] rounded-xl hover:bg-[#f9fafb] transition-colors">Cancel</a>
+          <button (click)="save()" [disabled]="!canSave || isSaving"
+            class="px-6 py-2.5 text-sm font-bold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] shadow-md shadow-purple-200/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Prompt' : 'Create Prompt') }}
+          </button>
+        </div>
+
+      </div>
+    }
+  </div>
+</div>
