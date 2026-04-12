@@ -48,6 +48,18 @@ export const TUTOR_ROUTES: Routes = [
         loadComponent: () => import('./pages/quiz/pages/story-quiz/story-quiz-form.component').then(m => m.TutorStoryQuizFormComponent)
       },
       {
+        path: 'writing',
+        loadComponent: () => import('./pages/writing/pages/writing-list/writing-list.component').then(m => m.TutorWritingListComponent)
+      },
+      {
+        path: 'writing/create',
+        loadComponent: () => import('./pages/writing/pages/writing-form/writing-form.component').then(m => m.TutorWritingFormComponent)
+      },
+      {
+        path: 'writing/edit/:id',
+        loadComponent: () => import('./pages/writing/pages/writing-form/writing-form.component').then(m => m.TutorWritingFormComponent)
+      },
+      {
         path: 'forums',
         loadComponent: () => import('./pages/forums/forums.component').then(m => m.TutorForumsComponent)
       },

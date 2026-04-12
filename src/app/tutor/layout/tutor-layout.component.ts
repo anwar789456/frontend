@@ -22,6 +22,7 @@ export class TutorLayoutComponent {
         { label: 'Dashboard', icon: 'dashboard', route: '/tutor/dashboard' },
         { label: 'My Courses', icon: 'courses', route: '/tutor/courses' },
         { label: 'Quizzes', icon: 'quiz', route: '/tutor/quiz' },
+        { label: 'Writing', icon: 'writing', route: '/tutor/writing' },
         // { label: 'Live Classes', icon: 'live', route: '/tutor/live-classes' }
       ]
     },
