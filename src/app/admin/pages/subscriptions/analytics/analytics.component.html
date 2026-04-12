@@ -1,6 +1,68 @@
 <div class="p-6 space-y-6">
   <h1 class="text-2xl font-bold text-[#0f1419]">Subscription Analytics</h1>
 
+  <!-- Platform Health Score (Python service) -->
+  <div class="bg-white rounded-xl border border-[#eef1f4] p-6 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-lg font-semibold text-[#0f1419]">Platform Health Score</h2>
+        <p class="text-xs text-[#9ca3af]">Computed by advanced Python analytics engine</p>
+      </div>
+      <span class="text-xs px-2 py-1 rounded-full border" [class]="getHealthColorClasses()">
+        {{ healthScore?.status ?? 'Loading...' }}
+      </span>
+    </div>
+
+    @if (isLoadingHealth) {
+      <div class="flex justify-center py-8">
+        <div class="w-6 h-6 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    } @else if (healthScore && healthScore.healthScore !== null) {
+      <div class="flex flex-col md:flex-row items-center gap-6">
+        <!-- Circular gauge -->
+        <div class="relative w-32 h-32 flex-shrink-0">
+          <svg class="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" />
+            <circle cx="50" cy="50" r="45" fill="none"
+                    [attr.stroke]="getHealthRingColor()"
+                    stroke-width="8"
+                    stroke-linecap="round"
+                    stroke-dasharray="282.74"
+                    [attr.stroke-dashoffset]="getHealthRingOffset()" />
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span class="text-3xl font-bold" [style.color]="getHealthRingColor()">
+              {{ healthScore.healthScore }}
+            </span>
+            <span class="text-xs text-[#9ca3af]">/ 100</span>
+          </div>
+        </div>
+
+        <!-- Grade + alerts -->
+        <div class="flex-1 w-full">
+          <div class="flex items-baseline gap-3 mb-3">
+            <span class="text-sm text-[#9ca3af]">Grade</span>
+            <span class="text-4xl font-bold" [style.color]="getHealthRingColor()">
+              {{ healthScore.grade }}
+            </span>
+          </div>
+          <div class="space-y-1">
+            @for (alert of healthScore.alerts; track alert) {
+              <div class="flex items-start gap-2 text-sm">
+                <span class="mt-0.5" [style.color]="getHealthRingColor()">●</span>
+                <span class="text-[#4b5563]">{{ alert }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="text-sm text-[#9ca3af] py-4">
+        Health score service is offline. Start the Python service on port 8086.
+      </div>
+    }
+  </div>
+
   <!-- Stats Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- Total -->
