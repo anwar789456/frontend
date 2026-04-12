@@ -1,6 +1,6 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AnalyticsService, AnalyticsDashboard } from './services/analytics.service';
+import { AnalyticsService, AnalyticsDashboard, HealthScore } from './services/analytics.service';
 import { AnalyticsChatbotComponent } from './components/analytics-chatbot/analytics-chatbot.component';
 import Chart from 'chart.js/auto';
 
@@ -15,7 +15,9 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('growthChart') growthChartRef!: ElementRef<HTMLCanvasElement>;
 
   dashboard: AnalyticsDashboard | null = null;
+  healthScore: HealthScore | null = null;
   isLoading = true;
+  isLoadingHealth = true;
   errorMessage: string | null = null;
 
   private revenueChart: Chart | null = null;
@@ -30,6 +32,49 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.loadDashboard();
+    this.loadHealthScore();
+  }
+
+  private loadHealthScore(): void {
+    this.isLoadingHealth = true;
+    this.analyticsService.getHealthScore().subscribe({
+      next: (data) => {
+        this.healthScore = data;
+        this.isLoadingHealth = false;
+      },
+      error: () => {
+        this.healthScore = null;
+        this.isLoadingHealth = false;
+      }
+    });
+  }
+
+  getHealthColorClasses(): string {
+    if (!this.healthScore) return 'bg-gray-100 text-gray-600 border-gray-200';
+    switch (this.healthScore.color) {
+      case 'green': return 'bg-green-50 text-green-700 border-green-200';
+      case 'blue': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'orange': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'red': return 'bg-red-50 text-red-700 border-red-200';
+      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+  }
+
+  getHealthRingColor(): string {
+    if (!this.healthScore) return '#9ca3af';
+    switch (this.healthScore.color) {
+      case 'green': return '#22c55e';
+      case 'blue': return '#3b82f6';
+      case 'orange': return '#f97316';
+      case 'red': return '#ef4444';
+      default: return '#9ca3af';
+    }
+  }
+
+  getHealthRingOffset(): number {
+    const score = this.healthScore?.healthScore ?? 0;
+    const circumference = 2 * Math.PI * 45;
+    return circumference - (score / 100) * circumference;
   }
 
   ngAfterViewInit(): void {
