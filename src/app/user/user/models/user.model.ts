@@ -20,6 +20,9 @@ export interface User {
   banDuration?: string;   // e.g. '1_day', '3_days', '7_days', '30_days', 'permanent'
   banExpiresAt?: string;  // ISO date when ban expires (null for permanent)
 
+  // Activity tracking
+  lastLoginAt?: string;
+  lastAvatarUpdatedAt?: string;
 
   // Face recognition
   faceRegistered?: boolean;
