@@ -26,6 +26,10 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
   currentSubscription: UserSubscription | null = null;
   isTogglingAutoRenew = false;
 
+  // Recommendation
+  recommendedPlan: PlanType | null = null;
+  recommendationReason: string | null = null;
+
   // Discount Code (Feature)
   discountCode: string = '';
   discountPercentage: number = 0;
@@ -86,6 +90,24 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadPlans();
     this.loadCurrentSubscription();
+    this.loadRecommendation();
+  }
+
+  private loadRecommendation(): void {
+    const user = this.authService.currentUser;
+    if (!user) return;
+    this.subscriptionService.getRecommendation(user.id).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (rec) => {
+        this.recommendedPlan = rec.recommendedPlan;
+        this.recommendationReason = rec.reason;
+      },
+      error: () => {
+        this.recommendedPlan = null;
+        this.recommendationReason = null;
+      }
+    });
   }
 
   ngOnDestroy(): void {

@@ -140,6 +140,16 @@ export class SubscriptionService {
     );
   }
 
+  // ── Recommendation ──
+
+  getRecommendation(userId: number): Observable<{ recommendedPlan: PlanType; reason: string; state: string }> {
+    return this.http.get<{ recommendedPlan: PlanType; reason: string; state: string }>(
+      `${this.apiUrl}/user/${userId}/recommendation`
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   // ── Discount Codes ──
 
   validateDiscountCode(code: string): Observable<{ code: string; discountPercentage: number }> {
