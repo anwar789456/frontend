@@ -11,7 +11,7 @@ export class EventRegistrationService {
 
     constructor(private http: HttpClient) { }
 
-    /** Register for an event */
+    /** Register for an eventt */
     register(eventId: number, registration: Partial<EventRegistration>): Observable<EventRegistration> {
         return this.http.post<EventRegistration>(`${this.apiUrl}/create/${eventId}`, registration);
     }

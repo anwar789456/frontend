@@ -62,3 +62,9 @@ export interface SuggestedEvent {
   category?: string;
   targetLevel?: TargetLevel;
 }
+
+export interface RecommendedEvent {
+  event: Event;
+  score: number;    // 0-100 confidence score from AI
+  reason: string;   // AI-generated natural language explanation
+}
