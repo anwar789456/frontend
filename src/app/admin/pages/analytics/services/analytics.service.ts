@@ -24,15 +24,6 @@ export interface AnalyticsDashboard {
   growthRatePercent: number;
 }
 
-export interface HealthScore {
-  healthScore: number | null;
-  grade: string;
-  status: string;
-  color: string;
-  alerts: string[];
-  breakdown: { [key: string]: number };
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -43,9 +34,5 @@ export class AnalyticsService {
 
   getDashboard(): Observable<AnalyticsDashboard> {
     return this.http.get<AnalyticsDashboard>(`${this.apiUrl}/dashboard`);
-  }
-
-  getHealthScore(): Observable<HealthScore> {
-    return this.http.get<HealthScore>(`${this.apiUrl}/health-score`);
   }
 }
