@@ -73,6 +73,10 @@ export const routes: Routes = [
         loadChildren: () => import('./user/quiz/quiz.routes').then(m => m.QUIZ_ROUTES)
       },
       {
+        path: 'writing',
+        loadChildren: () => import('./user/writing/writing.routes').then(m => m.WRITING_ROUTES)
+      },
+      {
         path: 'forums',
         loadChildren: () => import('./user/forum/forum.routes').then(m => m.FORUM_ROUTES)
       },

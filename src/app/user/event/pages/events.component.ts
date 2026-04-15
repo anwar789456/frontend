@@ -1,24 +1,38 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MOCK_USER } from '../../../shared/constants/mock-data';
-import { Event, ScheduleItem, SuggestedEvent } from '../models/event.model';
+import { Event, ScheduleItem, SuggestedEvent, RecommendedEvent } from '../models/event.model';
 import { EventRegistration } from '../models/event-registration.model';
 import { EventService } from '../services/event.service';
 import { EventRegistrationService } from '../services/event-registration.service';
+import { EventRecommendationService } from '../services/event-recommendation.service';
+import { AuthService } from '../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-events',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './events.component.html'
+  templateUrl: './events.component.html',
+  styleUrl: './events.component.css'
 })
 export class EventsComponent implements OnInit {
   events: Event[] = [];
-  user = MOCK_USER;
+
+  get user() { return this.authService.currentUser; }
+  get userId(): number { return this.authService.currentUser?.id ?? 0; }
+
+  // Typed helpers for template (avoids index-signature TS errors)
+  get userName(): string { return this.authService.currentUser?.name ?? 'User'; }
+  get userEmail(): string { return this.authService.currentUser?.email ?? ''; }
+  get userStreak(): number { return (this.authService.currentUser?.['streak'] as number) ?? 0; }
+  get userXp(): number { return (this.authService.currentUser?.['xp'] as number) ?? 0; }
 
   isLoading = true;
   error: string | null = null;
+
+  // AI Recommendations
+  recommendedEvents: RecommendedEvent[] = [];
+  recommendationsLoading = false;
 
   tabs = ['Explore', 'Going', 'Past'];
   activeTab = 'Explore';
@@ -33,14 +47,14 @@ export class EventsComponent implements OnInit {
     { value: 'attendees', label: '👥 Most Attendees', icon: '↓' }
   ];
 
-  // Pagination
+  // Paginationn
   currentPage: { [tab: string]: number } = { Explore: 1, Going: 1, Past: 1 };
   pageSize = 5;
 
   // Registration state
   userRegistrations: EventRegistration[] = [];
   registrationLoading: Set<number> = new Set(); // eventIds currently being processed
-  readonly MOCK_USER_ID = 2; // hardcoded until auth is implemented
+  get MOCK_USER_ID(): number { return this.userId; }
 
   // Phone number for SMS reminders
   showPhoneModal = false;
@@ -51,15 +65,41 @@ export class EventsComponent implements OnInit {
   hoverRating: { [eventId: number]: number } = {};
   ratingLoading: Set<number> = new Set();
 
+  // Calendar modal
+  showCalendar = false;
+  calendarDate = new Date();
+  calendarDays: { date: Date; events: Event[]; isCurrentMonth: boolean; isToday: boolean }[] = [];
+  selectedDayEvents: Event[] = [];
+  selectedDay: Date | null = null;
+
   constructor(
     private eventService: EventService,
     private registrationService: EventRegistrationService,
+    private recommendationService: EventRecommendationService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.loadEvents();
     this.loadUserRegistrations();
+    this.loadRecommendations();
+  }
+
+  loadRecommendations(): void {
+    this.recommendationsLoading = true;
+    this.recommendationService.getRecommendations(this.MOCK_USER_ID).subscribe({
+      next: (recs: RecommendedEvent[]) => {
+        this.recommendedEvents = recs;
+        this.recommendationsLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err: unknown) => {
+        console.warn('AI recommendations unavailable, using fallback:', err);
+        this.recommendationsLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   loadEvents(): void {
@@ -114,8 +154,8 @@ export class EventsComponent implements OnInit {
 
     const registration: Partial<EventRegistration> = {
       userId: this.MOCK_USER_ID,
-      userName: this.user.name || 'User',
-      userEmail: 'mahmoud.salhi@esprit.tn',
+      userName: this.userName,
+      userEmail: this.userEmail,
       phoneNumber: this.phoneNumber.trim() || undefined
     };
 
@@ -465,5 +505,117 @@ export class EventsComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  // ─── Calendar Modal ─────────────────────────────────────────────
+
+  openCalendar(): void {
+    this.calendarDate = new Date();
+    this.selectedDay = null;
+    this.selectedDayEvents = [];
+    this.buildCalendarDays();
+    this.showCalendar = true;
+    this.cdr.markForCheck();
+  }
+
+  closeCalendar(): void {
+    this.showCalendar = false;
+    this.cdr.markForCheck();
+  }
+
+  calendarPrevMonth(): void {
+    this.calendarDate = new Date(this.calendarDate.getFullYear(), this.calendarDate.getMonth() - 1, 1);
+    this.selectedDay = null;
+    this.selectedDayEvents = [];
+    this.buildCalendarDays();
+  }
+
+  calendarNextMonth(): void {
+    this.calendarDate = new Date(this.calendarDate.getFullYear(), this.calendarDate.getMonth() + 1, 1);
+    this.selectedDay = null;
+    this.selectedDayEvents = [];
+    this.buildCalendarDays();
+  }
+
+  get calendarMonthLabel(): string {
+    return this.calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  selectDay(day: { date: Date; events: Event[] }): void {
+    this.selectedDay = day.date;
+    this.selectedDayEvents = day.events;
+    this.cdr.markForCheck();
+  }
+
+  private buildCalendarDays(): void {
+    const year = this.calendarDate.getFullYear();
+    const month = this.calendarDate.getMonth();
+    const today = new Date();
+
+    // Get registered event IDs
+    const registeredIds = new Set(this.userRegistrations.map(r => this.getEventIdFromRegistration(r)));
+
+    // Build a map: "YYYY-MM-DD" → Event[]
+    const eventsByDate = new Map<string, Event[]>();
+    for (const event of this.events) {
+      if (!registeredIds.has(event.id)) continue;  // Only show events user is going to
+      const startDate = event.startDate ? new Date(event.startDate) : null;
+      if (!startDate) continue;
+      const key = `${startDate.getFullYear()}-${startDate.getMonth()}-${startDate.getDate()}`;
+      if (!eventsByDate.has(key)) eventsByDate.set(key, []);
+      eventsByDate.get(key)!.push(event);
+    }
+
+    // First day of month and padding
+    const firstDay = new Date(year, month, 1);
+    const startPad = firstDay.getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const days: typeof this.calendarDays = [];
+
+    // Previous month padding
+    for (let i = startPad - 1; i >= 0; i--) {
+      const d = new Date(year, month - 1, daysInPrevMonth - i);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      days.push({
+        date: d,
+        events: eventsByDate.get(key) || [],
+        isCurrentMonth: false,
+        isToday: false
+      });
+    }
+
+    // Current month
+    for (let i = 1; i <= daysInMonth; i++) {
+      const d = new Date(year, month, i);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      days.push({
+        date: d,
+        events: eventsByDate.get(key) || [],
+        isCurrentMonth: true,
+        isToday: d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
+      });
+    }
+
+    // Next month padding (fill to 42 = 6 rows)
+    const remaining = 42 - days.length;
+    for (let i = 1; i <= remaining; i++) {
+      const d = new Date(year, month + 1, i);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      days.push({
+        date: d,
+        events: eventsByDate.get(key) || [],
+        isCurrentMonth: false,
+        isToday: false
+      });
+    }
+
+    this.calendarDays = days;
+    this.cdr.markForCheck();
+  }
+
+  isSameDay(a: Date, b: Date): boolean {
+    return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
   }
 }

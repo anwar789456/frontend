@@ -147,14 +147,26 @@
   <div class="grid grid-cols-3 gap-6 mb-8">
     @for (plan of plans; track plan.id) {
       <div class="relative bg-white border rounded-2xl p-6 flex flex-col"
-        [class.border-[#38a9f3]]="plan.name === 'STANDARD'"
-        [class.border-2]="plan.name === 'STANDARD'"
-        [class.border-dashed]="plan.name === 'STANDARD'"
-        [class.border-gray-200]="plan.name !== 'STANDARD'"
+        [class.border-[#38a9f3]]="plan.name === 'STANDARD' && plan.name !== recommendedPlan"
+        [class.border-2]="plan.name === 'STANDARD' || plan.name === recommendedPlan"
+        [class.border-dashed]="plan.name === 'STANDARD' && plan.name !== recommendedPlan"
+        [class.border-[#a855f7]]="plan.name === recommendedPlan"
+        [class.shadow-lg]="plan.name === recommendedPlan"
+        [class.border-gray-200]="plan.name !== 'STANDARD' && plan.name !== recommendedPlan"
       >
-        @if (plan.name === 'STANDARD') {
+        @if (plan.name === recommendedPlan) {
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#a855f7] to-[#ec4899] text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+            ✦ Recommended for you
+          </div>
+        } @else if (plan.name === 'STANDARD') {
           <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#38a9f3] text-white text-xs font-bold px-3 py-1 rounded-full">
             Most Popular
+          </div>
+        }
+
+        @if (plan.name === recommendedPlan && recommendationReason) {
+          <div class="mb-3 -mt-1 text-xs text-[#7c3aed] bg-[#f5f3ff] border border-[#ddd6fe] rounded-lg px-3 py-2 text-center font-medium">
+            {{ recommendationReason }}
           </div>
         }
 

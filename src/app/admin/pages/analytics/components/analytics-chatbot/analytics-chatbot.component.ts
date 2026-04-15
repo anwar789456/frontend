@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { timeout } from 'rxjs/operators';
 import { AnalyticsChatbotService, Message, ChatResponse } from '../../services/analytics-chatbot.service';
 import { AnalyticsDashboard } from '../../services/analytics.service';
 import { AuthService } from '../../../../../shared/services/auth.service';
@@ -84,39 +84,35 @@ export class AnalyticsChatbotComponent implements OnInit {
     // Get user ID
     const userId = this.authService.currentUser?.id || null;
 
-    // Get AI response
-    this.chatService.chat(message, this.analytics, userId).subscribe({
+    // Get AI response (120s timeout — Ollama can be slow on first load)
+    this.chatService.chat(message, this.analytics, userId).pipe(
+      timeout(120000)
+    ).subscribe({
       next: (response: ChatResponse) => {
         this.isTyping = false;
         const aiMessage: Message = {
           id: this.generateMessageId(),
           type: 'ai',
-          text: response.message,
+          text: response.message || '(No response received)',
           timestamp: new Date()
         };
         this.messages.push(aiMessage);
-        this.scrollToBottom();
         this.cdr.detectChanges();
+        this.scrollToBottom();
       },
       error: (error) => {
         this.isTyping = false;
-        console.error('Full error details:', error);
-        console.error('Error status:', error.status);
-        console.error('Error message:', error.message);
-        console.error('Error response:', error.error);
-        
+        console.error('Chat error:', error);
+
         let errorText = 'Sorry, I encountered an error. Please try again.';
-        
-        if (error.status === 401) {
-          errorText = 'Authentication error. Please check API key configuration.';
-        } else if (error.status === 403) {
-          errorText = 'Access denied. Please contact support.';
-        } else if (error.status === 500) {
-          errorText = 'Server error. The team has been notified.';
+        if (error.name === 'TimeoutError') {
+          errorText = 'The AI is taking too long to respond. Please try again.';
         } else if (error.status === 0) {
           errorText = 'Network error. Please check your connection.';
+        } else if (error.status === 500) {
+          errorText = 'Server error. Please try again.';
         }
-        
+
         const errorMessage: Message = {
           id: this.generateMessageId(),
           type: 'system',
@@ -124,6 +120,7 @@ export class AnalyticsChatbotComponent implements OnInit {
           timestamp: new Date()
         };
         this.messages.push(errorMessage);
+        this.cdr.detectChanges();
         this.scrollToBottom();
       }
     });

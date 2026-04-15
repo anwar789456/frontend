@@ -45,7 +45,7 @@
     @for (message of messages; track message.id) {
       <div class="message-wrapper" [ngClass]="message.type">
         <div class="message-bubble">
-          <p class="message-text" [innerHTML]="message.text.replace(/\n/g, '<br>')"></p>
+          <p class="message-text" [innerHTML]="(message.text || '').replace(/\n/g, '<br>')"></p>
           <span class="message-time">{{ formatTime(message.timestamp) }}</span>
         </div>
       </div>
