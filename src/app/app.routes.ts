@@ -29,6 +29,16 @@ export const routes: Routes = [
     loadComponent: () => import('./user/user/pages/register/verify-code.component').then(m => m.VerifyCodeComponent)
   },
   {
+    path: 'face-setup',
+    canActivate: [authGuard],
+    loadComponent: () => import('./user/user/pages/face-setup/face-setup.component').then(m => m.FaceSetupComponent)
+  },
+  {
+    path: 'google-setup',
+    canActivate: [authGuard],
+    loadComponent: () => import('./user/user/pages/google-setup/google-setup.component').then(m => m.GoogleSetupComponent)
+  },
+  {
     path: 'forgot-password',
     loadComponent: () =>
       import('./user/user/pages/forgetpassword/forgot-password.component')

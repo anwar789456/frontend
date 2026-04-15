@@ -16,6 +16,10 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent)
       },
       {
+        path: 'user-logs',
+        loadComponent: () => import('./pages/user-logs/user-logs.component').then(m => m.UserLogsComponent)
+      },
+      {
         path: 'events',
         loadComponent: () => import('./pages/events/events.component').then(m => m.AdminEventsComponent)
       },
