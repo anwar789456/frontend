@@ -79,6 +79,11 @@ export class ForumComponent implements OnInit, OnDestroy {
   editingPostId: number | null = null;
   editContent = '';
 
+  // Edit Reply
+  editingReplyId: number | null = null;
+  editReplyContent = '';
+  editReplyError = '';
+
   // Menu
   openMenuPostId: number | null = null;
 
@@ -122,6 +127,9 @@ export class ForumComponent implements OnInit, OnDestroy {
   userReactions: Map<number, string> = new Map();
   postReactionCounts: Map<number, Map<string, number>> = new Map();
   floatingReaction: { postId: number; emoji: string } | null = null;
+
+  // Interaction debounce for polling
+  private lastInteractionTime = 0;
 
   // GIF Picker
   showGifPicker = false;
@@ -337,14 +345,26 @@ export class ForumComponent implements OnInit, OnDestroy {
   }
 
   private pollNewPosts(): void {
+    // Skip poll if user interacted recently (avoid overwriting optimistic updates)
+    if (Date.now() - this.lastInteractionTime < 5000) return;
+
     this.forumService.getAllPosts().subscribe({
       next: (all) => {
-        // Always sync — catches new posts, edits, reactions, replies, deletions
+        // Skip if user interacted while request was in-flight
+        if (Date.now() - this.lastInteractionTime < 5000) return;
+
         this.allPosts = all;
         this.posts = all.filter(p => !p.parentPostId);
         this.countCommentsFromAll();
         this.resolveSharedPosts();
         this.applyFilter();
+
+        // Auto-refresh expanded replies
+        if (this.expandedRepliesPostId) {
+          const replies = this.allPosts.filter(p => p.parentPostId === this.expandedRepliesPostId);
+          this.repliesMap.set(this.expandedRepliesPostId, replies);
+        }
+
         this.cdRef.detectChanges();
       }
     });
@@ -765,6 +785,9 @@ export class ForumComponent implements OnInit, OnDestroy {
   // ── Repost ──
 
   repostPost(post: ForumPost): void {
+    this.lastInteractionTime = Date.now();
+    post.reposts = (post.reposts || 0) + 1;
+    this.cdRef.detectChanges();
     this.forumService.repostPost(post.id).subscribe({
       next: (updated) => {
         const idx = this.posts.findIndex(p => p.id === post.id);
@@ -808,6 +831,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   submitReply(parentPostId: number): void {
     this.replyError = this.validateReplyContent(this.replyContent);
     if (this.replyError || !this.user) return;
+    this.lastInteractionTime = Date.now();
 
     const reply: any = {
       content: this.replyContent.trim(),
@@ -841,6 +865,85 @@ export class ForumComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Edit / Delete Reply ──
+
+  isOwnReply(reply: ForumPost): boolean {
+    return !!this.user && reply.userId === this.user.id;
+  }
+
+  startEditReply(reply: ForumPost): void {
+    this.editingReplyId = reply.id;
+    this.editReplyContent = reply.content;
+    this.editReplyError = '';
+  }
+
+  cancelEditReply(): void {
+    this.editingReplyId = null;
+    this.editReplyContent = '';
+    this.editReplyError = '';
+  }
+
+  submitEditReply(reply: ForumPost): void {
+    this.editReplyError = this.validateReplyContent(this.editReplyContent);
+    if (this.editReplyError) return;
+
+    const updated: any = {
+      content: this.editReplyContent.trim(),
+      isEdited: true,
+      image: reply.image,
+      author: reply.author,
+      username: reply.username,
+      avatar: reply.avatar
+    };
+    this.forumService.updatePost(reply.id, updated).subscribe({
+      next: () => {
+        this.editingReplyId = null;
+        this.editReplyContent = '';
+        this.editReplyError = '';
+        this.loadPosts();
+        // Refresh replies for the parent post
+        setTimeout(() => {
+          if (this.expandedRepliesPostId) {
+            const replies = this.allPosts.filter(p => p.parentPostId === this.expandedRepliesPostId);
+            this.repliesMap.set(this.expandedRepliesPostId, replies);
+            this.cdRef.detectChanges();
+          }
+        }, 500);
+        this.addNotification('Reply updated!', 'success');
+      },
+      error: (err) => {
+        this.editReplyError = `Failed to update reply (${err?.status || 'network error'}).`;
+      }
+    });
+  }
+
+  deleteReply(reply: ForumPost, parentPostId: number): void {
+    this.lastInteractionTime = Date.now();
+    // Optimistic: remove reply from local map immediately
+    const replies = this.repliesMap.get(parentPostId);
+    if (replies) {
+      this.repliesMap.set(parentPostId, replies.filter(r => r.id !== reply.id));
+    }
+    // Optimistic: decrement comment count
+    const parentPost = this.posts.find(p => p.id === parentPostId);
+    if (parentPost) parentPost.comments = Math.max(0, parentPost.comments - 1);
+    this.cdRef.detectChanges();
+    this.forumService.deletePost(reply.id).subscribe({
+      next: () => {
+        this.loadPosts();
+        setTimeout(() => {
+          const replies = this.allPosts.filter(p => p.parentPostId === parentPostId);
+          this.repliesMap.set(parentPostId, replies);
+          this.cdRef.detectChanges();
+        }, 500);
+        this.addNotification('Reply deleted', 'info');
+      },
+      error: () => {
+        this.addNotification('Failed to delete reply', 'warning');
+      }
+    });
+  }
+
   // ── Edit Post ──
 
   startEdit(post: ForumPost): void {
@@ -859,6 +962,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   submitEdit(post: ForumPost): void {
     this.editError = this.validatePostContent(this.editContent);
     if (this.editError) return;
+    this.lastInteractionTime = Date.now();
 
     const hashtags = this.extractHashtags(this.editContent);
     let topicId = post.topicId;
@@ -895,6 +999,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   // ── Delete Post ──
 
   deletePost(post: ForumPost): void {
+    this.lastInteractionTime = Date.now();
     this.openMenuPostId = null;
     this.posts = this.posts.filter(p => p.id !== post.id);
     this.applyFilter();
@@ -1067,14 +1172,43 @@ export class ForumComponent implements OnInit, OnDestroy {
   reactToPost(post: ForumPost, emoji: string, event: Event): void {
     event.stopPropagation();
     const currentReaction = this.userReactions.get(post.id);
+    const oldLikes = post.likes;
+
+    // Pause polling briefly so it doesn't overwrite optimistic update
+    this.lastInteractionTime = Date.now();
+
+    const updatePostInList = (updated: ForumPost) => {
+      const idx = this.posts.findIndex(p => p.id === post.id);
+      if (idx !== -1) { updated.comments = this.posts[idx].comments; this.posts[idx] = updated; }
+      this.applyFilter();
+      this.cdRef.detectChanges();
+    };
+
+    const revertOnError = () => {
+      post.likes = oldLikes;
+      this.applyFilter();
+      this.cdRef.detectChanges();
+    };
+
     if (currentReaction === emoji) {
+      // Removing reaction → unlike on backend
       this.userReactions.delete(post.id);
       const counts = this.postReactionCounts.get(post.id);
       if (counts) {
         const c = (counts.get(emoji) || 1) - 1;
         if (c <= 0) counts.delete(emoji); else counts.set(emoji, c);
       }
+      // Optimistic: decrement immediately
+      post.likes = Math.max(0, post.likes - 1);
+      this.applyFilter();
+      this.cdRef.detectChanges();
+      this.forumService.unlikePost(post.id).subscribe({
+        next: updatePostInList,
+        error: revertOnError
+      });
     } else {
+      // Switching or adding reaction
+      const hadReaction = !!currentReaction;
       if (currentReaction) {
         const counts = this.postReactionCounts.get(post.id);
         if (counts) {
@@ -1090,16 +1224,18 @@ export class ForumComponent implements OnInit, OnDestroy {
       counts.set(emoji, (counts.get(emoji) || 0) + 1);
       this.floatingReaction = { postId: post.id, emoji };
       setTimeout(() => this.floatingReaction = null, 600);
-      if (!currentReaction) {
+      if (!hadReaction) {
+        // Optimistic: increment immediately
+        post.likes = post.likes + 1;
+        this.applyFilter();
+        this.cdRef.detectChanges();
         this.awardXP(ForumService.XP_REWARDS.reaction, 'reaction');
         this.forumService.likePost(post.id).subscribe({
-          next: (updated) => {
-            const idx = this.posts.findIndex(p => p.id === post.id);
-            if (idx !== -1) { updated.comments = this.posts[idx].comments; this.posts[idx] = updated; }
-            this.applyFilter();
-          }
+          next: updatePostInList,
+          error: revertOnError
         });
       }
+      // If switching reactions, no backend call — like count stays the same
     }
     this.showReactionsPostId = null;
     this.saveReactionsToStorage();

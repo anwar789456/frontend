@@ -1181,18 +1181,31 @@ export class FriendsComponent implements OnInit, OnDestroy {
 
     this.speechRecognition = new SpeechRecognition();
     this.speechRecognition.lang = 'en-US';
-    this.speechRecognition.interimResults = false;
+    this.speechRecognition.interimResults = true;
     this.speechRecognition.maxAlternatives = 1;
-    this.speechRecognition.continuous = false;
+    this.speechRecognition.continuous = true;
 
     this.speechRecognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      this.messageText = transcript;
-      this.isSpeechListening = false;
+      let finalTranscript = '';
+      let interimTranscript = '';
+
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interimTranscript += result[0].transcript;
+        }
+      }
+
+      // Show real-time text (final + interim combined)
+      this.messageText = finalTranscript + interimTranscript;
       this.cdr.detectChanges();
 
-      // Send to AI for correction
-      this.checkAiCorrection(transcript);
+      // Only trigger AI correction when we have finalized text and no more interim
+      if (finalTranscript && !interimTranscript) {
+        this.checkAiCorrection(finalTranscript);
+      }
     };
 
     this.speechRecognition.onerror = (event: any) => {
@@ -1209,7 +1222,11 @@ export class FriendsComponent implements OnInit, OnDestroy {
     };
 
     this.speechRecognition.onend = () => {
-      this.isSpeechListening = false;
+      // In continuous mode, browser may stop unexpectedly — restart if still listening
+      if (this.isSpeechListening) {
+        try { this.speechRecognition.start(); } catch (_) {}
+        return;
+      }
       this.cdr.detectChanges();
     };
   }

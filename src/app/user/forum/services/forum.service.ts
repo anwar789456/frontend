@@ -61,6 +61,10 @@ export class ForumService {
     return this.http.put<ForumPost>(`${this.apiUrl}/like-forum/${id}`, {});
   }
 
+  unlikePost(id: number): Observable<ForumPost> {
+    return this.http.put<ForumPost>(`${this.apiUrl}/unlike-forum/${id}`, {});
+  }
+
   repostPost(id: number): Observable<ForumPost> {
     return this.http.put<ForumPost>(`${this.apiUrl}/repost-forum/${id}`, {});
   }

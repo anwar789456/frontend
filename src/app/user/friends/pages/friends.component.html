@@ -586,19 +586,7 @@
 
       <!-- Message Input - Duolingo chunky -->
       <div class="px-5 py-4 bg-white border-t-[3px] border-[#E5E5E5] shrink-0">
-        @if (isSpeechListening) {
-          <!-- Speech Listening State -->
-          <div class="flex items-center gap-3">
-            <button (click)="toggleSpeechToText()" class="p-2.5 rounded-2xl text-[#FF4B4B] hover:bg-[#FFF0F0] transition-all border-[3px] border-[#E5E5E5] hover:border-[#FF4B4B]" title="Stop listening">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-            <div class="speech-pulse flex-1 flex items-center gap-3 px-5 py-3 bg-[#F3EEFF] border-[3px] border-[#7C3AED] rounded-2xl">
-              <div class="w-3 h-3 bg-[#7C3AED] rounded-full animate-pulse"></div>
-              <span class="text-[15px] font-black text-[#7C3AED]">🗣️ Listening... Speak now!</span>
-            </div>
-          </div>
-        } @else {
-          <!-- Normal Input State -->
+        <!-- Input State -->
           <div class="flex items-center gap-2.5">
             <!-- Action Buttons -->
             <div class="flex items-center gap-1">
@@ -608,12 +596,18 @@
               </button>
               <button (click)="toggleEmojiPicker($event)" class="emoji-picker-zone w-10 h-10 rounded-2xl flex items-center justify-center text-xl transition-all border-[2px]" [class.bg-[#F3EEFF]]="showEmojiPicker" [class.border-[#7C3AED]]="showEmojiPicker" [class.border-transparent]="!showEmojiPicker" title="Emoji">😊</button>
               @if (speechSupported) {
-                <button (click)="toggleSpeechToText()" class="w-10 h-10 rounded-2xl flex items-center justify-center text-[13px] font-black transition-all border-[2px] border-transparent hover:border-[#7C3AED]/30 hover:bg-[#F3EEFF]" [class.bg-[#F3EEFF]]="isSpeechListening" [class.border-[#7C3AED]]="isSpeechListening" title="AI Speech-to-Text">🗣️</button>
+                <button (click)="toggleSpeechToText()" class="w-10 h-10 rounded-2xl flex items-center justify-center text-[13px] font-black transition-all border-[2px]" [class.bg-[#F3EEFF]]="isSpeechListening" [class.border-[#7C3AED]]="isSpeechListening" [class.border-transparent]="!isSpeechListening" [class.hover:border-[#7C3AED]/30]="!isSpeechListening" [class.hover:bg-[#F3EEFF]]="!isSpeechListening" title="AI Speech-to-Text">🗣️</button>
               }
             </div>
-            <!-- Input -->
+            <!-- Input + Listening indicator side by side -->
             <div class="flex-1 relative">
-              <input #messageInput type="text" [(ngModel)]="messageText" (keydown)="onKeyDown($event)" placeholder="Type a message..." class="w-full px-5 py-3.5 bg-[#F7F7F7] border-[3px] border-[#E5E5E5] border-b-[5px] rounded-2xl text-[15px] font-bold text-[#3C3C3C] placeholder-[#AFAFAF] outline-none focus:border-[#7C3AED] focus:bg-white transition-all" />
+              <input #messageInput type="text" [(ngModel)]="messageText" (keydown)="onKeyDown($event)" [placeholder]="isSpeechListening ? 'Listening... speak now!' : 'Type a message...'" class="w-full px-5 py-3.5 border-[3px] border-b-[5px] rounded-2xl text-[15px] font-bold text-[#3C3C3C] placeholder-[#AFAFAF] outline-none transition-all" [class.bg-[#F3EEFF]]="isSpeechListening" [class.border-[#7C3AED]]="isSpeechListening" [class.bg-[#F7F7F7]]="!isSpeechListening" [class.border-[#E5E5E5]]="!isSpeechListening" [class.focus:border-[#7C3AED]]="!isSpeechListening" [class.focus:bg-white]="!isSpeechListening" />
+              @if (isSpeechListening) {
+                <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                  <div class="w-2 h-2 bg-[#7C3AED] rounded-full animate-pulse"></div>
+                  <span class="text-[11px] font-black text-[#7C3AED]">🎙️ LIVE</span>
+                </div>
+              }
             </div>
             <!-- Quick Reactions -->
             <div class="flex items-center gap-0.5">
@@ -626,7 +620,6 @@
               <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
             </button>
           </div>
-        }
       </div>
     } @else {
       <!-- No Chat Selected - Duolingo fun style -->
