@@ -146,6 +146,12 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authService.googleLogin(idToken).subscribe({
       next: (user: AuthUser) => {
         this.googleLoading = false;
+        if (user.needsSetup) {
+          this.successMessage = 'Almost done! Let\'s finish setting up your account...';
+          this.cdr.markForCheck();
+          setTimeout(() => this.router.navigate(['/google-setup']), 800);
+          return;
+        }
         this.successMessage = 'Signed in with Google! Redirecting...';
         this.cdr.markForCheck();
         const redirectUrl = this.authService.getRedirectUrlForRole(user.role);

@@ -18,6 +18,8 @@ export interface AuthUser {
   name: string;
   email: string;
   role: 'ADMIN' | 'ETUDIANT' | 'TUTEUR';
+  sessionToken?: string;
+  needsSetup?: boolean;
   [key: string]: any;
 }
 
@@ -86,8 +88,21 @@ export class AuthService {
     );
   }
 
+  completeGoogleSignup(userId: number, payload: { username: string; password: string; parentalEmail?: string }): Observable<AuthUser> {
+    return this.http.post<AuthUser>(`${this.apiUrl}/complete-google-signup/${userId}`, payload).pipe(
+      tap((user: AuthUser) => this.setSession(user)),
+      catchError(this.handleError)
+    );
+  }
+
 
   logout(): void {
+    const user = this.currentUser;
+    if (user) {
+      // Fire-and-forget: clear server-side session token so the DB stays clean.
+      // Errors are intentionally swallowed — logout must succeed locally regardless.
+      this.http.post(`${this.apiUrl}/session/${user.id}/invalidate`, {}).subscribe({ error: () => {} });
+    }
     localStorage.removeItem(this.STORAGE_KEY);
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
