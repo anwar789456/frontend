@@ -56,14 +56,32 @@ export class EventsComponent implements OnInit {
   registrationLoading: Set<number> = new Set(); // eventIds currently being processed
   get MOCK_USER_ID(): number { return this.userId; }
 
-  // Phone number for SMS reminders
-  showPhoneModal = false;
-  phoneNumber = '';
   pendingRegistrationEvent: Event | null = null;
+
+  // Waitlist positions: eventId → position
+  waitlistPositions: Map<number, number> = new Map();
 
   // Star rating
   hoverRating: { [eventId: number]: number } = {};
   ratingLoading: Set<number> = new Set();
+
+  // Success toast
+  toastVisible = false;
+  toastEventTitle = '';
+  toastType: 'pending' | 'registered' | 'waitlisted' | 'cancelled' | 'rejected' = 'pending';
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+  showSuccessToast(title: string, type: 'pending' | 'registered' | 'waitlisted' | 'cancelled' | 'rejected'): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastEventTitle = title;
+    this.toastType = type;
+    this.toastVisible = true;
+    this.cdr.markForCheck();
+    this.toastTimer = setTimeout(() => {
+      this.toastVisible = false;
+      this.cdr.markForCheck();
+    }, 3500);
+  }
 
   // Calendar modal
   showCalendar = false;
@@ -124,6 +142,7 @@ export class EventsComponent implements OnInit {
     this.registrationService.getByUser(this.MOCK_USER_ID).subscribe({
       next: (registrations: EventRegistration[]) => {
         this.userRegistrations = registrations.filter(r => r.status !== 'CANCELLED');
+        this.loadWaitlistPositions();
         this.cdr.markForCheck();
       },
       error: (err: unknown) => {
@@ -132,23 +151,49 @@ export class EventsComponent implements OnInit {
     });
   }
 
+  loadWaitlistPositions(): void {
+    const waitlisted = this.userRegistrations.filter(r => r.status === 'WAITLISTED' && r.id);
+    waitlisted.forEach(r => {
+      this.registrationService.getWaitlistPosition(r.id!).subscribe({
+        next: (data) => {
+          const eventId = r.event?.id ?? r.eventId;
+          if (eventId) this.waitlistPositions.set(eventId, data.position);
+          this.cdr.markForCheck();
+        },
+        error: () => {}
+      });
+    });
+  }
+
+  getWaitlistPosition(eventId: number): number | null {
+    return this.waitlistPositions.get(eventId) ?? null;
+  }
+
+  getCapacityPercent(event: Event): number {
+    if (!event.maxAttendees) return 0;
+    return Math.min(100, Math.round(((event.currentAttendees || 0) / event.maxAttendees) * 100));
+  }
+
+  getCapacityColor(event: Event): string {
+    const pct = this.getCapacityPercent(event);
+    if (pct >= 90) return '#ef4444';
+    if (pct >= 60) return '#f97316';
+    return '#16a34a';
+  }
+
   // --- Registration Actions ---
 
   registerForEvent(event: Event): void {
     if (this.isRegistered(event.id) || this.isWaitlisted(event.id) || this.registrationLoading.has(event.id)) return;
 
-    // Show phone modal first
     this.pendingRegistrationEvent = event;
-    this.phoneNumber = '';
-    this.showPhoneModal = true;
-    this.cdr.markForCheck();
+    this.confirmRegistration();
   }
 
   confirmRegistration(): void {
     const event = this.pendingRegistrationEvent;
     if (!event) return;
 
-    this.showPhoneModal = false;
     this.registrationLoading.add(event.id);
     this.cdr.markForCheck();
 
@@ -156,24 +201,46 @@ export class EventsComponent implements OnInit {
       userId: this.MOCK_USER_ID,
       userName: this.userName,
       userEmail: this.userEmail,
-      phoneNumber: this.phoneNumber.trim() || undefined
+      phoneNumber: this.authService.currentUser?.['numTel'] || undefined
     };
 
     this.registrationService.register(event.id, registration).subscribe({
       next: (created: EventRegistration) => {
-        // Ensure eventId is set (backend may not populate read-only FK on insert)
         created.eventId = event.id;
-        this.userRegistrations.push(created);
 
-        // Only increment attendee count if actually registered (not waitlisted)
-        if (created.status !== 'WAITLISTED') {
-          const ev = this.events.find(e => e.id === event.id);
-          if (ev) {
-            ev.currentAttendees = (ev.currentAttendees || 0) + 1;
-          }
+        if (created.status === 'WAITLISTED' && created.id) {
+          // Fetch position first, then show badge — avoids the ⏳⏳ flash
+          this.registrationService.getWaitlistPosition(created.id).subscribe({
+            next: (data) => {
+              this.waitlistPositions.set(event.id, data.position);
+              this.userRegistrations.push(created);
+              this.registrationLoading.delete(event.id);
+              this.showSuccessToast(event.title, 'waitlisted');
+              this.cdr.markForCheck();
+            },
+            error: () => {
+              this.userRegistrations.push(created);
+              this.registrationLoading.delete(event.id);
+              this.showSuccessToast(event.title, 'waitlisted');
+              this.cdr.markForCheck();
+            }
+          });
+        } else {
+          this.userRegistrations.push(created);
+          this.registrationLoading.delete(event.id);
+          this.showSuccessToast(event.title, 'pending');
+          this.cdr.markForCheck();
         }
-        this.registrationLoading.delete(event.id);
-        this.cdr.markForCheck();
+
+        // Refresh only this event to get accurate currentAttendees without full reload
+        this.eventService.getById(event.id).subscribe({
+          next: (updated) => {
+            const idx = this.events.findIndex(e => e.id === event.id);
+            if (idx !== -1) this.events[idx] = updated;
+            this.cdr.markForCheck();
+          },
+          error: () => {}
+        });
       },
       error: (err: unknown) => {
         console.error('Failed to register:', err);
@@ -188,6 +255,7 @@ export class EventsComponent implements OnInit {
     if (!registration?.id || this.registrationLoading.has(eventId)) return;
 
     const wasRegistered = registration.status !== 'WAITLISTED';
+    const eventTitle = this.events.find(e => e.id === eventId)?.title ?? '';
 
     this.registrationLoading.add(eventId);
     this.cdr.markForCheck();
@@ -203,6 +271,7 @@ export class EventsComponent implements OnInit {
           }
         }
         this.registrationLoading.delete(eventId);
+        this.showSuccessToast(eventTitle, 'cancelled');
         this.cdr.markForCheck();
       },
       error: (err: unknown) => {
@@ -217,7 +286,8 @@ export class EventsComponent implements OnInit {
 
   isRegistered(eventId: number): boolean {
     return this.userRegistrations.some(r =>
-      this.getEventIdFromRegistration(r) === eventId && r.status !== 'WAITLISTED' && r.status !== 'CANCELLED'
+      this.getEventIdFromRegistration(r) === eventId &&
+      (r.status === 'REGISTERED' || r.status === 'CONFIRMED' || r.status === 'ATTENDED')
     );
   }
 
@@ -227,8 +297,24 @@ export class EventsComponent implements OnInit {
     );
   }
 
+  isPending(eventId: number): boolean {
+    return this.userRegistrations.some(r =>
+      this.getEventIdFromRegistration(r) === eventId && r.status === 'PENDING'
+    );
+  }
+
+  isRejected(eventId: number): boolean {
+    return this.userRegistrations.some(r =>
+      this.getEventIdFromRegistration(r) === eventId && r.status === 'REJECTED'
+    );
+  }
+
   getRegistration(eventId: number): EventRegistration | undefined {
     return this.userRegistrations.find(r => this.getEventIdFromRegistration(r) === eventId);
+  }
+
+  isEventCancelled(event: Event): boolean {
+    return event.status === 'CANCELLED';
   }
 
   isEventFull(event: Event): boolean {
@@ -243,7 +329,7 @@ export class EventsComponent implements OnInit {
   // --- Search & Sort ---
 
   get filteredEvents(): Event[] {
-    let result = this.events;
+    let result = this.events.filter(e => e.isPublic !== false);
     const q = this.searchQuery.trim().toLowerCase();
     if (q) {
       result = result.filter(e =>
@@ -281,14 +367,33 @@ export class EventsComponent implements OnInit {
 
   get goingEvents(): Event[] {
     const now = new Date();
+    const activeStatuses = new Set(['REGISTERED', 'CONFIRMED', 'WAITLISTED']);
     const registeredEventIds = new Set(
-      this.userRegistrations.map(r => this.getEventIdFromRegistration(r))
+      this.userRegistrations
+        .filter(r => activeStatuses.has(r.status ?? ''))
+        .map(r => this.getEventIdFromRegistration(r))
     );
-    return this.filteredEvents
+    return this.events
       .filter(e => {
         const endDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
+        // Show upcoming registered events + cancelled events user was registered for
+        if (e.status === 'CANCELLED') return registeredEventIds.has(e.id);
+        if (e.status === 'DRAFT') return false;
         return registeredEventIds.has(e.id) && endDate >= now;
       });
+  }
+
+  get pendingEvents(): Event[] {
+    const now = new Date();
+    const pendingIds = new Set(
+      this.userRegistrations
+        .filter(r => r.status === 'PENDING')
+        .map(r => this.getEventIdFromRegistration(r))
+    );
+    return this.filteredEvents.filter(e => {
+      const endDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
+      return pendingIds.has(e.id) && endDate >= now;
+    });
   }
 
   get pastEvents(): Event[] {
@@ -355,22 +460,24 @@ export class EventsComponent implements OnInit {
   /** Returns a live event if one is happening now, otherwise a featured or nearest upcoming event */
   get featuredEvent(): Event | undefined {
     const now = new Date();
+    const isVisible = (e: Event) => e.status !== 'DRAFT' && e.status !== 'CANCELLED' && e.isPublic !== false;
 
     // 1. Check for a currently live event (now is between startDate and endDate)
     const liveEvent = this.events.find(e => {
+      if (!isVisible(e)) return false;
       const start = new Date(e.startDate);
-      const end = e.endDate ? new Date(e.endDate) : new Date(start.getTime() + 60 * 60000); // default 1h
+      const end = e.endDate ? new Date(e.endDate) : new Date(start.getTime() + 60 * 60000);
       return now >= start && now <= end;
     });
     if (liveEvent) return liveEvent;
 
-    // 2. Fall back to explicitly featured event
-    const featured = this.events.find(e => e.isFeatured);
+    // 2. Fall back to explicitly featured event (must be upcoming, not past)
+    const featured = this.events.find(e => isVisible(e) && e.isFeatured && new Date(e.startDate) > now);
     if (featured) return featured;
 
     // 3. Fall back to the nearest upcoming event
     return this.events
-      .filter(e => new Date(e.startDate) > now)
+      .filter(e => isVisible(e) && new Date(e.startDate) > now)
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())[0];
   }
 
@@ -387,10 +494,10 @@ export class EventsComponent implements OnInit {
     const now = new Date();
     return this.filteredEvents
       .filter(e => {
+        if (e.status === 'DRAFT' || e.status === 'CANCELLED' || e.status === 'COMPLETED') return false;
         const endDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
-        const isUpcoming = e.status === 'UPCOMING' || (e.status !== 'COMPLETED' && e.status !== 'CANCELLED' && new Date(e.startDate) > now);
         const notPast = endDate >= now;
-        return isUpcoming && notPast && (!featured || e.id !== featured.id);
+        return notPast && (!featured || e.id !== featured.id);
       });
   }
 
@@ -440,6 +547,12 @@ export class EventsComponent implements OnInit {
     } catch {
       return dateStr;
     }
+  }
+
+  formatTime(dateStr: string): string {
+    try {
+      return new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    } catch { return ''; }
   }
 
   getDay(dateStr: string): number {

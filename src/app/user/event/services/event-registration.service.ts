@@ -46,6 +46,21 @@ export class EventRegistrationService {
         return this.http.delete<void>(`${this.apiUrl}/delete/${id}`);
     }
 
+    /** Approve a pending registration (admin) */
+    approve(id: number): Observable<EventRegistration> {
+        return this.http.post<EventRegistration>(`${this.apiUrl}/approve/${id}`, {});
+    }
+
+    /** Reject a pending registration (admin) */
+    reject(id: number): Observable<EventRegistration> {
+        return this.http.post<EventRegistration>(`${this.apiUrl}/reject/${id}`, {});
+    }
+
+    /** Get all pending registrations (admin) */
+    getPending(): Observable<EventRegistration[]> {
+        return this.http.get<EventRegistration[]>(`${this.apiUrl}/pending`);
+    }
+
     /** QR Check-in */
     checkIn(code: string): Observable<EventRegistration> {
         return this.http.post<EventRegistration>(`${this.apiUrl}/check-in/${code}`, {});
@@ -54,5 +69,20 @@ export class EventRegistrationService {
     /** Rate an event (1-5 stars) */
     rateEvent(registrationId: number, rating: number): Observable<EventRegistration> {
         return this.http.post<EventRegistration>(`${this.apiUrl}/rate/${registrationId}`, { rating });
+    }
+
+    /** Get waitlist position for a registration */
+    getWaitlistPosition(registrationId: number): Observable<{ position: number }> {
+        return this.http.get<{ position: number }>(`${this.apiUrl}/waitlist-position/${registrationId}`);
+    }
+
+    /** Send announcement to all registrants */
+    sendAnnouncement(eventId: number, subject: string, message: string): Observable<any> {
+        return this.http.post(`${this.apiUrl}/announce/${eventId}`, { subject, message });
+    }
+
+    /** Get average rating for an event */
+    getAvgRating(eventId: number): Observable<{ avg: number | null; count: number }> {
+        return this.http.get<{ avg: number | null; count: number }>(`${this.apiUrl}/avg-rating/${eventId}`);
     }
 }
