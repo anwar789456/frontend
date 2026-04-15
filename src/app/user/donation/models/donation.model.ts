@@ -1,26 +1,21 @@
 export interface Donation {
   id?: number;
   userId?: number | null;
-  type?: DonationType;
-  itemName?: string;
+  type: DonationType;
+  itemName: string;
   description?: string;
-  quantity?: number;
-  condition?: ItemCondition;
-  anonymous?: boolean;
+  quantity: number;
+  condition: ItemCondition;
+  anonymous: boolean;
   status: DonationStatus;
   donatedAt?: string;
   imageUrl?: string;
-  amount?: number;
-  paymentMethod?: string;
-  message?: string;
 }
 
 export enum DonationStatus {
   PENDING = 'PENDING',
   ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
-  SUCCESS = 'SUCCESS',
-  FAILED = 'FAILED'
+  REJECTED = 'REJECTED'
 }
 
 export enum DonationType {
