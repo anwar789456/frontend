@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InvoiceService } from '../../services/invoice.service';
 import { Invoice } from '../../models/invoice.model';
@@ -17,7 +17,9 @@ export class BillingHistoryComponent implements OnInit {
 
   constructor(
     private invoiceService: InvoiceService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -30,12 +32,18 @@ export class BillingHistoryComponent implements OnInit {
 
     this.invoiceService.getInvoicesForUser(user.id).subscribe({
       next: (data) => {
-        this.invoices = data;
-        this.isLoading = false;
+        this.ngZone.run(() => {
+          this.invoices = data;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load billing history.';
-        this.isLoading = false;
+        this.ngZone.run(() => {
+          this.errorMessage = 'Failed to load billing history.';
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
         console.error('Billing history error:', err);
       }
     });

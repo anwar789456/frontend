@@ -23,6 +23,7 @@ export interface DiscountCode {
 export class DiscountsComponent implements OnInit {
   discounts: DiscountCode[] = [];
   isLoading = false;
+  isListLoading = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
@@ -41,18 +42,18 @@ export class DiscountsComponent implements OnInit {
   }
 
   loadDiscounts() {
-    this.isLoading = true;
+    this.isListLoading = true;
     this.errorMessage = null;
-    
+
     this.http.get<DiscountCode[]>(this.apiUrl + '/discounts')
       .subscribe({
         next: (data) => {
           this.discounts = data;
-          this.isLoading = false;
+          this.isListLoading = false;
         },
         error: (err) => {
           this.errorMessage = 'Failed to load discount codes.';
-          this.isLoading = false;
+          this.isListLoading = false;
           console.error('Error loading discounts:', err);
         }
       });
