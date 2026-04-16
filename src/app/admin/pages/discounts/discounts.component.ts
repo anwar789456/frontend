@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -23,6 +23,7 @@ export interface DiscountCode {
 export class DiscountsComponent implements OnInit {
   discounts: DiscountCode[] = [];
   isLoading = false;
+  isListLoading = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
@@ -34,25 +35,35 @@ export class DiscountsComponent implements OnInit {
 
   private readonly apiUrl = 'https://minolingo.online/api/abonnements';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit() {
     this.loadDiscounts();
   }
 
   loadDiscounts() {
-    this.isLoading = true;
+    this.isListLoading = true;
     this.errorMessage = null;
-    
+
     this.http.get<DiscountCode[]>(this.apiUrl + '/discounts')
       .subscribe({
         next: (data) => {
-          this.discounts = data;
-          this.isLoading = false;
+          this.ngZone.run(() => {
+            this.discounts = data;
+            this.isListLoading = false;
+            this.cdr.detectChanges();
+          });
         },
         error: (err) => {
-          this.errorMessage = 'Failed to load discount codes.';
-          this.isLoading = false;
+          this.ngZone.run(() => {
+            this.errorMessage = 'Failed to load discount codes.';
+            this.isListLoading = false;
+            this.cdr.detectChanges();
+          });
           console.error('Error loading discounts:', err);
         }
       });
@@ -77,14 +88,20 @@ export class DiscountsComponent implements OnInit {
     this.http.post<DiscountCode>(this.apiUrl + '/discounts', payload)
       .subscribe({
         next: (response) => {
-          this.successMessage = `Discount code "${this.newCode.code}" created successfully!`;
-          this.isLoading = false; // Reset loading state immediately
-          this.loadDiscounts();
-          this.resetForm();
+          this.ngZone.run(() => {
+            this.successMessage = `Discount code "${this.newCode.code}" created successfully!`;
+            this.isLoading = false;
+            this.resetForm();
+            this.loadDiscounts();
+            this.cdr.detectChanges();
+          });
         },
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Failed to create discount code. The code might already exist.';
-          this.isLoading = false;
+          this.ngZone.run(() => {
+            this.errorMessage = err.error?.message || 'Failed to create discount code. The code might already exist.';
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          });
           console.error('Error creating discount:', err);
         }
       });
@@ -102,13 +119,19 @@ export class DiscountsComponent implements OnInit {
     this.http.delete(this.apiUrl + `/discounts/${id}`)
       .subscribe({
         next: () => {
-          this.successMessage = `Discount code "${code}" deactivated successfully!`;
-          this.isLoading = false; // Reset loading state immediately
-          this.loadDiscounts();
+          this.ngZone.run(() => {
+            this.successMessage = `Discount code "${code}" deactivated successfully!`;
+            this.isLoading = false;
+            this.loadDiscounts();
+            this.cdr.detectChanges();
+          });
         },
         error: (err) => {
-          this.errorMessage = 'Failed to deactivate discount code.';
-          this.isLoading = false;
+          this.ngZone.run(() => {
+            this.errorMessage = 'Failed to deactivate discount code.';
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          });
           console.error('Error deactivating discount:', err);
         }
       });

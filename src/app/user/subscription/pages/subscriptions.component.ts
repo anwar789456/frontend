@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -84,7 +84,9 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
   constructor(
     private subscriptionService: SubscriptionService,
     private authService: AuthService,
-    private stripeService: StripePaymentService
+    private stripeService: StripePaymentService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) { }
 
   ngOnInit(): void {
@@ -100,12 +102,18 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (rec) => {
-        this.recommendedPlan = rec.recommendedPlan;
-        this.recommendationReason = rec.reason;
+        this.ngZone.run(() => {
+          this.recommendedPlan = rec.recommendedPlan;
+          this.recommendationReason = rec.reason;
+          this.cdr.detectChanges();
+        });
       },
       error: () => {
-        this.recommendedPlan = null;
-        this.recommendationReason = null;
+        this.ngZone.run(() => {
+          this.recommendedPlan = null;
+          this.recommendationReason = null;
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -126,14 +134,23 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
     this.subscriptionService.getAllPlans().pipe(
       takeUntil(this.destroy$),
       finalize(() => {
-        this.isLoadingPlans = false;
+        this.ngZone.run(() => {
+          this.isLoadingPlans = false;
+          this.cdr.detectChanges();
+        });
       })
     ).subscribe({
       next: (plans) => {
-        this.plans = plans;
+        this.ngZone.run(() => {
+          this.plans = plans;
+          this.cdr.detectChanges();
+        });
       },
       error: (err: ServiceError) => {
-        this.subscriptionError = err.message || 'Failed to load subscription plans.';
+        this.ngZone.run(() => {
+          this.subscriptionError = err.message || 'Failed to load subscription plans.';
+          this.cdr.detectChanges();
+        });
         console.error('Failed to load plans:', err);
       }
     });
@@ -148,8 +165,18 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
     this.subscriptionService.getCurrentSubscription(user.id).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
-      next: (sub) => { this.currentSubscription = sub; },
-      error: () => { this.currentSubscription = null; }
+      next: (sub) => {
+        this.ngZone.run(() => {
+          this.currentSubscription = sub;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => {
+        this.ngZone.run(() => {
+          this.currentSubscription = null;
+          this.cdr.detectChanges();
+        });
+      }
     });
   }
 
@@ -162,18 +189,29 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
     const newValue = !this.currentSubscription.autoRenew;
     this.subscriptionService.toggleAutoRenew(this.currentSubscription.id, newValue).pipe(
       takeUntil(this.destroy$),
-      finalize(() => { this.isTogglingAutoRenew = false; })
+      finalize(() => {
+        this.ngZone.run(() => {
+          this.isTogglingAutoRenew = false;
+          this.cdr.detectChanges();
+        });
+      })
     ).subscribe({
       next: (updated: UserSubscription) => {
-        this.currentSubscription = updated;
-        this.subscriptionMessage = newValue
-          ? 'Auto-renew enabled. Your subscription will renew automatically.'
-          : 'Auto-renew disabled.';
-        this.setMessageTimeout();
+        this.ngZone.run(() => {
+          this.currentSubscription = updated;
+          this.subscriptionMessage = newValue
+            ? 'Auto-renew enabled. Your subscription will renew automatically.'
+            : 'Auto-renew disabled.';
+          this.setMessageTimeout();
+          this.cdr.detectChanges();
+        });
       },
       error: (err: ServiceError) => {
-        this.subscriptionError = err.message || 'Failed to update auto-renew setting.';
-        this.setMessageTimeout();
+        this.ngZone.run(() => {
+          this.subscriptionError = err.message || 'Failed to update auto-renew setting.';
+          this.setMessageTimeout();
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -280,11 +318,14 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
     });
 
     // Create Stripe checkout session and redirect
-    const requestPayload = {
+    const requestPayload: { userId: number; planId: number; email: string; discountCode?: string } = {
       userId: userId,
       planId: planId,
       email: user.email
     };
+    if (this.isDiscountApplied && this.discountCode) {
+      requestPayload.discountCode = this.discountCode.trim().toUpperCase();
+    }
     
     console.log('Sending request payload:', JSON.stringify(requestPayload, null, 2));
     
@@ -456,16 +497,22 @@ export class SubscriptionsComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (response: { code: string; discountPercentage: number }) => {
-        this.discountPercentage = response.discountPercentage;
-        this.isDiscountApplied = true;
-        this.discountMessage = `✓ ${this.discountPercentage}% discount applied!`;
-        this.discountCode = this.discountCode.toUpperCase();
-        this.updateFinalPrice();
+        this.ngZone.run(() => {
+          this.discountPercentage = response.discountPercentage;
+          this.isDiscountApplied = true;
+          this.discountMessage = `✓ ${this.discountPercentage}% discount applied!`;
+          this.discountCode = this.discountCode.toUpperCase();
+          this.updateFinalPrice();
+          this.cdr.detectChanges();
+        });
       },
       error: (err: ServiceError) => {
-        this.discountError = err.message || 'Invalid or expired discount code';
-        this.isDiscountApplied = false;
-        this.discountPercentage = 0;
+        this.ngZone.run(() => {
+          this.discountError = err.message || 'Invalid or expired discount code';
+          this.isDiscountApplied = false;
+          this.discountPercentage = 0;
+          this.cdr.detectChanges();
+        });
       }
     });
   }

@@ -78,16 +78,16 @@
   <div class="list-section">
     <h2>Active Discount Codes</h2>
     
-    <div *ngIf="isLoading" class="loading-spinner">
+    <div *ngIf="isListLoading" class="loading-spinner">
       <div class="spinner"></div>
       <p>Loading discount codes...</p>
     </div>
 
-    <div *ngIf="!isLoading && discounts.length === 0" class="empty-state">
+    <div *ngIf="!isListLoading && discounts.length === 0" class="empty-state">
       <p>📭 No discount codes created yet. Create one above!</p>
     </div>
 
-    <div *ngIf="!isLoading && discounts.length > 0" class="codes-table">
+    <div *ngIf="!isListLoading && discounts.length > 0" class="codes-table">
       <table>
         <thead>
           <tr>

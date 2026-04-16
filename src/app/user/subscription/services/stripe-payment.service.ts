@@ -9,6 +9,7 @@ export interface CreateCheckoutSessionRequest {
   userId: number;
   planId: number;
   email: string;
+  discountCode?: string;
 }
 
 export interface CreateCheckoutSessionResponse {
