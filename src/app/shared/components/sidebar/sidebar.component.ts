@@ -25,10 +25,9 @@ export class SidebarComponent {
   }
 
   navItems = [
-    { label: 'Ask Lingo', icon: 'ai-tutor', route: '/ai-tutor' },
+    { label: 'Ask Mino', icon: 'ai-tutor', route: '/ai-tutor' },
     { label: 'Courses', icon: 'courses', route: '/courses' },
     { label: 'Friends', icon: 'friends', route: '/friends' },
-    { label: 'Sessions', icon: 'sessions', route: '/sessions' },
     { label: 'Quiz', icon: 'quiz', route: '/quiz' },
     { label: 'Writing', icon: 'writing', route: '/writing' },
     { label: 'Forums', icon: 'forums', route: '/forums' },

@@ -1,0 +1,275 @@
+<div class="min-h-screen bg-[#f8fafc] p-8">
+  <div class="max-w-2xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-8 anim-fade-up">
+      <a routerLink="/tutor/writing" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-white rounded-xl transition-colors border border-transparent hover:border-gray-200">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      </a>
+      <div class="flex-1">
+        <div class="flex items-center gap-2.5 mb-0.5">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm"
+            style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+            </svg>
+          </div>
+          <h1 class="text-[22px] font-bold text-[#0f1724] font-['SN_Pro']">Generate Writing Prompt with AI</h1>
+        </div>
+        <p class="text-sm text-[#9ca3af] ml-9.5">Describe what you need — the AI writes a full prompt for your students.</p>
+      </div>
+    </div>
+
+    <!-- ───────────────── FORM STEP ───────────────── -->
+    @if (step === 'form') {
+      <form [formGroup]="form" (ngSubmit)="generate()" class="space-y-5 anim-fade-up">
+
+        <!-- Error -->
+        @if (errorMessage) {
+          <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-600 rounded-2xl px-4 py-3.5 text-sm">
+            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+            {{ errorMessage }}
+          </div>
+        }
+
+        <!-- Title -->
+        <div class="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+          <label class="block text-sm font-semibold text-[#374151] mb-1.5">
+            Prompt Title <span class="text-red-400">*</span>
+          </label>
+          <input formControlName="title" type="text"
+            placeholder="e.g. My Dream Vacation, A Day in the Life of a Robot..."
+            class="w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-colors"
+            [class]="form.get('title')?.invalid && form.get('title')?.touched
+              ? 'border-red-300 focus:border-red-400 focus:ring-1 focus:ring-red-200'
+              : 'border-gray-200 focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6]/20'" />
+          @if (form.get('title')?.invalid && form.get('title')?.touched) {
+            <p class="text-xs text-red-500 mt-1.5">Title is required (min. 3 characters).</p>
+          }
+        </div>
+
+        <!-- Writing Type -->
+        <div class="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+          <label class="block text-sm font-semibold text-[#374151] mb-3">Writing Type</label>
+          <div class="grid grid-cols-3 gap-2.5">
+            @for (t of writingTypes; track t.value) {
+              <button type="button" (click)="selectType(t.value)"
+                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-left transition-all"
+                [class]="form.get('type')?.value === t.value
+                  ? 'border-[#8b5cf6] bg-[#f5f3ff]'
+                  : 'border-gray-200 bg-gray-50 hover:border-gray-300'">
+                <span class="text-lg">{{ t.icon }}</span>
+                <span class="text-sm font-semibold"
+                  [class]="form.get('type')?.value === t.value ? 'text-[#7c3aed]' : 'text-[#374151]'">
+                  {{ t.label }}
+                </span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Topic Hints -->
+        <div class="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+          <label class="block text-sm font-semibold text-[#374151] mb-0.5">
+            Topic Hints
+            <span class="ml-2 text-xs font-normal text-[#9ca3af]">optional</span>
+          </label>
+          <p class="text-xs text-[#9ca3af] mb-2">Guide the AI — mention themes, context, or specific requirements.</p>
+          <textarea formControlName="hints" rows="2"
+            placeholder="e.g. Set in outer space. Students must include at least 3 descriptive adjectives. Target audience: 10-year-olds."
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6]/20 resize-none transition-colors"></textarea>
+        </div>
+
+        <!-- Difficulty -->
+        <div class="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+          <label class="block text-sm font-semibold text-[#374151] mb-3">Difficulty Level</label>
+          <div class="grid grid-cols-3 gap-3">
+            @for (lvl of levels; track lvl.value) {
+              <button type="button" (click)="selectLevel(lvl.value)"
+                class="relative flex flex-col items-center gap-1.5 py-4 px-3 rounded-xl border-2 transition-all"
+                [class]="form.get('difficulty')?.value === lvl.value
+                  ? (lvl.color === 'emerald' ? 'border-emerald-400 bg-emerald-50' : lvl.color === 'amber' ? 'border-amber-400 bg-amber-50' : 'border-red-400 bg-red-50')
+                  : 'border-gray-200 bg-gray-50 hover:border-gray-300'">
+                <span class="text-2xl">{{ lvl.emoji }}</span>
+                <span class="text-sm font-bold text-[#374151]">{{ lvl.label }}</span>
+                <span class="text-[11px] text-center leading-tight"
+                  [class]="form.get('difficulty')?.value === lvl.value ? 'text-[#6b7280]' : 'text-[#9ca3af]'">
+                  {{ lvl.desc }}
+                </span>
+                @if (form.get('difficulty')?.value === lvl.value) {
+                  <div class="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center"
+                    [class]="lvl.color === 'emerald' ? 'bg-emerald-400' : lvl.color === 'amber' ? 'bg-amber-400' : 'bg-red-400'">
+                    <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                  </div>
+                }
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- XP Reward -->
+        <div class="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+          <label class="block text-sm font-semibold text-[#374151] mb-1.5">XP Reward</label>
+          <p class="text-xs text-[#9ca3af] mb-3">Points students earn on completion.</p>
+          <div class="flex items-center gap-3">
+            <div class="relative flex-1">
+              <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <input formControlName="xpReward" type="number" min="0" max="1000" placeholder="50"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6]/20 transition-colors" />
+            </div>
+            <div class="flex gap-1.5">
+              @for (preset of [25, 50, 100]; track preset) {
+                <button type="button" (click)="form.patchValue({ xpReward: preset })"
+                  class="px-3.5 py-2.5 text-xs font-semibold rounded-xl border transition-all"
+                  [class]="form.get('xpReward')?.value === preset
+                    ? 'border-amber-300 bg-amber-50 text-amber-600'
+                    : 'border-gray-200 text-[#9ca3af] hover:border-gray-300'">
+                  {{ preset }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button type="submit" [disabled]="form.invalid"
+          class="w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-white font-bold text-base transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);"
+          [style.box-shadow]="form.valid ? '0 8px 24px -4px rgba(139,92,246,0.45)' : 'none'">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+          </svg>
+          Generate Writing Prompt with AI
+        </button>
+
+      </form>
+    }
+
+    <!-- ───────────────── GENERATING STEP ───────────────── -->
+    @if (step === 'generating') {
+      <div class="anim-fade-up">
+        <div class="bg-white rounded-3xl border border-[#e5e7eb] p-10 text-center shadow-sm">
+
+          <div class="relative w-20 h-20 mx-auto mb-6">
+            <div class="absolute inset-0 rounded-full opacity-20 anim-pulse" style="background: radial-gradient(circle, #8b5cf6, transparent);"></div>
+            <div class="absolute inset-2 rounded-full opacity-15 anim-pulse" style="background: radial-gradient(circle, #6d28d9, transparent); animation-delay:.3s"></div>
+            <div class="w-20 h-20 rounded-full flex items-center justify-center border-4 border-purple-100 bg-gradient-to-br from-purple-50 to-violet-50 relative">
+              <svg class="w-8 h-8 text-purple-600 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 class="text-xl font-bold text-[#0f1724] mb-2">AI is writing your prompt...</h2>
+          <p class="text-sm text-[#9ca3af] mb-8">This usually takes 5–15 seconds. Hang tight!</p>
+
+          <div class="text-left space-y-2.5 max-w-xs mx-auto">
+            @for (s of generatingSteps; track $index; let i = $index) {
+              <div class="flex items-center gap-3 transition-all duration-500"
+                [class]="i <= generatingStepIndex ? 'opacity-100' : 'opacity-25'">
+                @if (i < generatingStepIndex) {
+                  <div class="w-5 h-5 rounded-full bg-emerald-400 flex items-center justify-center shrink-0">
+                    <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                  </div>
+                } @else if (i === generatingStepIndex) {
+                  <div class="w-5 h-5 rounded-full border-2 border-purple-400 flex items-center justify-center shrink-0">
+                    <div class="w-2 h-2 rounded-full bg-purple-500 anim-pulse"></div>
+                  </div>
+                } @else {
+                  <div class="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0"></div>
+                }
+                <span class="text-sm" [class]="i === generatingStepIndex ? 'font-semibold text-[#374151]' : 'text-[#6b7280]'">
+                  {{ s }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ───────────────── RESULT STEP ───────────────── -->
+    @if (step === 'result' && generatedPrompt) {
+      <div class="space-y-5 anim-fade-up">
+
+        <!-- Success banner -->
+        <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-4">
+          <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-emerald-800">Writing prompt generated!</p>
+            <p class="text-xs text-emerald-600">Saved and ready for students.</p>
+          </div>
+        </div>
+
+        <!-- Prompt Card Preview -->
+        <div class="bg-white rounded-2xl border border-[#e5e7eb] overflow-hidden shadow-sm">
+          <!-- Cover -->
+          <div class="h-28 relative flex items-center justify-center bg-gradient-to-br"
+            [ngClass]="getDifficultyGradient(generatedPrompt.difficulty)">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <svg class="w-14 h-14 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+              </svg>
+            </div>
+            <div class="absolute top-3 left-4">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-md"
+                [ngClass]="getDifficultyColor(generatedPrompt.difficulty)">
+                {{ generatedPrompt.difficulty }}
+              </span>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <p class="text-[11px] font-extrabold text-[#8b5cf6] tracking-widest uppercase mb-2">WRITING PROMPT</p>
+            <h2 class="text-lg font-bold text-[#0f1419] mb-3">{{ generatedPrompt.title }}</h2>
+
+            <!-- The actual AI-generated prompt -->
+            <div class="bg-[#f5f3ff] border border-[#e9d5ff] rounded-xl p-4 mb-4">
+              <p class="text-xs font-bold text-[#7c3aed] uppercase tracking-widest mb-2">Student Instruction</p>
+              <p class="text-sm text-[#374151] leading-relaxed">{{ generatedPrompt.description }}</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex items-center gap-4 text-[13px] text-[#6b7280]">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                </svg>
+                <span class="font-medium">{{ generatedPrompt.minWords }}–{{ generatedPrompt.maxWords }} words</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <span class="font-semibold text-[#374151]">{{ generatedPrompt.xpReward }} XP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+          <button type="button" (click)="goToEdit()"
+            class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-white font-semibold text-sm shadow-md transition-all hover:-translate-y-0.5"
+            style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 6px 18px -3px rgba(139,92,246,0.4);">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+            Edit Prompt
+          </button>
+          <button type="button" (click)="resetForm()"
+            class="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-[#6b7280] border border-[#e5e7eb] bg-white hover:bg-[#f9fafb] transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+            Generate Another
+          </button>
+          <a routerLink="/tutor/writing"
+            class="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-[#374151] border border-[#e5e7eb] bg-white hover:bg-[#f9fafb] transition-all">
+            Back to List
+          </a>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

@@ -108,6 +108,17 @@ export class CoursesComponent implements OnInit {
     this.initForms();
     this.loadCurrentUser();
     this.loadLeaderboard();
+
+    // React to ?open=<id> changes even when already on the courses page
+    this.route.queryParamMap.subscribe(params => {
+      const openId = Number(params.get('open'));
+      if (!openId || !this.courses.length) return;
+      const course = this.courses.find(c => Number(c.id) === openId);
+      if (course) {
+        this.openCourseDetail(course);
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   ngAfterViewInit(): void {

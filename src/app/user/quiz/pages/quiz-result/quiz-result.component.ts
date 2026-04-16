@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
 import { Quiz, QuestionQuiz, QuizAttempt } from '../../models/quiz.model';
+import { AuthService } from '../../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-user-quiz-result',
@@ -51,6 +52,8 @@ export class UserQuizResultComponent implements OnInit {
   isLoading = true;
   quizId!: number;
   attemptId!: number;
+  emailSent = false;
+  emailSending = false;
 
   confettiItems = Array.from({ length: 12 }, (_, i) => ({
     left: Math.random() * 100,
@@ -62,7 +65,8 @@ export class UserQuizResultComponent implements OnInit {
   constructor(
     private quizService: QuizService,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -95,9 +99,28 @@ export class UserQuizResultComponent implements OnInit {
         this.attempt = attempt;
         this.isLoading = false;
         this.cdr.markForCheck();
+        this.trySendResultsEmail();
       },
       error: () => {
         this.isLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private trySendResultsEmail(): void {
+    const user = this.authService.currentUser;
+    if (!user?.email) return;
+    this.emailSending = true;
+    this.cdr.markForCheck();
+    this.quizService.sendQuizResults(this.attemptId, user.email, user.name).subscribe({
+      next: () => {
+        this.emailSent = true;
+        this.emailSending = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.emailSending = false;
         this.cdr.markForCheck();
       }
     });

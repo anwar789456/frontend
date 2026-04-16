@@ -55,10 +55,6 @@ export const routes: Routes = [
         loadChildren: () => import('./user/friends/friends.routes').then(m => m.FRIENDS_ROUTES)
       },
       {
-        path: 'sessions',
-        loadChildren: () => import('./user/sessionreservation/sessionreservation.routes').then(m => m.SESSION_ROUTES)
-      },
-      {
         path: 'quiz',
         loadChildren: () => import('./user/quiz/quiz.routes').then(m => m.QUIZ_ROUTES)
       },

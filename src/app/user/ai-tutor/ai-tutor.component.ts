@@ -148,7 +148,7 @@ export class AiTutorComponent implements OnInit, OnDestroy {
     const hadHistory = this.restoreSession();
     if (!hadHistory) {
       setTimeout(() => this.receiveReply(
-        `Hi! I'm Lingo, your English buddy! Ask me about English, courses, or quizzes!`
+        `Hi! I'm Mino, your English buddy! Ask me about English, courses, or quizzes!`
       ), 700);
     } else {
       setTimeout(() => this.scrollHistory(), 50);
@@ -374,17 +374,7 @@ export class AiTutorComponent implements OnInit, OnDestroy {
 
   navigateTo(route: string): void {
     this.suggestions = [];
-    const [path, queryStr] = route.split('?');
-    if (queryStr) {
-      const queryParams: Record<string, string> = {};
-      queryStr.split('&').forEach(pair => {
-        const [k, v] = pair.split('=');
-        queryParams[k] = v;
-      });
-      this.router.navigate([path], { queryParams });
-    } else {
-      this.router.navigate([path]);
-    }
+    this.router.navigateByUrl(route);
   }
   goBack(): void { this.router.navigate(['/courses']); }
 

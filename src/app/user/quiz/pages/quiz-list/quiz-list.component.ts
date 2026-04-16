@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { QuizService } from '../../services/quiz.service';
@@ -8,7 +8,7 @@ import { Quiz, QuizAttempt, StoryQuiz, StoryAttempt } from '../../models/quiz.mo
 @Component({
   selector: 'app-user-quiz-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, DecimalPipe],
   templateUrl: './quiz-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
@@ -44,6 +44,31 @@ export class UserQuizListComponent implements OnInit {
       const user = JSON.parse(localStorage.getItem('auth_user') || 'null');
       return user?.id ?? null;
     } catch { return null; }
+  }
+
+  get userXp(): number {
+    try {
+      const user = JSON.parse(localStorage.getItem('auth_user') || 'null');
+      return user?.xp ?? 0;
+    } catch { return 0; }
+  }
+
+  get userStreak(): number {
+    try {
+      const user = JSON.parse(localStorage.getItem('auth_user') || 'null');
+      return user?.streak ?? 0;
+    } catch { return 0; }
+  }
+
+  get totalXpEarned(): number {
+    return this.attempts
+      .filter(a => a.completed)
+      .reduce((sum, a) => sum + (a.score ?? 0), 0);
+  }
+
+  get completedQuizCount(): number {
+    return this.attempts.filter(a => a.completed).length
+      + this.storyAttempts.filter(a => a.completed).length;
   }
 
   ngOnInit(): void {

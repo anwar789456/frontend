@@ -112,8 +112,22 @@
         </div>
       </div>
 
+      <!-- Email confirmation -->
+      @if (emailSending) {
+        <div class="flex items-center gap-2 bg-[#eff6ff] border border-[#bfdbfe] rounded-2xl px-4 py-3 mb-4 anim-fade-up delay-5 text-[13px] text-[#3b82f6] font-semibold">
+          <div class="w-4 h-4 border-2 border-[#3b82f6] border-t-transparent rounded-full animate-spin shrink-0"></div>
+          Sending your results to your email...
+        </div>
+      }
+      @if (emailSent) {
+        <div class="flex items-center gap-2 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl px-4 py-3 mb-4 anim-fade-up delay-5 text-[13px] text-[#16a34a] font-semibold">
+          <span class="text-base">📧</span>
+          Results sent to your email!
+        </div>
+      }
+
       <!-- Action Button (arcade-button style) -->
-      <div class="anim-fade-up delay-5">
+      <div class="anim-fade-up delay-6">
         <a routerLink="/quiz"
           class="w-full flex items-center justify-center gap-2 py-4 text-[15px] font-extrabold text-white bg-[#38a9f3] rounded-2xl hover:bg-[#2196e3] shadow-[0_5px_0_0_#1e88d0] hover:shadow-[0_2px_0_0_#1e88d0] hover:translate-y-[3px] transition-all text-center block uppercase tracking-wide">
           <span>🏠</span> Back to Quiz Hub

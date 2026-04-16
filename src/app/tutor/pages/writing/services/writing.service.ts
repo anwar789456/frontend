@@ -40,4 +40,14 @@ export class TutorWritingService {
   unarchivePrompt(id: number): Observable<WritingPrompt> {
     return this.http.put<WritingPrompt>(`${this.apiUrl}/prompts/unarchive/${id}`, {});
   }
+
+  generateWritingPrompt(params: {
+    title: string;
+    difficulty: string;
+    type: string;
+    hints: string;
+    xpReward: number;
+  }): Observable<WritingPrompt> {
+    return this.http.post<WritingPrompt>(`${this.apiUrl}/prompts/generate-ai`, params);
+  }
 }

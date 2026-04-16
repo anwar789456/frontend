@@ -112,7 +112,6 @@ export class TutorQuizListComponent implements OnInit {
     // Filter
     if (this.activeFilter === 'archived') list = list.filter(q => q.archived);
     else if (this.activeFilter === 'open') list = list.filter(q => q.status === 'OPEN' && !q.archived);
-    else if (this.activeFilter === 'closed') list = list.filter(q => q.status === 'CLOSED' && !q.archived);
     else list = list.filter(q => !q.archived); // 'all' = only non-archived
 
     // Sort
