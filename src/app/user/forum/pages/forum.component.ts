@@ -152,6 +152,12 @@ export class ForumComponent implements OnInit, OnDestroy {
   unreadNotifCount = 0;
   private notifPollInterval: any;
 
+  // Content Moderation
+  isModeratingPost = false;
+  moderationWarning = '';
+  showModerationWarning = false;
+  showModerationBlock = false;
+
   // Share Post
   showShareModal = false;
   sharingPost: ForumPost | null = null;
@@ -493,6 +499,63 @@ export class ForumComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.showModerationWarning = false;
+    this.showModerationBlock = false;
+    this.moderationWarning = '';
+    this.isModeratingPost = true;
+    this.cdRef.detectChanges();
+
+    this.forumService.moderateContent(this.newPostContent).subscribe({
+      next: (modResult) => {
+        this.isModeratingPost = false;
+        if (!modResult.isSafe) {
+          const warningCount = this.forumService.incrementModerationWarning(this.user!.id);
+          if (warningCount >= 2) {
+            this.showModerationBlock = true;
+            this.moderationWarning = modResult.reason || 'Your post contains inappropriate content.';
+            this.addNotification('Your post has been reported. Please check your email.', 'warning');
+            this.autoReportPost(this.newPostContent, modResult.reason);
+          } else {
+            this.showModerationWarning = true;
+            this.moderationWarning = modResult.reason || 'Your post contains inappropriate content.';
+            this.addNotification('Your post was blocked. Please revise the content.', 'warning');
+          }
+          this.cdRef.detectChanges();
+          return;
+        }
+        this.proceedWithCreatePost();
+      },
+      error: () => {
+        this.isModeratingPost = false;
+        this.proceedWithCreatePost();
+      }
+    });
+  }
+
+  private autoReportPost(content: string, reason: string): void {
+    if (!this.user) return;
+    const report: any = {
+      postId: 0,
+      reporterId: 0,
+      reportedUserId: this.user.id,
+      reporterName: 'AI Moderation System',
+      reporterEmail: '',
+      reportedUserName: this.user.name,
+      reason: 'AI_MODERATION',
+      postContent: content.substring(0, 500),
+      description: 'Auto-reported by AI content moderation (2nd offense). Reason: ' + (reason || 'Inappropriate content'),
+      status: 'PENDING'
+    };
+    this.forumService.createReport(report).subscribe();
+  }
+
+  dismissModerationWarning(): void {
+    this.showModerationWarning = false;
+    this.showModerationBlock = false;
+    this.moderationWarning = '';
+  }
+
+  private proceedWithCreatePost(): void {
     const hashtags = this.extractHashtags(this.newPostContent);
     let topicId: number | undefined;
     for (const tag of hashtags) {
@@ -833,12 +896,42 @@ export class ForumComponent implements OnInit, OnDestroy {
     if (this.replyError || !this.user) return;
     this.lastInteractionTime = Date.now();
 
+    this.showModerationWarning = false;
+    this.showModerationBlock = false;
+    this.moderationWarning = '';
+
+    this.forumService.moderateContent(this.replyContent).subscribe({
+      next: (modResult) => {
+        if (!modResult.isSafe) {
+          const warningCount = this.forumService.incrementModerationWarning(this.user!.id);
+          if (warningCount >= 2) {
+            this.showModerationBlock = true;
+            this.moderationWarning = modResult.reason || 'Your reply contains inappropriate content.';
+            this.addNotification('Your reply has been reported. Please check your email.', 'warning');
+            this.autoReportPost(this.replyContent, modResult.reason);
+          } else {
+            this.showModerationWarning = true;
+            this.moderationWarning = modResult.reason || 'Your reply contains inappropriate content.';
+            this.addNotification('Your reply was blocked. Please revise the content.', 'warning');
+          }
+          this.cdRef.detectChanges();
+          return;
+        }
+        this.proceedWithSubmitReply(parentPostId);
+      },
+      error: () => {
+        this.proceedWithSubmitReply(parentPostId);
+      }
+    });
+  }
+
+  private proceedWithSubmitReply(parentPostId: number): void {
     const reply: any = {
       content: this.replyContent.trim(),
-      author: this.user.name,
-      username: '@' + this.user.name.replace(/\s+/g, '_').toLowerCase(),
-      avatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
-      userId: this.user.id,
+      author: this.user!.name,
+      username: '@' + this.user!.name.replace(/\s+/g, '_').toLowerCase(),
+      avatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user!.name,
+      userId: this.user!.id,
       parentPostId: parentPostId,
       comments: 0,
       reposts: 0,

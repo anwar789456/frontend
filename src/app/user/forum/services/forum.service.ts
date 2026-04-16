@@ -371,6 +371,24 @@ export class ForumService {
     localStorage.removeItem(`forum_equipped_badge_${userId}`);
   }
 
+  // ── Content Moderation ──
+
+  moderateContent(content: string): Observable<{ isSafe: boolean; reason: string }> {
+    return this.http.post<{ isSafe: boolean; reason: string }>(`${this.apiUrl}/moderate-content`, { content });
+  }
+
+  getModerationWarningCount(userId: number): number {
+    try {
+      return parseInt(localStorage.getItem(`forum_mod_warnings_${userId}`) || '0', 10);
+    } catch { return 0; }
+  }
+
+  incrementModerationWarning(userId: number): number {
+    const count = this.getModerationWarningCount(userId) + 1;
+    localStorage.setItem(`forum_mod_warnings_${userId}`, String(count));
+    return count;
+  }
+
   // ── Translation ──
 
   translateText(text: string, targetLang: string = 'en'): Observable<string> {

@@ -8,7 +8,7 @@
           <path stroke-linecap="round" stroke-linejoin="round"
             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
         </svg>
-        <input type="text" placeholder="Search events, locations, hosts..."
+        <input type="text" [(ngModel)]="filterSearch" placeholder="Search events, locations, hosts..."
           class="pl-10 pr-4 py-2 w-[280px] bg-[#f7f9fa] border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
       </div>
     </div>
@@ -46,6 +46,84 @@
           class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3]">+
           Create Event</button>
       </div>
+
+      <!-- Filter Toggle & Bar -->
+      <div class="flex items-center gap-2 mb-4">
+        <button (click)="showFilters = !showFilters"
+          class="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-lg border transition-all"
+          [class.border-[#38a9f3]]="showFilters || activeFilterCount > 0"
+          [class.bg-[#e8f5fe]]="showFilters || activeFilterCount > 0"
+          [class.text-[#38a9f3]]="showFilters || activeFilterCount > 0"
+          [class.border-[#eef1f4]]="!showFilters && activeFilterCount === 0"
+          [class.text-[#536471]]="!showFilters && activeFilterCount === 0">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+          </svg>
+          Filters
+          @if (activeFilterCount > 0) {
+            <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-[#38a9f3] text-white leading-none">{{ activeFilterCount }}</span>
+          }
+        </button>
+        @if (activeFilterCount > 0) {
+          <button (click)="clearFilters()" class="text-[11px] font-semibold text-red-400 hover:text-red-600">Clear all</button>
+        }
+        <span class="ml-auto text-[11px] text-[#9ca3af]">{{ filteredEvents.length }} event{{ filteredEvents.length !== 1 ? 's' : '' }}</span>
+      </div>
+
+      @if (showFilters) {
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-4 p-4 bg-[#f7f9fa] rounded-xl border border-[#eef1f4]">
+          <!-- Search -->
+          <div>
+            <label class="block text-[10px] font-semibold text-[#9ca3af] uppercase mb-1">Search</label>
+            <input type="text" [(ngModel)]="filterSearch" placeholder="Title, location, host..."
+              class="w-full px-3 py-1.5 border border-[#eef1f4] rounded-lg text-xs outline-none focus:border-[#38a9f3] bg-white" />
+          </div>
+          <!-- Category -->
+          <div>
+            <label class="block text-[10px] font-semibold text-[#9ca3af] uppercase mb-1">Category</label>
+            <select [(ngModel)]="filterCategory"
+              class="w-full px-3 py-1.5 border border-[#eef1f4] rounded-lg text-xs outline-none focus:border-[#38a9f3] bg-white">
+              <option value="">All Categories</option>
+              @for (cat of allCategories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+          </div>
+          <!-- Target Level -->
+          <div>
+            <label class="block text-[10px] font-semibold text-[#9ca3af] uppercase mb-1">Level</label>
+            <select [(ngModel)]="filterLevel"
+              class="w-full px-3 py-1.5 border border-[#eef1f4] rounded-lg text-xs outline-none focus:border-[#38a9f3] bg-white">
+              <option value="">All Levels</option>
+              @for (level of targetLevels; track level) {
+                <option [value]="level">{{ level.replace('_', ' ') }}</option>
+              }
+            </select>
+          </div>
+          <!-- Date From -->
+          <div>
+            <label class="block text-[10px] font-semibold text-[#9ca3af] uppercase mb-1">From Date</label>
+            <input type="date" [(ngModel)]="filterDateFrom"
+              class="w-full px-3 py-1.5 border border-[#eef1f4] rounded-lg text-xs outline-none focus:border-[#38a9f3] bg-white" />
+          </div>
+          <!-- Date To -->
+          <div>
+            <label class="block text-[10px] font-semibold text-[#9ca3af] uppercase mb-1">To Date</label>
+            <input type="date" [(ngModel)]="filterDateTo"
+              class="w-full px-3 py-1.5 border border-[#eef1f4] rounded-lg text-xs outline-none focus:border-[#38a9f3] bg-white" />
+          </div>
+          <!-- Featured -->
+          <div>
+            <label class="block text-[10px] font-semibold text-[#9ca3af] uppercase mb-1">Featured</label>
+            <select [(ngModel)]="filterFeatured"
+              class="w-full px-3 py-1.5 border border-[#eef1f4] rounded-lg text-xs outline-none focus:border-[#38a9f3] bg-white">
+              <option value="">All</option>
+              <option value="true">Featured Only</option>
+              <option value="false">Not Featured</option>
+            </select>
+          </div>
+        </div>
+      }
 
       <!-- Loading -->
       @if (isLoading) {

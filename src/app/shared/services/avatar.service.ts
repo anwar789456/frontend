@@ -75,36 +75,65 @@ export class AvatarService {
   // ── Extract navigation suggestions from an AI reply ───────────────────────
   extractCourseSuggestions(reply: string): AvatarSuggestion[] {
     const suggestions: AvatarSuggestion[] = [];
-
-    // Match explicit course IDs mentioned by the AI, e.g. "course #42" or "course 42"
-    const courseIdPattern = /\bcourse[s]?\s*#?(\d+)\b/gi;
     let match: RegExpExecArray | null;
     const seen = new Set<string>();
 
-    while ((match = courseIdPattern.exec(reply)) !== null) {
+    // Course IDs — "course #42" or "Course 42"
+    const courseIdPattern = /\bcourse[s]?\s*#?(\d+)\b/gi;
+    while ((match = courseIdPattern.exec(reply)) !== null && suggestions.length < 4) {
       const id = match[1];
       const route = `/courses?open=${id}`;
-      if (!seen.has(route)) {
-        seen.add(route);
-        suggestions.push({ label: `Open Course #${id}`, route });
-      }
-      if (suggestions.length >= 3) break;
+      if (!seen.has(route)) { seen.add(route); suggestions.push({ label: `Open Course #${id}`, route }); }
     }
 
-    // Match quiz IDs, e.g. "quiz #5"
-    if (suggestions.length < 3) {
-      const quizPattern = /\bquiz\s*#?(\d+)\b/gi;
-      while ((match = quizPattern.exec(reply)) !== null) {
-        const id = match[1];
-        const route = `/quiz/${id}/play`;
-        if (!seen.has(route)) {
-          seen.add(route);
-          suggestions.push({ label: `Start Quiz #${id}`, route });
-        }
-        if (suggestions.length >= 3) break;
-      }
+    // Quiz IDs — "quiz #5"
+    const quizPattern = /\bquiz\s*#?(\d+)\b/gi;
+    while ((match = quizPattern.exec(reply)) !== null && suggestions.length < 4) {
+      const id = match[1];
+      const route = `/quiz/${id}/play`;
+      if (!seen.has(route)) { seen.add(route); suggestions.push({ label: `Start Quiz #${id}`, route }); }
     }
 
-    return suggestions;
+    // Event IDs — "event #7"
+    const eventPattern = /\bevent\s*#?(\d+)\b/gi;
+    while ((match = eventPattern.exec(reply)) !== null && suggestions.length < 4) {
+      const id = match[1];
+      const route = `/events?open=${id}`;
+      if (!seen.has(route)) { seen.add(route); suggestions.push({ label: `View Event #${id}`, route }); }
+    }
+
+    // Topic-based navigation
+    const lower = reply.toLowerCase();
+    if (suggestions.length < 4 && (lower.includes('event') || lower.includes('workshop')) && !seen.has('/events')) {
+      seen.add('/events'); suggestions.push({ label: 'Browse Events', route: '/events' });
+    }
+    if (suggestions.length < 4 && (lower.includes('forum') || lower.includes('discuss') || lower.includes('topic')) && !seen.has('/forums')) {
+      seen.add('/forums'); suggestions.push({ label: 'Visit Forums', route: '/forums' });
+    }
+    if (suggestions.length < 4 && (lower.includes('donat') || lower.includes('give') || lower.includes('merci')) && !seen.has('/donations')) {
+      seen.add('/donations'); suggestions.push({ label: 'Make a Donation', route: '/donations' });
+    }
+    if (suggestions.length < 4 && (lower.includes('subscri') || lower.includes('plan') || lower.includes('premium') || lower.includes('abonnement')) && !seen.has('/subscriptions')) {
+      seen.add('/subscriptions'); suggestions.push({ label: 'View Plans', route: '/subscriptions' });
+    }
+
+    // Account-related
+    if (suggestions.length < 4 && (lower.includes('register') || lower.includes('sign up') || lower.includes('create account')) && !seen.has('/register')) {
+      seen.add('/register'); suggestions.push({ label: 'Create Account', route: '/register' });
+    }
+    if (suggestions.length < 4 && (lower.includes('log in') || lower.includes('login') || lower.includes('sign in')) && !seen.has('/login')) {
+      seen.add('/login'); suggestions.push({ label: 'Go to Login', route: '/login' });
+    }
+    if (suggestions.length < 4 && (lower.includes('password') || lower.includes('forgot') || lower.includes('reset')) && !seen.has('/forgot-password')) {
+      seen.add('/forgot-password'); suggestions.push({ label: 'Reset Password', route: '/forgot-password' });
+    }
+    if (suggestions.length < 4 && (lower.includes('profile') || lower.includes('account') || lower.includes('settings')) && !seen.has('/profile')) {
+      seen.add('/profile'); suggestions.push({ label: 'My Profile', route: '/profile' });
+    }
+    if (suggestions.length < 4 && (lower.includes('face') || lower.includes('biometric')) && !seen.has('/face-setup')) {
+      seen.add('/face-setup'); suggestions.push({ label: 'Face Setup', route: '/face-setup' });
+    }
+
+    return suggestions.slice(0, 4);
   }
 }

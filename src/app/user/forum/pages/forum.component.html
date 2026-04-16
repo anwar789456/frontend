@@ -342,11 +342,54 @@
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
           </button>
         </div>
-        <button (click)="createPost()" class="btn-primary px-8 py-2.5 text-sm">
-          Post 🚀
+        <button (click)="createPost()" [disabled]="isModeratingPost" class="btn-primary px-8 py-2.5 text-sm disabled:opacity-60 flex items-center gap-2">
+          @if (isModeratingPost) {
+            <div class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+            Checking...
+          } @else {
+            Post 🚀
+          }
         </button>
       </div>
     </div>
+
+    <!-- Content Moderation Warning (1st offense) -->
+    @if (showModerationWarning) {
+      <div class="mb-4 rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 flex items-start gap-3 animate-[slideUp_.22s_ease-out]">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-bold text-amber-800">Your post was not published</p>
+          <p class="text-xs text-amber-700 mt-1">{{ moderationWarning }}</p>
+          <p class="text-xs text-amber-600 mt-2">Please edit your message and try again. Repeated violations will be reported to an admin.</p>
+        </div>
+        <button (click)="dismissModerationWarning()" class="text-amber-400 hover:text-amber-600 flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    }
+
+    <!-- Content Moderation Block (2nd+ offense — auto-reported) -->
+    @if (showModerationBlock) {
+      <div class="mb-4 rounded-2xl border-2 border-red-300 bg-red-50 p-4 flex items-start gap-3 animate-[slideUp_.22s_ease-out]">
+        <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-bold text-red-800">Post blocked and reported</p>
+          <p class="text-xs text-red-700 mt-1">{{ moderationWarning }}</p>
+          <p class="text-xs text-red-600 mt-2">This is your second violation. Your post has been automatically reported to an admin. Please check your email for more details.</p>
+        </div>
+        <button (click)="dismissModerationWarning()" class="text-red-400 hover:text-red-600 flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    }
 
     <!-- Active Filter Indicator -->
     @if (activeTab !== 'all') {

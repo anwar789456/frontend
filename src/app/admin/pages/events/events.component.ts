@@ -60,6 +60,41 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   pendingLoading = false;
   approvalActionLoading: Set<number> = new Set();
 
+  // Filters
+  filterSearch = '';
+  filterCategory = '';
+  filterLevel: TargetLevel | '' = '';
+  filterDateFrom = '';
+  filterDateTo = '';
+  filterFeatured: '' | 'true' | 'false' = '';
+  showFilters = false;
+
+  get allCategories(): string[] {
+    const cats = new Set<string>();
+    this.events.forEach(e => { if (e.category) cats.add(e.category); });
+    return Array.from(cats).sort();
+  }
+
+  get activeFilterCount(): number {
+    let count = 0;
+    if (this.filterSearch.trim()) count++;
+    if (this.filterCategory) count++;
+    if (this.filterLevel) count++;
+    if (this.filterDateFrom) count++;
+    if (this.filterDateTo) count++;
+    if (this.filterFeatured) count++;
+    return count;
+  }
+
+  clearFilters(): void {
+    this.filterSearch = '';
+    this.filterCategory = '';
+    this.filterLevel = '';
+    this.filterDateFrom = '';
+    this.filterDateTo = '';
+    this.filterFeatured = '';
+  }
+
   // Bulk selection
   selectedIds: Set<number> = new Set();
   isBulkLoading = false;
@@ -224,16 +259,53 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   // --- Tab filtering ---
   get filteredEvents(): Event[] {
     const now = new Date();
+    let result: Event[];
     switch (this.activeTab) {
       case 'Upcoming':
-        return this.events.filter(e => e.status === 'UPCOMING' || (e.status !== 'COMPLETED' && e.status !== 'CANCELLED' && e.status !== 'DRAFT' && new Date(e.startDate) > now));
+        result = this.events.filter(e => e.status === 'UPCOMING' || (e.status !== 'COMPLETED' && e.status !== 'CANCELLED' && e.status !== 'DRAFT' && new Date(e.startDate) > now));
+        break;
       case 'Past':
-        return this.events.filter(e => e.status === 'COMPLETED' || (e.status !== 'DRAFT' && new Date(e.endDate || e.startDate) < now));
+        result = this.events.filter(e => e.status === 'COMPLETED' || (e.status !== 'DRAFT' && new Date(e.endDate || e.startDate) < now));
+        break;
       case 'Drafts':
-        return this.events.filter(e => e.status === 'DRAFT');
+        result = this.events.filter(e => e.status === 'DRAFT');
+        break;
       default:
-        return this.events;
+        result = [...this.events];
     }
+
+    const search = this.filterSearch.trim().toLowerCase();
+    if (search) {
+      result = result.filter(e =>
+        e.title.toLowerCase().includes(search) ||
+        (e.location || '').toLowerCase().includes(search) ||
+        (e.hostName || '').toLowerCase().includes(search) ||
+        (e.description || '').toLowerCase().includes(search) ||
+        (e.tags || []).some(t => t.toLowerCase().includes(search))
+      );
+    }
+    if (this.filterCategory) {
+      result = result.filter(e => e.category === this.filterCategory);
+    }
+    if (this.filterLevel) {
+      result = result.filter(e => e.targetLevel === this.filterLevel);
+    }
+    if (this.filterDateFrom) {
+      const from = new Date(this.filterDateFrom);
+      result = result.filter(e => new Date(e.startDate) >= from);
+    }
+    if (this.filterDateTo) {
+      const to = new Date(this.filterDateTo);
+      to.setHours(23, 59, 59, 999);
+      result = result.filter(e => new Date(e.startDate) <= to);
+    }
+    if (this.filterFeatured === 'true') {
+      result = result.filter(e => e.isFeatured);
+    } else if (this.filterFeatured === 'false') {
+      result = result.filter(e => !e.isFeatured);
+    }
+
+    return result;
   }
 
   // --- Status helpers ---
