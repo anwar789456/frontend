@@ -30,4 +30,28 @@ export class EventService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/delete-event/${id}`);
   }
+
+  draft(id: number): Observable<Event> {
+    return this.http.post<Event>(`${this.apiUrl}/draft-event/${id}`, {});
+  }
+
+  undraft(id: number): Observable<Event> {
+    return this.http.post<Event>(`${this.apiUrl}/undraft-event/${id}`, {});
+  }
+
+  uncancel(id: number): Observable<Event> {
+    return this.http.post<Event>(`${this.apiUrl}/uncancel-event/${id}`, {});
+  }
+
+  duplicate(id: number): Observable<Event> {
+    return this.http.post<Event>(`${this.apiUrl}/duplicate-event/${id}`, {});
+  }
+
+  bulkDraft(ids: number[]): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/bulk-draft`, ids);
+  }
+
+  bulkCancel(ids: number[]): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/bulk-cancel`, ids);
+  }
 }

@@ -103,6 +103,7 @@ export class VerifyCodeComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.isLoading) return; // prevent double-submit from auto-fill + manual submit
     if (this.fullCode.length !== 6) {
       this.errorMessage = 'Please enter the complete 6-digit code.';
       return;
@@ -123,15 +124,29 @@ export class VerifyCodeComponent implements OnInit {
         const role = response.user?.role || response.role || this.role;
 
         setTimeout(() => {
-          const redirectUrl = this.authService.getRedirectUrlForRole(role);
+          // Students go to the face-setup page so they can register their face for fast future logins.
+          // Admin/Tutor go straight to their dashboards.
+          const redirectUrl = (role === 'ETUDIANT' || role === 'TUTEUR') ? '/face-setup' : this.authService.getRedirectUrlForRole(role);
           this.router.navigate([redirectUrl]);
         }, 2000);
       },
       error: (err) => {
         this.isLoading = false;
+        const message = typeof err === 'string' ? err : 'Invalid code. Please try again.';
+
+        // If already verified (e.g. user refreshed and resubmitted), treat as success and redirect
+        if (message.toLowerCase().includes('already verified')) {
+          this.successMessage = 'Already verified! Redirecting...';
+          setTimeout(() => {
+            const redirectUrl = (this.role === 'ETUDIANT' || this.role === 'TUTEUR') ? '/face-setup' : this.authService.getRedirectUrlForRole(this.role);
+            this.router.navigate([redirectUrl]);
+          }, 1500);
+          return;
+        }
+
         this.digits = ['', '', '', '', '', ''];
         document.getElementById('digit-0')?.focus();
-        this.errorMessage = typeof err === 'string' ? err : 'Invalid code. Please try again.';
+        this.errorMessage = message;
       }
     });
   }

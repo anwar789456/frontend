@@ -2,8 +2,11 @@ import { Component, OnInit, ChangeDetectorRef, AfterViewChecked } from '@angular
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Event, EventStatus, TargetLevel } from '../../../user/event/models/event.model';
+import { EventRegistration } from '../../../user/event/models/event-registration.model';
 import { EventService } from '../../../user/event/services/event.service';
 import { EventRegistrationService } from '../../../user/event/services/event-registration.service';
+import { UserService } from '../../../user/user/services/user.service';
+import { User } from '../../../user/user/models/user.model';
 import * as L from 'leaflet';
 
 @Component({
@@ -17,7 +20,7 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   isLoading = true;
   error: string | null = null;
 
-  tabs = ['All Events', 'Upcoming', 'Past', 'Drafts'];
+  tabs = ['All Events', 'Upcoming', 'Past', 'Drafts', 'Approvals'];
   activeTab = 'All Events';
 
   selectedEvent: Event | null = null;
@@ -49,17 +52,27 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   eventStatuses: EventStatus[] = ['DRAFT', 'UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED'];
   targetLevels: TargetLevel[] = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'ALL_LEVELS'];
 
-  // Mock users for host dropdown
-  mockHosts = [
-    { name: 'Alex Johnson', email: 'alex.johnson@example.com' },
-    { name: 'Priya Patel', email: 'priya.patel@example.com' },
-    { name: 'Alex Chen', email: 'alex.chen@example.com' },
-    { name: 'Maria Garcia', email: 'maria.garcia@example.com' },
-    { name: 'David Okafor', email: 'david.okafor@example.com' },
-    { name: 'Hassan M.', email: 'hassan.m@example.com' },
-    { name: 'Yuki S.', email: 'yuki.s@example.com' },
-    { name: 'Mahmoud Salhi', email: 'mahmoud.salhi@esprit.tn' }
-  ];
+  // Admin users for host dropdown
+  adminUsers: User[] = [];
+
+  // Approval state
+  pendingRegistrations: EventRegistration[] = [];
+  pendingLoading = false;
+  approvalActionLoading: Set<number> = new Set();
+
+  // Bulk selection
+  selectedIds: Set<number> = new Set();
+  isBulkLoading = false;
+
+  // Announcement modal
+  showAnnouncementModal = false;
+  announcementSubject = '';
+  announcementMessage = '';
+  isSendingAnnouncement = false;
+
+  // Rating state
+  selectedEventAvgRating: number | null = null;
+  selectedEventRatingCount = 0;
 
   // QR Check-in state
   showCheckInModal = false;
@@ -70,12 +83,25 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   constructor(
     private eventService: EventService,
     private registrationService: EventRegistrationService,
+    private userService: UserService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.loadEvents();
+    this.loadPendingRegistrations();
+    this.loadAdminUsers();
     this.fixLeafletIcons();
+  }
+
+  loadAdminUsers(): void {
+    this.userService.getAllUsers().subscribe({
+      next: (users: User[]) => {
+        this.adminUsers = users.filter(u => u.role === 'ADMIN');
+        this.cdr.markForCheck();
+      },
+      error: () => { /* silently fail — dropdown just stays empty */ }
+    });
   }
 
   ngAfterViewChecked(): void {
@@ -124,6 +150,61 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
     });
   }
 
+  // --- Approval Methods ---
+
+  loadPendingRegistrations(): void {
+    this.pendingLoading = true;
+    this.registrationService.getPending().subscribe({
+      next: (data) => {
+        this.pendingRegistrations = data;
+        this.pendingLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.pendingLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  approveRegistration(id: number): void {
+    if (this.approvalActionLoading.has(id)) return;
+    this.approvalActionLoading.add(id);
+    this.cdr.markForCheck();
+    this.registrationService.approve(id).subscribe({
+      next: () => {
+        this.pendingRegistrations = this.pendingRegistrations.filter(r => r.id !== id);
+        this.approvalActionLoading.delete(id);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.approvalActionLoading.delete(id);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  rejectRegistration(id: number): void {
+    if (this.approvalActionLoading.has(id)) return;
+    this.approvalActionLoading.add(id);
+    this.cdr.markForCheck();
+    this.registrationService.reject(id).subscribe({
+      next: () => {
+        this.pendingRegistrations = this.pendingRegistrations.filter(r => r.id !== id);
+        this.approvalActionLoading.delete(id);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.approvalActionLoading.delete(id);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  getEventTitleForRegistration(reg: EventRegistration): string {
+    return this.events.find(e => e.id === reg.eventId)?.title ?? `Event #${reg.eventId}`;
+  }
+
   // --- Stats ---
   get stats() {
     const now = new Date();
@@ -163,7 +244,7 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
 
     if (event.status === 'DRAFT') return 'Draft';
     if (event.status === 'CANCELLED') return 'Cancelled';
-    if (now >= start && now <= end) return 'Live Now';
+    if (now >= start && now <= end) return 'Ongoing';
     if (now > end || event.status === 'COMPLETED') return 'Past';
     return 'Upcoming';
   }
@@ -187,6 +268,16 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   // --- Selection ---
   selectEvent(event: Event): void {
     this.selectedEvent = event;
+    this.selectedEventAvgRating = null;
+    this.selectedEventRatingCount = 0;
+    this.registrationService.getAvgRating(event.id).subscribe({
+      next: (data) => {
+        this.selectedEventAvgRating = data.avg;
+        this.selectedEventRatingCount = data.count;
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
   }
 
   // --- CRUD: Create ---
@@ -220,7 +311,8 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   // --- CRUD: Edit ---
   openEditModal(event: Event): void {
     this.isEditing = true;
-    this.formData = { ...event, tags: event.tags ? [...event.tags] : [] };
+    const { currentAttendees, ...rest } = event as any;
+    this.formData = { ...rest, tags: event.tags ? [...event.tags] : [] };
     this.formErrors = {};
     this.formSubmitted = false;
     this.mapSearchQuery = '';
@@ -330,7 +422,116 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  // --- CRUD: Delete ---
+  // --- Bulk Actions ---
+  toggleSelection(id: number): void {
+    this.selectedIds.has(id) ? this.selectedIds.delete(id) : this.selectedIds.add(id);
+    this.cdr.markForCheck();
+  }
+
+  toggleSelectAll(): void {
+    if (this.selectedIds.size === this.filteredEvents.length) {
+      this.selectedIds.clear();
+    } else {
+      this.filteredEvents.forEach(e => this.selectedIds.add(e.id));
+    }
+    this.cdr.markForCheck();
+  }
+
+  bulkDraft(): void {
+    if (!this.selectedIds.size || this.isBulkLoading) return;
+    this.isBulkLoading = true;
+    this.eventService.bulkDraft(Array.from(this.selectedIds)).subscribe({
+      next: () => { this.selectedIds.clear(); this.isBulkLoading = false; this.loadEvents(); this.cdr.markForCheck(); },
+      error: () => { this.isBulkLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  bulkCancel(): void {
+    if (!this.selectedIds.size || this.isBulkLoading) return;
+    this.isBulkLoading = true;
+    this.eventService.bulkCancel(Array.from(this.selectedIds)).subscribe({
+      next: () => { this.selectedIds.clear(); this.isBulkLoading = false; this.loadEvents(); this.cdr.markForCheck(); },
+      error: () => { this.isBulkLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  // --- Export CSV ---
+  exportAttendeesCSV(): void {
+    if (!this.selectedEvent) return;
+    this.registrationService.getByEvent(this.selectedEvent.id).subscribe({
+      next: (regs) => {
+        const rows = [
+          ['Name', 'Email', 'Status', 'Phone', 'Registered At'],
+          ...regs.map(r => [
+            r.userName || '', r.userEmail || '', r.status || '',
+            r.phoneNumber || '', r.registrationDate || ''
+          ])
+        ];
+        const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${this.selectedEvent!.title}-attendees.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (err: unknown) => console.error('Failed to export:', err)
+    });
+  }
+
+  // --- Announcement ---
+  openAnnouncementModal(): void {
+    this.announcementSubject = '';
+    this.announcementMessage = '';
+    this.showAnnouncementModal = true;
+  }
+
+  closeAnnouncementModal(): void {
+    this.showAnnouncementModal = false;
+  }
+
+  sendAnnouncement(): void {
+    if (!this.selectedEvent || !this.announcementSubject.trim() || !this.announcementMessage.trim()) return;
+    this.isSendingAnnouncement = true;
+    this.registrationService.sendAnnouncement(this.selectedEvent.id, this.announcementSubject, this.announcementMessage).subscribe({
+      next: () => { this.isSendingAnnouncement = false; this.showAnnouncementModal = false; this.cdr.markForCheck(); },
+      error: () => { this.isSendingAnnouncement = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  // --- CRUD: Undraft ---
+  undraftEvent(): void {
+    if (!this.selectedEvent) return;
+    this.eventService.undraft(this.selectedEvent.id).subscribe({
+      next: () => {
+        this.selectedEvent = null;
+        this.loadEvents();
+        this.cdr.markForCheck();
+      },
+      error: (err: unknown) => {
+        console.error('Failed to publish event:', err);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  uncancelEvent(): void {
+    if (!this.selectedEvent) return;
+    this.eventService.uncancel(this.selectedEvent.id).subscribe({
+      next: () => {
+        this.selectedEvent = null;
+        this.loadEvents();
+        this.cdr.markForCheck();
+      },
+      error: (err: unknown) => {
+        console.error('Failed to uncancel event:', err);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  // --- CRUD: Draft (soft-delete) ---
   confirmDelete(): void {
     this.showDeleteConfirm = true;
   }
@@ -342,7 +543,7 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   deleteEvent(): void {
     if (!this.selectedEvent) return;
     this.isDeleting = true;
-    this.eventService.delete(this.selectedEvent.id).subscribe({
+    this.eventService.draft(this.selectedEvent.id).subscribe({
       next: () => {
         this.showDeleteConfirm = false;
         this.isDeleting = false;
@@ -351,7 +552,7 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
         this.cdr.markForCheck();
       },
       error: (err: unknown) => {
-        console.error('Failed to delete event:', err);
+        console.error('Failed to move event to drafts:', err);
         this.isDeleting = false;
         this.cdr.markForCheck();
       }
@@ -595,11 +796,7 @@ export class AdminEventsComponent implements OnInit, AfterViewChecked {
   }
 
   onHostChange(hostName: string): void {
-    const host = this.mockHosts.find(h => h.name === hostName);
-    if (host) {
-      this.formData.contactEmail = host.email;
-    } else {
-      this.formData.contactEmail = '';
-    }
+    const host = this.adminUsers.find(u => u.name === hostName);
+    this.formData.contactEmail = host?.email ?? '';
   }
 }

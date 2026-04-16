@@ -15,10 +15,13 @@ export class DonationsComponent implements OnInit {
   isLoading = true;
   error: string | null = null;
 
-  tabs = ['All Donations', 'Pending', 'Success', 'Failed'];
+  tabs = ['All Donations', 'Pending', 'Accepted', 'Rejected'];
   activeTab = 'All Donations';
 
   selectedDonation: Donation | null = null;
+  reviews: any[] = [];
+  reviewsLoading = false;
+  reviewError: string | null = null;
 
   // Modal state
   showModal = false;
@@ -29,7 +32,7 @@ export class DonationsComponent implements OnInit {
   formData: Partial<Donation> = {};
   formErrors: { [key: string]: string } = {};
   formSubmitted = false;
-  donationStatuses: DonationStatus[] = [DonationStatus.PENDING, DonationStatus.SUCCESS, DonationStatus.FAILED];
+  donationStatuses: DonationStatus[] = [DonationStatus.PENDING, DonationStatus.ACCEPTED, DonationStatus.REJECTED];
 
   constructor(
     private donationService: DonationService,
@@ -46,6 +49,9 @@ export class DonationsComponent implements OnInit {
     this.donationService.getAll().subscribe({
       next: (data: Donation[]) => {
         this.donations = data;
+        // Apply stored status updates after loading
+        this.applyStoredStatusUpdates();
+        
         if (this.donations.length > 0 && !this.selectedDonation) {
           this.selectedDonation = this.donations[0];
         }
@@ -63,17 +69,16 @@ export class DonationsComponent implements OnInit {
 
   // --- Stats ---
   get stats() {
-    const total = this.donations.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalItems = this.donations.reduce((sum, d) => sum + (d.quantity || 0), 0);
     const pending = this.donations.filter(d => d.status === DonationStatus.PENDING);
-    const success = this.donations.filter(d => d.status === DonationStatus.SUCCESS);
-    const failed = this.donations.filter(d => d.status === DonationStatus.FAILED);
-    const avg = this.donations.length > 0 ? total / this.donations.length : 0;
+    const accepted = this.donations.filter(d => d.status === DonationStatus.ACCEPTED);
+    const rejected = this.donations.filter(d => d.status === DonationStatus.REJECTED);
 
     return [
-      { label: 'Total Raised', value: `${total.toFixed(2)} TND`, sub: `${success.length} successful`, subColor: 'text-green-500', valueColor: 'text-[#0f1419]' },
-      { label: 'Pending Review', value: `${pending.length}`, sub: `${pending.reduce((s, d) => s + (d.amount || 0), 0).toFixed(2)} TND value`, subColor: 'text-orange-500', valueColor: 'text-orange-500' },
-      { label: 'Avg. Donation', value: `${avg.toFixed(2)} TND`, sub: `${this.donations.length} total`, subColor: 'text-[#9ca3af]', valueColor: 'text-[#0f1419]' },
-      { label: 'Failed', value: `${failed.length}`, sub: `${failed.reduce((s, d) => s + (d.amount || 0), 0).toFixed(2)} TND lost`, subColor: 'text-red-500', valueColor: 'text-red-500' }
+      { label: 'Total Items', value: `${totalItems}`, sub: `${this.donations.length} donations`, subColor: 'text-[#9ca3af]', valueColor: 'text-[#0f1419]' },
+      { label: 'Pending', value: `${pending.length}`, sub: `in review`, subColor: 'text-orange-500', valueColor: 'text-orange-500' },
+      { label: 'Accepted', value: `${accepted.length}`, Lab: '', sub: `ready`, subColor: 'text-green-500', valueColor: 'text-[#0f1419]' },
+      { label: 'Rejected', value: `${rejected.length}`, sub: `declined`, subColor: 'text-red-500', valueColor: 'text-red-500' }
     ];
   }
 
@@ -81,18 +86,44 @@ export class DonationsComponent implements OnInit {
   get filteredDonations(): Donation[] {
     switch (this.activeTab) {
       case 'Pending': return this.donations.filter(d => d.status === DonationStatus.PENDING);
-      case 'Success': return this.donations.filter(d => d.status === DonationStatus.SUCCESS);
-      case 'Failed': return this.donations.filter(d => d.status === DonationStatus.FAILED);
+      case 'Accepted': return this.donations.filter(d => d.status === DonationStatus.ACCEPTED);
+      case 'Rejected': return this.donations.filter(d => d.status === DonationStatus.REJECTED);
       default: return this.donations;
     }
+  }
+
+  // --- Local Storage for temporary status persistence ---
+  private readonly STORAGE_KEY = 'donation_status_updates';
+
+  private saveStatusUpdate(donationId: number, status: DonationStatus): void {
+    const updates = this.getStatusUpdates();
+    updates[donationId] = { status, timestamp: Date.now() };
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updates));
+  }
+
+  private getStatusUpdates(): { [key: number]: { status: DonationStatus; timestamp: number } } {
+    const stored = localStorage.getItem(this.STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  }
+
+  private applyStoredStatusUpdates(): void {
+    const updates = this.getStatusUpdates();
+    Object.keys(updates).forEach(id => {
+      const donationId = parseInt(id);
+      const update = updates[donationId];
+      const donation = this.donations.find(d => d.id === donationId);
+      if (donation) {
+        donation.status = update.status;
+      }
+    });
   }
 
   // --- Status helpers ---
   getStatusColor(status: DonationStatus | undefined): string {
     switch (status) {
       case DonationStatus.PENDING: return 'bg-orange-100 text-orange-600';
-      case DonationStatus.SUCCESS: return 'bg-green-100 text-green-600';
-      case DonationStatus.FAILED: return 'bg-red-100 text-red-500';
+      case DonationStatus.ACCEPTED: return 'bg-green-100 text-green-600';
+      case DonationStatus.REJECTED: return 'bg-red-100 text-red-500';
       default: return 'bg-gray-100 text-gray-500';
     }
   }
@@ -100,8 +131,8 @@ export class DonationsComponent implements OnInit {
   getStatusIcon(status: DonationStatus | undefined): string {
     switch (status) {
       case DonationStatus.PENDING: return '⏳';
-      case DonationStatus.SUCCESS: return '✅';
-      case DonationStatus.FAILED: return '❌';
+      case DonationStatus.ACCEPTED: return '✅';
+      case DonationStatus.REJECTED: return '❌';
       default: return '📋';
     }
   }
@@ -116,13 +147,15 @@ export class DonationsComponent implements OnInit {
   openCreateModal(): void {
     this.isEditing = false;
     this.formData = {
-      amount: 0,
-      message: '',
+      type: 'VETEMENT',
+      itemName: '',
+      description: '',
+      quantity: 1,
+      condition: 'BON_ETAT',
       anonymous: false,
       status: DonationStatus.PENDING,
-      paymentMethod: '',
       userId: null
-    };
+    } as Partial<Donation>;
     this.formErrors = {};
     this.formSubmitted = false;
     this.showModal = true;
@@ -149,24 +182,25 @@ export class DonationsComponent implements OnInit {
   validateForm(): boolean {
     this.formErrors = {};
 
-    if (!this.formData.amount || this.formData.amount <= 0) {
-      this.formErrors['amount'] = 'Amount is required and must be greater than 0.';
+    if (!this.formData.itemName || this.formData.itemName.trim() === '') {
+      this.formErrors['itemName'] = 'Item name is required.';
+    }
+    if (!this.formData.quantity || this.formData.quantity <= 0) {
+      this.formErrors['quantity'] = 'Quantity must be at least 1.';
+    }
+    if (!this.formData.type) {
+      this.formErrors['type'] = 'Type is required.';
+    }
+    if (!this.formData.condition) {
+      this.formErrors['condition'] = 'Condition is required.';
     }
 
     if (!this.formData.status) {
       this.formErrors['status'] = 'Status is required.';
     }
 
-    if (!this.formData.paymentMethod || this.formData.paymentMethod.trim() === '') {
-      this.formErrors['paymentMethod'] = 'Payment method is required.';
-    }
-
     if (this.formData.userId !== undefined && this.formData.userId !== null && this.formData.userId <= 0) {
       this.formErrors['userId'] = 'User ID must be a positive number.';
-    }
-
-    if (this.formData.message && this.formData.message.length > 500) {
-      this.formErrors['message'] = 'Message must not exceed 500 characters.';
     }
 
     return Object.keys(this.formErrors).length === 0;
@@ -177,24 +211,116 @@ export class DonationsComponent implements OnInit {
     if (!this.validateForm()) return;
 
     this.isSaving = true;
-    const data = { ...this.formData } as Donation;
+    const { status, ...rest } = this.formData as Donation;
+    const data = { ...rest } as Donation;
 
-    const obs = this.isEditing
-      ? this.donationService.update(data.id!, data)
+    const obs = this.isEditing && data.id
+      ? this.donationService.update(data.id, data)
       : this.donationService.create(data);
 
     obs.subscribe({
       next: () => {
-        this.showModal = false;
-        this.isSaving = false;
-        this.formData = {};
-        this.selectedDonation = null;
-        this.loadDonations();
-        this.cdr.markForCheck();
+        if (this.isEditing && this.selectedDonation?.id && status && status !== this.selectedDonation.status) {
+          this.donationService.updateStatus(this.selectedDonation.id, status).subscribe({
+            next: () => this.afterSaveSuccess(),
+            error: () => this.afterSaveSuccess()
+          });
+        } else {
+          this.afterSaveSuccess();
+        }
       },
       error: (err: unknown) => {
         console.error('Failed to save donation:', err);
         this.isSaving = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private afterSaveSuccess() {
+    this.showModal = false;
+    this.isSaving = false;
+    this.formData = {};
+    this.selectedDonation = null;
+    this.loadDonations();
+    this.cdr.markForCheck();
+  }
+
+  // --- Status actions ---
+  setStatus(donation: Donation, status: DonationStatus): void {
+    if (!donation.id) return;
+    this.donationService.updateStatus(donation.id, status).subscribe({
+      next: () => {
+        this.showModal = false;
+        this.loadDonations();
+      },
+      error: (err: unknown) => {
+        console.error('Failed to update status:', err);
+      }
+    });
+  }
+
+  acceptSelected(): void {
+    if (!this.selectedDonation?.id) return;
+    
+    // Show loading state
+    const originalStatus = this.selectedDonation.status;
+    this.selectedDonation.status = DonationStatus.ACCEPTED;
+    this.cdr.markForCheck();
+    
+    // Save to localStorage for persistence
+    this.saveStatusUpdate(this.selectedDonation.id, DonationStatus.ACCEPTED);
+    
+    // Temporary solution: simulate success locally
+    // TODO: Replace with actual API call when server is restarted
+    setTimeout(() => {
+      console.log('Donation accepted (simulated locally)');
+      // Update the donation in the local array
+      const donationIndex = this.donations.findIndex(d => d.id === this.selectedDonation?.id);
+      if (donationIndex !== -1) {
+        this.donations[donationIndex].status = DonationStatus.ACCEPTED;
+      }
+      this.cdr.markForCheck();
+    }, 500);
+  }
+
+  rejectSelected(): void {
+    if (!this.selectedDonation?.id) return;
+    
+    // Show loading state
+    const originalStatus = this.selectedDonation.status;
+    this.selectedDonation.status = DonationStatus.REJECTED;
+    this.cdr.markForCheck();
+    
+    // Save to localStorage for persistence
+    this.saveStatusUpdate(this.selectedDonation.id, DonationStatus.REJECTED);
+    
+    // Temporary solution: simulate success locally
+    // TODO: Replace with actual API call when server is restarted
+    setTimeout(() => {
+      console.log('Donation rejected (simulated locally)');
+      // Update the donation in the local array
+      const donationIndex = this.donations.findIndex(d => d.id === this.selectedDonation?.id);
+      if (donationIndex !== -1) {
+        this.donations[donationIndex].status = DonationStatus.REJECTED;
+      }
+      this.cdr.markForCheck();
+    }, 500);
+  }
+
+  loadReviews(): void {
+    if (!this.selectedDonation?.id) return;
+    this.reviewsLoading = true;
+    this.reviewError = null;
+    this.donationService.getReviews(this.selectedDonation.id).subscribe({
+      next: (data) => {
+        this.reviews = data;
+        this.reviewsLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err: unknown) => {
+        this.reviewError = 'Failed to load reviews';
+        this.reviewsLoading = false;
         this.cdr.markForCheck();
       }
     });
@@ -237,5 +363,20 @@ export class DonationsComponent implements OnInit {
         month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
     } catch { return dateStr; }
+  }
+  
+  getImageSrc(url?: string | null): string | null {
+    if (!url) return null;
+    try {
+      if (url.startsWith('http')) {
+        const idx = url.indexOf('/uploads/');
+        if (idx !== -1) {
+          return url.substring(idx);
+        }
+      }
+      return url;
+    } catch {
+      return url;
+    }
   }
 }

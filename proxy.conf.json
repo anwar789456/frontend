@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "https://minolingo.online",
+    "secure": true,
+    "changeOrigin": true
+  }
+}

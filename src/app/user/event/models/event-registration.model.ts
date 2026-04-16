@@ -1,4 +1,4 @@
-export type RegistrationStatus = 'REGISTERED' | 'WAITLISTED' | 'CONFIRMED' | 'ATTENDED' | 'CANCELLED' | 'NO_SHOW';
+export type RegistrationStatus = 'PENDING' | 'REGISTERED' | 'WAITLISTED' | 'CONFIRMED' | 'ATTENDED' | 'CANCELLED' | 'REJECTED' | 'NO_SHOW';
 
 export interface EventRegistration {
     id?: number;
@@ -15,6 +15,7 @@ export interface EventRegistration {
     // Registration details
     registrationDate?: string;
     status?: RegistrationStatus;
+    requestedWaitlist?: boolean;
     checkInCode?: string;
     phoneNumber?: string;
     rating?: number;

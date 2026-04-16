@@ -18,6 +18,8 @@ export interface AuthUser {
   name: string;
   email: string;
   role: 'ADMIN' | 'ETUDIANT' | 'TUTEUR';
+  sessionToken?: string;
+  needsSetup?: boolean;
   [key: string]: any;
 }
 
@@ -50,7 +52,57 @@ export class AuthService {
     );
   }
 
+  faceLogin(email: string, image: string): Observable<AuthUser> {
+    return this.http.post<AuthUser>(`${this.apiUrl}/face/login`, { email, image }).pipe(
+      tap((user: AuthUser) => this.setSession(user)),
+      catchError(this.handleError)
+    );
+  }
+
+  faceIdentifyLogin(image: string): Observable<AuthUser> {
+    return this.http.post<AuthUser>(`${this.apiUrl}/face/identify-login`, { image }).pipe(
+      switchMap((user: AuthUser) => {
+        return this.http.get<AuthUser>(`${this.apiUrl}/get-user-by-id/${user.id}`).pipe(
+          switchMap((fullUser: AuthUser) => {
+            this.setSession(fullUser);
+            return of(fullUser);
+          })
+        );
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  checkFaceStatus(email: string): Observable<{ faceRegistered: boolean; userId?: number }> {
+    return this.http.get<{ faceRegistered: boolean; userId?: number }>(
+      `${this.apiUrl}/face/status-by-email?email=${encodeURIComponent(email)}`
+    ).pipe(
+      catchError(() => of({ faceRegistered: false }))
+    );
+  }
+
+  googleLogin(idToken: string): Observable<AuthUser> {
+    return this.http.post<AuthUser>(`${this.apiUrl}/google-auth`, { idToken }).pipe(
+      tap((user: AuthUser) => this.setSession(user)),
+      catchError(this.handleError)
+    );
+  }
+
+  completeGoogleSignup(userId: number, payload: { username: string; password: string; parentalEmail?: string }): Observable<AuthUser> {
+    return this.http.post<AuthUser>(`${this.apiUrl}/complete-google-signup/${userId}`, payload).pipe(
+      tap((user: AuthUser) => this.setSession(user)),
+      catchError(this.handleError)
+    );
+  }
+
+
   logout(): void {
+    const user = this.currentUser;
+    if (user) {
+      // Fire-and-forget: clear server-side session token so the DB stays clean.
+      // Errors are intentionally swallowed — logout must succeed locally regardless.
+      this.http.post(`${this.apiUrl}/session/${user.id}/invalidate`, {}).subscribe({ error: () => {} });
+    }
     localStorage.removeItem(this.STORAGE_KEY);
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);

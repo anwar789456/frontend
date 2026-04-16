@@ -1,0 +1,305 @@
+/* ═══════════════════════════════════════════════════
+   MinoLingo Events — Kid-Friendly Vibrant Theme
+   Coral Primary • Green Success • Purple Accents
+   ═══════════════════════════════════════════════════ */
+/* ── Base Container ── */
+
+/* ── Base Container ── */
+.events-container {
+  font-family: 'Nunito', 'Quicksand', 'Comic Neue', sans-serif;
+  background: linear-gradient(135deg, #fff7ed 0%, #faf5ff 50%, #f0fdf4 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+/* ── MinoLingo Color Palette ── */
+:host {
+  --ev-primary: #f97316;
+  --ev-primary-dark: #ea580c;
+  --ev-primary-light: #fff7ed;
+  --ev-primary-glow: rgba(249,115,22,.2);
+  --ev-purple: #7C3AED;
+  --ev-purple-light: #EDE9FE;
+  --ev-green: #16a34a;
+  --ev-green-light: #dcfce7;
+  --ev-amber: #d97706;
+  --ev-amber-light: #fef3c7;
+  --ev-red: #dc2626;
+  --ev-red-light: #fee2e2;
+  --ev-blue: #2563eb;
+  --ev-blue-light: #dbeafe;
+  --ev-text: #1E293B;
+  --ev-text-sec: #64748B;
+  --ev-text-muted: #94A3B8;
+  --ev-border: #E2E8F0;
+  --ev-border-dark: #CBD5E1;
+  --ev-bg: #F8FAFC;
+  --ev-card-shadow: 0 4px 0 #E2E8F0;
+  --ev-radius: 16px;
+  --ev-radius-lg: 20px;
+}
+
+/* ── Mascot Animations ── */
+@keyframes mascotWave { 0%,100%{transform:rotate(0)} 20%{transform:rotate(14deg)} 40%{transform:rotate(-8deg)} 60%{transform:rotate(10deg)} 80%{transform:rotate(-4deg)} }
+@keyframes mascotBounce { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-12px)} 60%{transform:translateY(-5px)} }
+@keyframes mascotFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes mascotDance { 0%{transform:rotate(0) scale(1)} 25%{transform:rotate(-5deg) scale(1.05)} 50%{transform:rotate(5deg) scale(1.1)} 75%{transform:rotate(-3deg) scale(1.05)} 100%{transform:rotate(0) scale(1)} }
+.mascot-wave { animation: mascotWave 1.5s ease-in-out infinite; transform-origin: 70% 70%; }
+.mascot-bounce { animation: mascotBounce 1.8s cubic-bezier(.36,.07,.19,.97) infinite; }
+.mascot-float { animation: mascotFloat 3s ease-in-out infinite; }
+.mascot-dance { animation: mascotDance 2s ease-in-out infinite; }
+
+/* ── Floating Decorations ── */
+@keyframes floatBubble { 0%,100%{transform:translateY(0) rotate(0);opacity:.7} 50%{transform:translateY(-14px) rotate(8deg);opacity:1} }
+@keyframes sparkleGlow { 0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.3);opacity:1} }
+.float-bubble { animation: floatBubble 3s ease-in-out infinite; }
+.float-bubble-delay { animation: floatBubble 3s ease-in-out .8s infinite; }
+.sparkle { animation: sparkleGlow 2s ease-in-out infinite; }
+
+/* ── Page Entrance Animations ── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideRight { from{opacity:0;transform:translateX(18px)} to{opacity:1;transform:translateX(0)} }
+@keyframes popIn { 0%{opacity:0;transform:scale(.8)} 60%{transform:scale(1.05)} 100%{opacity:1;transform:scale(1)} }
+.anim-fade-up { animation: fadeUp .5s cubic-bezier(.36,.07,.19,.97) both; }
+.anim-slide-right { animation: slideRight .5s cubic-bezier(.36,.07,.19,.97) both; }
+.anim-pop { animation: popIn .4s cubic-bezier(.36,.07,.19,.97) both; }
+.anim-delay-1 { animation-delay: .1s; }
+.anim-delay-2 { animation-delay: .2s; }
+.anim-delay-3 { animation-delay: .3s; }
+
+/* ── Event Cards — 3D style ── */
+.ev-card {
+  background: #fff;
+  border: 2px solid var(--ev-border);
+  border-radius: var(--ev-radius-lg);
+  transition: all .25s cubic-bezier(.36,.07,.19,.97);
+  box-shadow: 0 4px 0 var(--ev-border);
+}
+.ev-card:hover {
+  box-shadow: 0 6px 0 var(--ev-border-dark), 0 8px 25px var(--ev-primary-glow);
+  transform: translateY(-3px);
+  border-color: var(--ev-primary);
+}
+
+/* ── 3D Hero Banner ── */
+.ev-hero {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 40%, #fbbf24 100%);
+  border-radius: var(--ev-radius-lg);
+  border: 2px solid #ea580c;
+  border-bottom: 4px solid #c2410c;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── 3D Buttons ── */
+.btn-ev-primary {
+  background: var(--ev-primary);
+  color: #fff;
+  font-weight: 800;
+  border-radius: var(--ev-radius);
+  border: none;
+  border-bottom: 4px solid var(--ev-primary-dark);
+  transition: all .15s;
+  letter-spacing: 0.4px;
+  font-size: 13px;
+}
+.btn-ev-primary:hover {
+  background: #fb923c;
+  transform: translateY(-1px);
+  border-bottom-width: 5px;
+  box-shadow: 0 6px 20px var(--ev-primary-glow);
+}
+.btn-ev-primary:active { transform: translateY(2px); border-bottom-width: 2px; }
+
+/* ── Tab styles ── */
+.ev-tab {
+  position: relative;
+  font-weight: 700;
+  transition: all .2s cubic-bezier(.36,.07,.19,.97);
+  border-bottom: 3px solid transparent;
+}
+.ev-tab.active {
+  color: var(--ev-primary);
+  border-bottom-color: var(--ev-primary);
+}
+.ev-tab:hover:not(.active) { color: #374151; background: #fff7ed; }
+
+/* ── Event List Item ── */
+.ev-list-item {
+  border-radius: var(--ev-radius);
+  border: 2px solid transparent;
+  transition: all .2s cubic-bezier(.36,.07,.19,.97);
+  padding: 12px;
+  margin: 0 -4px;
+}
+.ev-list-item:hover {
+  background: var(--ev-primary-light);
+  border-color: #fed7aa;
+  transform: translateX(4px);
+  box-shadow: 0 2px 0 #fed7aa;
+}
+
+/* ── Date Badge 3D ── */
+.ev-date-badge {
+  background: #fff7ed;
+  border: 2px solid #fed7aa;
+  border-bottom: 4px solid #fdba74;
+  border-radius: 12px;
+  min-width: 52px;
+  padding: 6px 8px;
+  text-align: center;
+  transition: all .2s;
+}
+.ev-list-item:hover .ev-date-badge {
+  background: var(--ev-primary);
+  border-color: var(--ev-primary-dark);
+  border-bottom-color: #c2410c;
+}
+.ev-list-item:hover .ev-date-badge .ev-month { color: #fff !important; }
+.ev-list-item:hover .ev-date-badge .ev-day { color: #fff !important; }
+
+/* ── Tags / Pills ── */
+.ev-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid;
+  transition: all .15s;
+}
+
+/* ── Status Badges ── */
+.ev-badge-registered {
+  background: var(--ev-green-light);
+  color: var(--ev-green);
+  border: 2px solid #bbf7d0;
+  border-bottom: 3px solid #86efac;
+}
+.ev-badge-waitlist {
+  background: var(--ev-amber-light);
+  color: var(--ev-amber);
+  border: 2px solid #fde68a;
+  border-bottom: 3px solid #fcd34d;
+}
+.ev-badge-live {
+  background: #16a34a;
+  color: #fff;
+  border: 2px solid #15803d;
+  border-bottom: 3px solid #166534;
+}
+
+/* ── Sidebar Card ── */
+.ev-sidebar-card {
+  background: #fff;
+  border: 2px solid var(--ev-border);
+  border-radius: var(--ev-radius-lg);
+  box-shadow: 0 4px 0 var(--ev-border);
+  transition: all .25s cubic-bezier(.36,.07,.19,.97);
+}
+.ev-sidebar-card:hover {
+  border-color: var(--ev-border-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--ev-border-dark), 0 8px 20px rgba(249,115,22,.08);
+}
+
+/* ── Search Input ── */
+.ev-search {
+  border: 2px solid var(--ev-border);
+  border-radius: 9999px;
+  transition: all .2s;
+  background: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 0 var(--ev-border);
+}
+.ev-search:focus {
+  border-color: var(--ev-primary);
+  box-shadow: 0 2px 0 var(--ev-primary), 0 0 0 4px var(--ev-primary-glow);
+  outline: none;
+}
+
+/* ── Pulse Live Badge ── */
+@keyframes livePulse { 0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.5)} 50%{box-shadow:0 0 0 8px transparent} }
+.badge-live-pulse { animation: livePulse 1.5s infinite; }
+
+/* ── Modal entrance ── */
+@keyframes modalBounceIn {
+  0% { transform: translateY(40px) scale(.9); opacity: 0; }
+  60% { transform: translateY(-10px) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0) scale(1); }
+}
+.ev-modal { animation: modalBounceIn .4s cubic-bezier(.36,.07,.19,.97); }
+
+/* ── Loading Mascot ── */
+@keyframes bounceLoop { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-16px) scale(1.05)} }
+.loading-mascot { animation: bounceLoop 1.2s ease-in-out infinite; }
+
+/* ── Sort Pills ── */
+.ev-sort-pill {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid;
+  white-space: nowrap;
+  transition: all .15s;
+  border-bottom: 3px solid;
+}
+.ev-sort-pill.active {
+  background: var(--ev-primary);
+  color: #fff;
+  border-color: var(--ev-primary-dark);
+  border-bottom-color: #c2410c;
+}
+.ev-sort-pill:not(.active) {
+  background: #fff;
+  color: var(--ev-text-sec);
+  border-color: var(--ev-border);
+  border-bottom-color: var(--ev-border-dark);
+}
+.ev-sort-pill:not(.active):hover {
+  border-color: #fdba74;
+  border-bottom-color: #fb923c;
+  background: var(--ev-primary-light);
+  color: var(--ev-primary-dark);
+}
+
+/* ── Star Rating ── */
+.star-btn { transition: transform .15s; }
+.star-btn:hover { transform: scale(1.3); }
+
+/* ── Page Scroll Buttons ── */
+.ev-page-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 2px solid var(--ev-border);
+  border-bottom: 3px solid var(--ev-border-dark);
+  background: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.ev-page-btn:hover:not(:disabled) {
+  border-color: var(--ev-primary);
+  border-bottom-color: var(--ev-primary-dark);
+  background: var(--ev-primary-light);
+  color: var(--ev-primary);
+}
+.ev-page-btn.active-page {
+  background: var(--ev-primary);
+  color: #fff;
+  border-color: var(--ev-primary-dark);
+  border-bottom-color: #c2410c;
+}
+.ev-page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--ev-primary), #fbbf24);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}

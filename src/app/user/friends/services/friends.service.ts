@@ -7,7 +7,7 @@ import { Friendship, ChatMessage, UserStatus } from '../models/friend.model';
   providedIn: 'root'
 })
 export class FriendsService {
-  private readonly apiUrl = 'https://minolingo.online/api/forums';
+  private readonly apiUrl = '/api/forums';
 
   constructor(private http: HttpClient) {}
 
@@ -71,6 +71,10 @@ export class FriendsService {
     return this.http.put<void>(`${this.apiUrl}/mark-conversation-read/${senderId}/${receiverId}`, {});
   }
 
+  getLastMessage(userId1: number, userId2: number): Observable<ChatMessage> {
+    return this.http.get<ChatMessage>(`${this.apiUrl}/get-last-message/${userId1}/${userId2}`);
+  }
+
   getAllMessages(userId: number): Observable<ChatMessage[]> {
     return this.http.get<ChatMessage[]>(`${this.apiUrl}/get-all-messages/${userId}`);
   }
@@ -107,5 +111,39 @@ export class FriendsService {
 
   getOnlineUsers(): Observable<UserStatus[]> {
     return this.http.get<UserStatus[]>(`${this.apiUrl}/online-users`);
+  }
+
+  unblockUser(friendshipId: number): Observable<Friendship> {
+    return this.http.put<Friendship>(`${this.apiUrl}/unblock-user/${friendshipId}`, {});
+  }
+
+  getBlockedUsers(userId: number): Observable<Friendship[]> {
+    return this.http.get<Friendship[]>(`${this.apiUrl}/get-blocked-users/${userId}`);
+  }
+
+  getMutualFriendsCount(userId1: number, userId2: number): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.apiUrl}/get-mutual-friends-count/${userId1}/${userId2}`);
+  }
+
+  // ── Typing Indicator ──
+
+  setTyping(userId: number, typingToUserId: number): Observable<UserStatus> {
+    return this.http.put<UserStatus>(`${this.apiUrl}/set-typing/${userId}/${typingToUserId}`, {});
+  }
+
+  clearTyping(userId: number): Observable<UserStatus> {
+    return this.http.put<UserStatus>(`${this.apiUrl}/clear-typing/${userId}`, {});
+  }
+
+  isTyping(typerId: number, receiverId: number): Observable<{ typing: boolean }> {
+    return this.http.get<{ typing: boolean }>(`${this.apiUrl}/is-typing/${typerId}/${receiverId}`);
+  }
+
+  // ── AI Speech Correction ──
+
+  correctText(text: string): Observable<{ originalText: string; correctedText: string; hasCorrections: boolean; explanation: string }> {
+    return this.http.post<{ originalText: string; correctedText: string; hasCorrections: boolean; explanation: string }>(
+      `${this.apiUrl}/ai/correct-text`, { text }
+    );
   }
 }

@@ -128,111 +128,96 @@
     }
 
     <!-- ── PROMPT CARDS GRID ── -->
+<div class="min-h-screen bg-[#f8fafc]">
+  <div class="p-8 max-w-[1200px] mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8 anim-fade-up">
+      <h1 class="text-2xl font-bold text-[#0f1419]">Writing Exercises</h1>
+      <p class="text-sm text-[#6b7280] mt-1">Practice your English writing skills! Choose a topic and express yourself.</p>
+    </div>
+
+    <!-- Filter -->
+    <div class="flex items-center gap-2 mb-6 anim-fade-up" style="animation-delay: 0.1s">
+      @for (level of ['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED']; track level) {
+        <button (click)="filterLevel = level" class="px-4 py-2 text-sm font-semibold rounded-xl transition-all"
+          [class]="filterLevel === level ? 'bg-[#8b5cf6] text-white shadow-md shadow-purple-200/40' : 'bg-white text-[#6b7280] border border-[#e5e7eb] hover:bg-[#f9fafb]'">
+          {{ level === 'ALL' ? 'All Levels' : level }}
+        </button>
+      }
+    </div>
+
+    <!-- Loading -->
+    @if (isLoading) {
+      <div class="text-center py-20 text-[#9ca3af]">Loading writing prompts...</div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading && filteredPrompts.length === 0) {
+      <div class="text-center py-20 anim-fade-up">
+        <div class="w-20 h-20 rounded-full bg-white border border-[#e5e7eb] flex items-center justify-center mx-auto mb-5 shadow-sm">
+          <svg class="w-10 h-10 text-[#8b5cf6]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+        </div>
+        <p class="text-lg font-bold text-[#374151]">No writing exercises available yet</p>
+        <p class="text-sm text-[#9ca3af] mt-1">Check back soon for new writing prompts!</p>
+      </div>
+    }
+
+    <!-- Prompt Cards -->
     @if (!isLoading && filteredPrompts.length > 0) {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         @for (p of filteredPrompts; track p.id; let idx = $index) {
           @let submission = getSubmissionForPrompt(p.id!);
-          @let draft     = hasDraft(p.id!);
-          @let theme     = getTheme(idx);
-          @let diff      = getDifficultyConfig(p.difficulty);
+          @let draft = hasDraft(p.id!);
 
-          <div class="bg-white rounded-3xl overflow-hidden flex flex-col card-hover anim-fade-up border-2"
-               [class]="theme.border"
-               [style.animation-delay.ms]="idx * 70">
+          <div class="bg-white rounded-2xl border border-[#e5e7eb]/70 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-250 flex flex-col anim-fade-up"
+               [style.animation-delay.ms]="idx * 80">
 
-            <!-- Card Header -->
-            <div class="relative h-36 bg-gradient-to-br shrink-0 flex items-center justify-center overflow-hidden"
-                 [ngClass]="theme.bg">
-
-              <!-- Big emoji -->
-              <span class="text-6xl drop-shadow-lg anim-float" [style.animation-delay.ms]="idx * 200">{{ theme.emoji }}</span>
-
-              <!-- Decorative circles -->
-              <div class="absolute -bottom-4 -right-4 w-20 h-20 bg-white/15 rounded-full"></div>
-              <div class="absolute -top-3 -left-3  w-14 h-14 bg-white/15 rounded-full"></div>
-
-              <!-- Difficulty badge -->
-              <div class="absolute top-3 left-3">
-                <span class="flex items-center gap-1 px-2.5 py-1 text-[11px] font-extrabold rounded-xl"
-                  [class]="diff.bg + ' ' + diff.text">
-                  {{ diff.emoji }} {{ diff.label }}
-                </span>
+            <!-- Cover -->
+            <div class="relative h-32 overflow-hidden bg-gradient-to-br shrink-0" [ngClass]="getDifficultyGradient(p.difficulty)">
+              <div class="absolute inset-0 flex items-center justify-center">
+                <svg class="w-14 h-14 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
               </div>
-
-              <!-- Status badge -->
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 text-[11px] font-bold rounded-md" [ngClass]="getDifficultyColor(p.difficulty)">{{ p.difficulty }}</span>
+              </div>
               @if (submission) {
                 <div class="absolute top-3 right-3">
-                  <span class="flex items-center gap-1 px-2.5 py-1 text-[11px] font-extrabold rounded-xl bg-white/90 text-emerald-600 shadow-sm">
-                    {{ getScoreEmoji(submission.overallScore) }} {{ submission.overallScore }}/100
-                  </span>
+                  <span class="px-2.5 py-1 text-[11px] font-bold rounded-md bg-emerald-100 text-emerald-700">Completed - {{ submission.overallScore }}/100</span>
                 </div>
               } @else if (draft) {
                 <div class="absolute top-3 right-3">
-                  <span class="flex items-center gap-1 px-2.5 py-1 text-[11px] font-extrabold rounded-xl bg-white/90 text-blue-600 shadow-sm">
-                    💾 Draft
-                  </span>
+                  <span class="px-2.5 py-1 text-[11px] font-bold rounded-md bg-blue-100 text-blue-700">Draft saved</span>
                 </div>
               }
-
-              <!-- XP pill -->
-              <div class="absolute bottom-3 right-3">
-                <span class="flex items-center gap-1 px-2.5 py-1 text-[11px] font-extrabold rounded-xl bg-white/90 text-amber-600 shadow-sm">
-                  ⭐ {{ p.xpReward }} XP
-                </span>
-              </div>
             </div>
 
-            <!-- Card Body -->
-            <div class="flex flex-col flex-1 p-4">
+            <!-- Body -->
+            <div class="flex flex-col flex-1 p-5">
+              <h3 class="text-[15px] font-bold text-[#0f1419] leading-snug mb-1 line-clamp-2">{{ p.title }}</h3>
+              <p class="text-xs text-[#6b7280] line-clamp-2 mb-3 flex-1">{{ p.description }}</p>
 
-              <!-- Title -->
-              <h3 class="text-[15px] font-extrabold text-[#1e0a3c] leading-snug mb-1.5 line-clamp-2">{{ p.title }}</h3>
-
-              <!-- Description -->
-              <p class="text-[12px] text-[#6b7280] leading-relaxed line-clamp-2 flex-1 mb-3">{{ p.description }}</p>
-
-              <!-- Word count pill -->
-              <div class="flex items-center gap-2 mb-4">
-                <div class="flex items-center gap-1.5 bg-[#f5f3ff] border border-violet-100 rounded-xl px-3 py-1.5">
-                  <span class="text-sm">📄</span>
-                  <span class="text-[11px] font-bold text-violet-600">{{ p.minWords }}–{{ p.maxWords }} words</span>
+              <div class="flex items-center gap-3 text-[12px] text-[#6b7280] mb-4">
+                <div class="flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                  <span class="font-semibold text-[#374151]">{{ p.xpReward }} XP</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" /></svg>
+                  <span class="font-medium">{{ p.minWords }}-{{ p.maxWords }} words</span>
                 </div>
               </div>
 
-              <!-- Score bar (completed only) -->
-              @if (submission) {
-                <div class="mb-4">
-                  <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-[11px] font-bold text-[#6b7280]">Your Score</span>
-                    <span class="text-[12px] font-extrabold text-emerald-600">{{ submission.overallScore }}/100</span>
-                  </div>
-                  <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                    <div class="h-full rounded-full transition-all duration-700"
-                      [style.width.%]="submission.overallScore"
-                      [class]="submission.overallScore >= 75 ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
-                              : submission.overallScore >= 50 ? 'bg-gradient-to-r from-amber-400 to-orange-500'
-                              : 'bg-gradient-to-r from-red-400 to-rose-500'">
-                    </div>
-                  </div>
-                </div>
-              }
-
-              <!-- CTA Button -->
               @if (submission) {
                 <a [routerLink]="['/writing', p.id, 'result', submission.id]"
-                  class="w-full flex items-center justify-center gap-2 py-3 text-[13px] font-extrabold text-violet-700 bg-violet-50 border-2 border-violet-200 rounded-2xl hover:bg-violet-100 hover:border-violet-400 transition-all">
-                  🏆 View Results
-                </a>
-              } @else if (draft) {
-                <a [routerLink]="['/writing', p.id]"
-                  class="w-full flex items-center justify-center gap-2 py-3 text-[13px] font-extrabold text-white rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] bg-gradient-to-r from-blue-500 to-cyan-500 shadow-blue-200/60">
-                  ▶ Continue Writing
+                  class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-[#8b5cf6] bg-[#8b5cf6]/5 border border-[#8b5cf6]/20 rounded-xl hover:bg-[#8b5cf6]/10 transition-all">
+                  View Results
                 </a>
               } @else {
                 <a [routerLink]="['/writing', p.id]"
-                  class="w-full flex items-center justify-center gap-2 py-3 text-[13px] font-extrabold text-white rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
-                  [ngClass]="'bg-gradient-to-r ' + theme.bg + ' shadow-purple-200/60'">
-                  ✍️ Start Writing!
+                  class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-[#8b5cf6] rounded-xl hover:bg-[#7c3aed] shadow-md shadow-purple-200/40 transition-all">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                  {{ draft ? 'Continue Writing' : 'Start Writing' }}
                 </a>
               }
             </div>

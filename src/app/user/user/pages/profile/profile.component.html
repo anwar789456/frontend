@@ -638,6 +638,22 @@
       }
 
       <!-- ═══════════════════════════════════ -->
+      <!-- FACE RECOGNITION                    -->
+      <!-- ═══════════════════════════════════ -->
+      @if (user) {
+        <div class="reveal d5 bg-white/85 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white p-6 mb-5">
+          <h2 class="fredoka text-[20px] text-[#1e293b] mb-4 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#38a9f3] to-[#6366f1] flex items-center justify-center text-white shadow-md shadow-blue-200">🤳</span>
+            Face Recognition
+          </h2>
+          <app-face-recognition
+            mode="register"
+            [userId]="user.id">
+          </app-face-recognition>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════ -->
       <!-- ONBOARDING CHECKLIST (new students) -->
       <!-- ═══════════════════════════════════ -->
       @if (isStudent && (user.xp || 0) === 0) {

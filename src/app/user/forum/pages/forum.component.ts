@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -29,6 +29,10 @@ export class ForumComponent implements OnInit, OnDestroy {
   trendingTopics: TrendingTopic[] = [];
   filteredPosts: ForumPost[] = [];
   user: AuthUser | null = null;
+
+  // Loading state
+  postsLoading = true;
+  private postsPollInterval: any;
 
   // Create post
   newPostContent = '';
@@ -75,6 +79,11 @@ export class ForumComponent implements OnInit, OnDestroy {
   editingPostId: number | null = null;
   editContent = '';
 
+  // Edit Reply
+  editingReplyId: number | null = null;
+  editReplyContent = '';
+  editReplyError = '';
+
   // Menu
   openMenuPostId: number | null = null;
 
@@ -105,19 +114,22 @@ export class ForumComponent implements OnInit, OnDestroy {
   reportSubmitting = false;
   reportReasons = REPORT_REASONS;
 
-  // Reactions (Educational)
+  // Reactions (Kid-friendly)
   reactionEmojis = [
-    { emoji: '🌟', label: 'Great English!' },
-    { emoji: '🤔', label: 'Interesting!' },
-    { emoji: '�', label: 'I learned something!' },
+    { emoji: '⭐', label: 'Super Star!' },
     { emoji: '❤️', label: 'Love it!' },
-    { emoji: '🔥', label: 'Amazing!' },
-    { emoji: '👏', label: 'Well done!' }
+    { emoji: '😄', label: 'Makes me happy!' },
+    { emoji: '👏', label: 'Well done!' },
+    { emoji: '🎉', label: 'Awesome!' },
+    { emoji: '�', label: 'I learned something!' }
   ];
   showReactionsPostId: number | null = null;
   userReactions: Map<number, string> = new Map();
   postReactionCounts: Map<number, Map<string, number>> = new Map();
   floatingReaction: { postId: number; emoji: string } | null = null;
+
+  // Interaction debounce for polling
+  private lastInteractionTime = 0;
 
   // GIF Picker
   showGifPicker = false;
@@ -217,29 +229,59 @@ export class ForumComponent implements OnInit, OnDestroy {
       this.user = u;
     });
     this.darkMode = localStorage.getItem('forum_dark_mode') === 'true';
+
+    // Load local data instantly (no network)
     this.loadReactionsFromStorage();
     this.loadSavedAndFavorites();
+    this.loadEquippedBadge();
+
+    // Load critical path data in parallel with forkJoin
+    this.postsLoading = true;
+    forkJoin({
+      posts: this.forumService.getAllPosts(),
+      topics: this.forumService.getAllTopics()
+    }).subscribe({
+      next: ({ posts, topics }) => {
+        this.allPosts = posts;
+        this.posts = posts.filter(p => !p.parentPostId);
+        this.trendingTopics = topics || [];
+        this.countCommentsFromAll();
+        this.resolveSharedPosts();
+        this.buildKnownUsers();
+        this.applyFilter();
+        this.postsLoading = false;
+        this.cdRef.detectChanges();
+      },
+      error: () => {
+        this.postsLoading = false;
+        this.cdRef.detectChanges();
+      }
+    });
+
+    // Load secondary data in parallel (non-blocking)
     this.loadXPData();
     this.loadStreakData();
     this.loadWordOfTheDay();
-    this.loadPosts();
-    this.loadTrendingTopics();
     this.loadAllUsers();
     this.loadTrendingGifs();
     this.loadTagNotifications();
     this.loadPendingFriendRequests();
-    this.loadEquippedBadge();
     this.loadFriendSuggestions();
+
     this.forumService.newTopic$.subscribe(() => {
       this.toggleNewTopicForm();
     });
-    // Poll for new notifications every 15 seconds
-    this.notifPollInterval = setInterval(() => this.pollNotifications(), 15000);
+
+    // Poll for new posts every 3 seconds
+    this.postsPollInterval = setInterval(() => this.pollNewPosts(), 3000);
+    // Poll for new notifications every 5 seconds
+    this.notifPollInterval = setInterval(() => this.pollNotifications(), 5000);
   }
 
   ngOnDestroy(): void {
     this.newTopicSub?.unsubscribe();
     if (this.notifPollInterval) clearInterval(this.notifPollInterval);
+    if (this.postsPollInterval) clearInterval(this.postsPollInterval);
   }
 
   @HostListener('document:click', ['$event'])
@@ -296,6 +338,33 @@ export class ForumComponent implements OnInit, OnDestroy {
         this.resolveSharedPosts();
         this.buildKnownUsers();
         this.applyFilter();
+        this.postsLoading = false;
+        this.cdRef.detectChanges();
+      }
+    });
+  }
+
+  private pollNewPosts(): void {
+    // Skip poll if user interacted recently (avoid overwriting optimistic updates)
+    if (Date.now() - this.lastInteractionTime < 5000) return;
+
+    this.forumService.getAllPosts().subscribe({
+      next: (all) => {
+        // Skip if user interacted while request was in-flight
+        if (Date.now() - this.lastInteractionTime < 5000) return;
+
+        this.allPosts = all;
+        this.posts = all.filter(p => !p.parentPostId);
+        this.countCommentsFromAll();
+        this.resolveSharedPosts();
+        this.applyFilter();
+
+        // Auto-refresh expanded replies
+        if (this.expandedRepliesPostId) {
+          const replies = this.allPosts.filter(p => p.parentPostId === this.expandedRepliesPostId);
+          this.repliesMap.set(this.expandedRepliesPostId, replies);
+        }
+
         this.cdRef.detectChanges();
       }
     });
@@ -343,6 +412,12 @@ export class ForumComponent implements OnInit, OnDestroy {
         p.username.toLowerCase().includes(q)
       );
     }
+    // Sort by date: newest first
+    result.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
     this.filteredPosts = result;
   }
 
@@ -710,6 +785,9 @@ export class ForumComponent implements OnInit, OnDestroy {
   // ── Repost ──
 
   repostPost(post: ForumPost): void {
+    this.lastInteractionTime = Date.now();
+    post.reposts = (post.reposts || 0) + 1;
+    this.cdRef.detectChanges();
     this.forumService.repostPost(post.id).subscribe({
       next: (updated) => {
         const idx = this.posts.findIndex(p => p.id === post.id);
@@ -753,6 +831,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   submitReply(parentPostId: number): void {
     this.replyError = this.validateReplyContent(this.replyContent);
     if (this.replyError || !this.user) return;
+    this.lastInteractionTime = Date.now();
 
     const reply: any = {
       content: this.replyContent.trim(),
@@ -786,6 +865,85 @@ export class ForumComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Edit / Delete Reply ──
+
+  isOwnReply(reply: ForumPost): boolean {
+    return !!this.user && reply.userId === this.user.id;
+  }
+
+  startEditReply(reply: ForumPost): void {
+    this.editingReplyId = reply.id;
+    this.editReplyContent = reply.content;
+    this.editReplyError = '';
+  }
+
+  cancelEditReply(): void {
+    this.editingReplyId = null;
+    this.editReplyContent = '';
+    this.editReplyError = '';
+  }
+
+  submitEditReply(reply: ForumPost): void {
+    this.editReplyError = this.validateReplyContent(this.editReplyContent);
+    if (this.editReplyError) return;
+
+    const updated: any = {
+      content: this.editReplyContent.trim(),
+      isEdited: true,
+      image: reply.image,
+      author: reply.author,
+      username: reply.username,
+      avatar: reply.avatar
+    };
+    this.forumService.updatePost(reply.id, updated).subscribe({
+      next: () => {
+        this.editingReplyId = null;
+        this.editReplyContent = '';
+        this.editReplyError = '';
+        this.loadPosts();
+        // Refresh replies for the parent post
+        setTimeout(() => {
+          if (this.expandedRepliesPostId) {
+            const replies = this.allPosts.filter(p => p.parentPostId === this.expandedRepliesPostId);
+            this.repliesMap.set(this.expandedRepliesPostId, replies);
+            this.cdRef.detectChanges();
+          }
+        }, 500);
+        this.addNotification('Reply updated!', 'success');
+      },
+      error: (err) => {
+        this.editReplyError = `Failed to update reply (${err?.status || 'network error'}).`;
+      }
+    });
+  }
+
+  deleteReply(reply: ForumPost, parentPostId: number): void {
+    this.lastInteractionTime = Date.now();
+    // Optimistic: remove reply from local map immediately
+    const replies = this.repliesMap.get(parentPostId);
+    if (replies) {
+      this.repliesMap.set(parentPostId, replies.filter(r => r.id !== reply.id));
+    }
+    // Optimistic: decrement comment count
+    const parentPost = this.posts.find(p => p.id === parentPostId);
+    if (parentPost) parentPost.comments = Math.max(0, parentPost.comments - 1);
+    this.cdRef.detectChanges();
+    this.forumService.deletePost(reply.id).subscribe({
+      next: () => {
+        this.loadPosts();
+        setTimeout(() => {
+          const replies = this.allPosts.filter(p => p.parentPostId === parentPostId);
+          this.repliesMap.set(parentPostId, replies);
+          this.cdRef.detectChanges();
+        }, 500);
+        this.addNotification('Reply deleted', 'info');
+      },
+      error: () => {
+        this.addNotification('Failed to delete reply', 'warning');
+      }
+    });
+  }
+
   // ── Edit Post ──
 
   startEdit(post: ForumPost): void {
@@ -804,6 +962,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   submitEdit(post: ForumPost): void {
     this.editError = this.validatePostContent(this.editContent);
     if (this.editError) return;
+    this.lastInteractionTime = Date.now();
 
     const hashtags = this.extractHashtags(this.editContent);
     let topicId = post.topicId;
@@ -840,6 +999,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   // ── Delete Post ──
 
   deletePost(post: ForumPost): void {
+    this.lastInteractionTime = Date.now();
     this.openMenuPostId = null;
     this.posts = this.posts.filter(p => p.id !== post.id);
     this.applyFilter();
@@ -1012,14 +1172,43 @@ export class ForumComponent implements OnInit, OnDestroy {
   reactToPost(post: ForumPost, emoji: string, event: Event): void {
     event.stopPropagation();
     const currentReaction = this.userReactions.get(post.id);
+    const oldLikes = post.likes;
+
+    // Pause polling briefly so it doesn't overwrite optimistic update
+    this.lastInteractionTime = Date.now();
+
+    const updatePostInList = (updated: ForumPost) => {
+      const idx = this.posts.findIndex(p => p.id === post.id);
+      if (idx !== -1) { updated.comments = this.posts[idx].comments; this.posts[idx] = updated; }
+      this.applyFilter();
+      this.cdRef.detectChanges();
+    };
+
+    const revertOnError = () => {
+      post.likes = oldLikes;
+      this.applyFilter();
+      this.cdRef.detectChanges();
+    };
+
     if (currentReaction === emoji) {
+      // Removing reaction → unlike on backend
       this.userReactions.delete(post.id);
       const counts = this.postReactionCounts.get(post.id);
       if (counts) {
         const c = (counts.get(emoji) || 1) - 1;
         if (c <= 0) counts.delete(emoji); else counts.set(emoji, c);
       }
+      // Optimistic: decrement immediately
+      post.likes = Math.max(0, post.likes - 1);
+      this.applyFilter();
+      this.cdRef.detectChanges();
+      this.forumService.unlikePost(post.id).subscribe({
+        next: updatePostInList,
+        error: revertOnError
+      });
     } else {
+      // Switching or adding reaction
+      const hadReaction = !!currentReaction;
       if (currentReaction) {
         const counts = this.postReactionCounts.get(post.id);
         if (counts) {
@@ -1035,16 +1224,18 @@ export class ForumComponent implements OnInit, OnDestroy {
       counts.set(emoji, (counts.get(emoji) || 0) + 1);
       this.floatingReaction = { postId: post.id, emoji };
       setTimeout(() => this.floatingReaction = null, 600);
-      if (!currentReaction) {
+      if (!hadReaction) {
+        // Optimistic: increment immediately
+        post.likes = post.likes + 1;
+        this.applyFilter();
+        this.cdRef.detectChanges();
         this.awardXP(ForumService.XP_REWARDS.reaction, 'reaction');
         this.forumService.likePost(post.id).subscribe({
-          next: (updated) => {
-            const idx = this.posts.findIndex(p => p.id === post.id);
-            if (idx !== -1) { updated.comments = this.posts[idx].comments; this.posts[idx] = updated; }
-            this.applyFilter();
-          }
+          next: updatePostInList,
+          error: revertOnError
         });
       }
+      // If switching reactions, no backend call — like count stays the same
     }
     this.showReactionsPostId = null;
     this.saveReactionsToStorage();
@@ -1339,6 +1530,7 @@ export class ForumComponent implements OnInit, OnDestroy {
     this.shareSearchQuery = '';
     this.showShareEmojiPicker = false;
     this.openMenuPostId = null;
+    this.loadShareFriends();
   }
 
   closeShareModal(): void {
@@ -1347,6 +1539,59 @@ export class ForumComponent implements OnInit, OnDestroy {
     this.shareMessage = '';
     this.shareSearchQuery = '';
     this.showShareEmojiPicker = false;
+  }
+
+  private loadShareFriends(): void {
+    if (!this.user) return;
+    this.shareLoading = true;
+    this.friendsService.getFriends(this.user.id).subscribe({
+      next: (friendships) => {
+        this.shareFriends = friendships.map(f => {
+          const isUser = f.userId === this.user!.id;
+          return {
+            id: isUser ? f.friendId : f.userId,
+            friendshipId: f.id!,
+            name: isUser ? f.friendName : f.userName,
+            avatar: isUser ? f.friendAvatar : f.userAvatar,
+            lastMessage: '',
+            lastMessageTime: '',
+            online: false,
+            unreadCount: 0
+          };
+        });
+        this.shareLoading = false;
+        this.cdRef.detectChanges();
+      },
+      error: () => { this.shareLoading = false; }
+    });
+  }
+
+  sendPostToFriend(friend: Friend): void {
+    if (!this.user || !this.sharingPost) return;
+    const msg: ChatMessage = {
+      senderId: this.user.id,
+      senderName: this.user.name,
+      senderAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      receiverId: friend.id,
+      receiverName: friend.name,
+      content: this.sharingPost.content?.substring(0, 200) || 'Shared a post',
+      messageType: 'SHARED_POST',
+      sharedPostId: this.sharingPost.id,
+      isRead: false
+    };
+    this.friendsService.sendMessage(msg).subscribe({
+      next: () => {
+        this.addNotification(`Post sent to ${friend.name}!`, 'success');
+        this.closeShareModal();
+      },
+      error: () => this.addNotification('Failed to send post', 'warning')
+    });
+  }
+
+  get filteredShareFriends(): Friend[] {
+    if (!this.shareSearchQuery.trim()) return this.shareFriends;
+    const q = this.shareSearchQuery.toLowerCase();
+    return this.shareFriends.filter(f => f.name.toLowerCase().includes(q));
   }
 
   toggleShareEmojiPicker(event: Event): void {

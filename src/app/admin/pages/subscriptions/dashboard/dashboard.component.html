@@ -1,0 +1,184 @@
+<div class="flex gap-6 p-8 h-full">
+  <!-- Main Content -->
+  <div class="flex-1 min-w-0">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-[#0f1419]">Overview</h1>
+        <p class="text-sm text-[#536471]">Welcome back, Administrator.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-[#536471] bg-white border border-[#eef1f4] rounded-lg px-3 py-2 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+          Oct 24, 2023 - Today
+        </span>
+        <button class="relative p-2 rounded-lg hover:bg-[#f0f9ff]">
+          <svg class="w-5 h-5 text-[#536471]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+        </button>
+        <div class="w-9 h-9 rounded-full bg-[#e6f6ff] flex items-center justify-center text-sm">👤</div>
+      </div>
+    </div>
+
+    <!-- Weekly Insights Banner -->
+    <div class="bg-gradient-to-r from-[#0f1419] to-[#1a2a3a] rounded-2xl p-6 mb-6 text-white">
+      <h2 class="text-xl font-bold mb-2">Weekly Insights Report</h2>
+      <p class="text-sm text-gray-300 mb-4">User engagement is up by 24% this week. There are 12 new tutor applications pending review.</p>
+      <div class="flex gap-3">
+        <button class="px-4 py-2 bg-white text-[#0f1419] text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors">View Reports</button>
+        <button class="px-4 py-2 bg-[#38a9f3] text-white text-sm font-semibold rounded-lg hover:bg-[#2196e3] transition-colors">Review Apps</button>
+      </div>
+    </div>
+
+    <!-- Traffic Chart -->
+    <div class="bg-white rounded-2xl border border-[#eef1f4] p-6 mb-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-[15px] font-bold text-[#0f1419]">Traffic & Sessions Overview</h3>
+        <div class="flex bg-[#f7f9fa] rounded-lg p-0.5">
+          <button
+            (click)="activeChartTab = 'Visitors'"
+            class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+            [class.bg-white]="activeChartTab === 'Visitors'"
+            [class.shadow-sm]="activeChartTab === 'Visitors'"
+            [class.text-[#0f1419]]="activeChartTab === 'Visitors'"
+            [class.text-[#9ca3af]]="activeChartTab !== 'Visitors'"
+          >Visitors</button>
+          <button
+            (click)="activeChartTab = 'Sessions'"
+            class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+            [class.bg-white]="activeChartTab === 'Sessions'"
+            [class.shadow-sm]="activeChartTab === 'Sessions'"
+            [class.text-[#0f1419]]="activeChartTab === 'Sessions'"
+            [class.text-[#9ca3af]]="activeChartTab !== 'Sessions'"
+          >Sessions</button>
+        </div>
+      </div>
+      <!-- Bar Chart -->
+      <div class="flex items-end gap-4 h-[180px]">
+        @for (day of chartDays; track day; let i = $index) {
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full flex justify-center">
+              <div
+                class="w-10 rounded-t-lg transition-all duration-300"
+                [class.bg-[#38a9f3]]="day === 'Thu'"
+                [class.bg-[#bfe5fc]]="day !== 'Thu'"
+                [style.height.px]="(chartVisitors[i] / getMaxChart()) * 150"
+              ></div>
+            </div>
+            <span class="text-[11px] font-medium" [class.text-[#38a9f3]]="day === 'Thu'" [class.text-[#9ca3af]]="day !== 'Thu'">{{ day }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Flagged Reports Table -->
+    <div class="bg-white rounded-2xl border border-[#eef1f4] p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-[15px] font-bold text-[#0f1419]">Flagged Reports (Pending)</h3>
+        <button class="text-xs text-[#536471] border border-[#eef1f4] rounded-lg px-3 py-1.5 hover:bg-[#f7f9fa]">View All</button>
+      </div>
+      <table class="w-full">
+        <thead>
+          <tr class="text-left">
+            <th class="text-[11px] font-semibold text-[#38a9f3] uppercase pb-3 tracking-wide">User</th>
+            <th class="text-[11px] font-semibold text-[#38a9f3] uppercase pb-3 tracking-wide">Reason</th>
+            <th class="text-[11px] font-semibold text-[#38a9f3] uppercase pb-3 tracking-wide">Time</th>
+            <th class="text-[11px] font-semibold text-[#38a9f3] uppercase pb-3 tracking-wide">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (report of flaggedReports; track report.user) {
+            <tr class="border-t border-[#f7f9fa]">
+              <td class="py-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">{{ report.avatar }}</span>
+                  <span class="text-sm text-[#0f1419]">{{ report.user }}</span>
+                </div>
+              </td>
+              <td class="py-3 text-sm text-[#536471]">{{ report.reason }}</td>
+              <td class="py-3 text-sm text-[#536471]">{{ report.time }}</td>
+              <td class="py-3">
+                <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ report.statusColor }}">{{ report.status }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Right Sidebar -->
+  <div class="w-[260px] shrink-0 space-y-4">
+    <!-- Stats Cards -->
+    @for (stat of stats; track stat.label) {
+      <div class="bg-white rounded-xl border border-[#eef1f4] p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-[11px] text-[#9ca3af] mb-1">{{ stat.label }}</p>
+            <p class="text-xl font-bold text-[#0f1419]">{{ stat.value }}</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center {{ stat.color }}">
+            @switch (stat.icon) {
+              @case ('users') {
+                <svg class="w-5 h-5 {{ stat.iconColor }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+              }
+              @case ('sessions') {
+                <svg class="w-5 h-5 {{ stat.iconColor }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>
+              }
+              @case ('reports') {
+                <svg class="w-5 h-5 {{ stat.iconColor }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+              }
+              @case ('revenue') {
+                <svg class="w-5 h-5 {{ stat.iconColor }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" /></svg>
+              }
+            }
+          </div>
+        </div>
+        <p class="text-[11px] text-green-500 mt-1">{{ stat.change }}</p>
+      </div>
+    }
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl border border-[#eef1f4] p-4">
+      <h3 class="text-[13px] font-bold text-[#0f1419] mb-3">Quick Actions</h3>
+      <div class="grid grid-cols-2 gap-2">
+        @for (action of quickActions; track action.label) {
+          <button class="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-[#eef1f4] hover:bg-[#f7f9fa] transition-colors">
+            @switch (action.icon) {
+              @case ('event') {
+                <svg class="w-5 h-5 text-[#536471]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+              }
+              @case ('tutor') {
+                <svg class="w-5 h-5 text-[#536471]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>
+              }
+              @case ('ban') {
+                <svg class="w-5 h-5 text-[#536471]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+              }
+              @case ('export') {
+                <svg class="w-5 h-5 text-[#536471]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+              }
+            }
+            <span class="text-[11px] text-[#536471]">{{ action.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="bg-white rounded-xl border border-[#eef1f4] p-4">
+      <h3 class="text-[13px] font-bold text-[#0f1419] mb-3">System Health</h3>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-[#536471]">Server Load</span>
+          <span class="text-xs font-semibold text-green-500">Normal (24%)</span>
+        </div>
+        <div class="w-full bg-[#eef1f4] rounded-full h-1.5">
+          <div class="bg-green-500 h-1.5 rounded-full" style="width: 24%"></div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-[#536471]">Database</span>
+          <span class="text-xs font-semibold text-green-500">Optimized</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

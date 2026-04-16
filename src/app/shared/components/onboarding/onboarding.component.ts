@@ -14,18 +14,32 @@ export interface OnboardingStep {
   standalone: true,
   imports: [CommonModule],
   template: `
+    <!-- Toggle button — always visible when overlay is closed -->
+    @if (!isVisible) {
+    <button (click)="reopen()"
+            class="fixed bottom-6 right-6 z-[9998] w-12 h-12 rounded-full text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 flex items-center justify-center"
+            style="background: linear-gradient(135deg, #38a9f3, #6366f1);"
+            title="Show guide">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </button>
+    }
+
     <!-- Onboarding Overlay -->
     @if (isVisible) {
-    <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4" 
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-opacity duration-300"
+         [class.opacity-0]="!isAnimating"
+         [class.pointer-events-none]="!isAnimating"
          style="background: linear-gradient(135deg, rgba(56, 169, 243, 0.95), rgba(99, 102, 241, 0.95));">
-      
+
       <!-- Animated background elements -->
       <div class="absolute inset-0 overflow-hidden pointer-events-none">
         <!-- Floating circles -->
         <div class="absolute top-[10%] left-[5%] w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
         <div class="absolute top-[60%] right-[10%] w-48 h-48 bg-white/10 rounded-full blur-2xl animate-pulse" style="animation-delay: 0.5s;"></div>
         <div class="absolute bottom-[20%] left-[15%] w-24 h-24 bg-white/10 rounded-full blur-lg animate-pulse" style="animation-delay: 1s;"></div>
-        
+
         <!-- Floating stars -->
         <div class="absolute top-[15%] right-[20%] text-yellow-300/60 animate-bounce" style="animation-duration: 2s;">
           <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -50,10 +64,10 @@ export interface OnboardingStep {
       </div>
 
       <!-- Main content card -->
-      <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-500"
+      <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300"
            [class.scale-100]="isAnimating" [class.opacity-100]="isAnimating"
            [class.scale-95]="!isAnimating" [class.opacity-0]="!isAnimating">
-        
+
         <!-- Progress bar -->
         <div class="h-1.5 bg-gray-100">
           <div class="h-full bg-gradient-to-r from-[#38a9f3] to-[#6366f1] transition-all duration-500 ease-out"
@@ -62,7 +76,7 @@ export interface OnboardingStep {
 
         <!-- Card content -->
         <div class="p-8 text-center">
-          
+
           <!-- Mascot with speech bubble -->
           <div class="relative inline-block mb-6">
             <div class="relative">
@@ -70,14 +84,14 @@ export interface OnboardingStep {
               <div class="absolute inset-[-12px] rounded-full border-[3px] animate-ping opacity-30"
                    [style.border-color]="steps[currentStep]?.highlightColor || '#38a9f3'"
                    style="animation-duration: 2s;"></div>
-              
+
               <!-- Mascot container -->
               <div class="w-32 h-32 rounded-full bg-gradient-to-br from-[#f0f9ff] to-[#e0f2fe] flex items-center justify-center shadow-xl">
-                <img src="/mino_images/nino.png" alt="MinoLingo Mascot" 
+                <img src="/mino_images/nino.png" alt="MinoLingo Mascot"
                      class="w-24 h-24 object-contain drop-shadow-lg animate-bounce" style="animation-duration: 2s;" />
               </div>
             </div>
-            
+
             <!-- Speech bubble -->
             <div class="absolute -right-4 -top-2 bg-white rounded-2xl px-4 py-2 shadow-lg border-2 animate-pulse"
                  [style.border-color]="steps[currentStep]?.highlightColor || '#38a9f3'"
@@ -95,7 +109,7 @@ export interface OnboardingStep {
 
           <!-- Step title -->
           <h2 class="text-2xl font-extrabold text-gray-900 mb-3">{{ steps[currentStep]?.title }}</h2>
-          
+
           <!-- Step description -->
           <p class="text-gray-600 text-[15px] leading-relaxed mb-8 max-w-sm mx-auto">{{ steps[currentStep]?.description }}</p>
 
@@ -119,7 +133,7 @@ export interface OnboardingStep {
               ← Back
             </button>
             }
-            
+
             @if (currentStep < steps.length - 1) {
             <button (click)="nextStep()"
                     class="px-8 py-3 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
@@ -176,6 +190,12 @@ export class OnboardingComponent implements OnInit {
 
   hasCompletedOnboarding(): boolean {
     return localStorage.getItem(this.storageKey) === 'true';
+  }
+
+  reopen(): void {
+    this.currentStep = 0;
+    this.isVisible = true;
+    setTimeout(() => this.isAnimating = true, 50);
   }
 
   nextStep(): void {

@@ -89,15 +89,25 @@ export class WritingListComponent implements OnInit {
         this.prompts = prompts.filter(p => !p.archived);
         if (this.userId) {
           this.writingService.getUserSubmissions(this.userId).subscribe({
-            next: (subs) => { this.submissions = subs; this.isLoading = false; this.cdr.markForCheck(); },
-            error: () => { this.isLoading = false; this.cdr.markForCheck(); }
+            next: (subs) => {
+              this.submissions = subs;
+              this.isLoading = false;
+              this.cdr.markForCheck();
+            },
+            error: () => {
+              this.isLoading = false;
+              this.cdr.markForCheck();
+            }
           });
         } else {
           this.isLoading = false;
           this.cdr.markForCheck();
         }
       },
-      error: () => { this.isLoading = false; this.cdr.markForCheck(); }
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -131,6 +141,24 @@ export class WritingListComponent implements OnInit {
       case 'INTERMEDIATE': return { label: 'Intermediate', emoji: '⚡', bg: 'bg-amber-100',   text: 'text-amber-700'   };
       case 'ADVANCED':     return { label: 'Advanced',     emoji: '🔥', bg: 'bg-red-100',     text: 'text-red-700'     };
       default:             return { label: difficulty,     emoji: '📝', bg: 'bg-gray-100',    text: 'text-gray-700'    };
+    }
+  }
+
+  getDifficultyColor(difficulty: string): string {
+    switch (difficulty?.toUpperCase()) {
+      case 'BEGINNER':     return 'bg-emerald-100 text-emerald-700';
+      case 'INTERMEDIATE': return 'bg-amber-100 text-amber-700';
+      case 'ADVANCED':     return 'bg-red-100 text-red-700';
+      default:             return 'bg-gray-100 text-gray-700';
+    }
+  }
+
+  getDifficultyGradient(difficulty: string): string {
+    switch (difficulty?.toUpperCase()) {
+      case 'BEGINNER':     return 'from-emerald-400 to-teal-500';
+      case 'INTERMEDIATE': return 'from-amber-400 to-orange-500';
+      case 'ADVANCED':     return 'from-red-400 to-rose-500';
+      default:             return 'from-gray-400 to-gray-500';
     }
   }
 }

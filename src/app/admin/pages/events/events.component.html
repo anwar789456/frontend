@@ -32,9 +32,14 @@
         <div class="flex gap-1 border-b border-[#eef1f4]">
           @for (tab of tabs; track tab) {
           <button (click)="activeTab = tab"
-            class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-[1px]"
+            class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-[1px] flex items-center gap-1.5"
             [class.border-[#38a9f3]]="activeTab === tab" [class.text-[#0f1419]]="activeTab === tab"
-            [class.border-transparent]="activeTab !== tab" [class.text-[#9ca3af]]="activeTab !== tab">{{ tab }}</button>
+            [class.border-transparent]="activeTab !== tab" [class.text-[#9ca3af]]="activeTab !== tab">
+            {{ tab }}
+            @if (tab === 'Approvals' && pendingRegistrations.length > 0) {
+              <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-400 text-white leading-none">{{ pendingRegistrations.length }}</span>
+            }
+          </button>
           }
         </div>
         <button (click)="openCreateModal()"
@@ -58,13 +63,117 @@
       </div>
       }
 
+      <!-- Approvals Tab -->
+      @if (activeTab === 'Approvals') {
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-[#536471]">{{ pendingRegistrations.length }} request{{ pendingRegistrations.length !== 1 ? 's' : '' }} awaiting review</p>
+          </div>
+
+          @if (pendingLoading) {
+            <div class="flex items-center justify-center py-12 gap-3">
+              <div class="w-6 h-6 border-2 border-[#eff3f4] border-t-[#38a9f3] rounded-full animate-spin"></div>
+              <span class="text-sm text-[#9ca3af]">Loading requests...</span>
+            </div>
+          }
+
+          @if (!pendingLoading && pendingRegistrations.length === 0) {
+            <div class="flex flex-col items-center justify-center py-16 gap-3 text-center">
+              <div class="w-12 h-12 rounded-xl bg-[#f0fdf9] flex items-center justify-center border border-[#e6f9f0]">
+                <svg class="w-6 h-6 text-[#38a9f3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-[#0f1419]">All caught up!</p>
+              <p class="text-xs text-[#9ca3af]">No pending registration requests.</p>
+            </div>
+          }
+
+          @if (!pendingLoading && pendingRegistrations.length > 0) {
+            <table class="w-full">
+              <thead>
+                <tr class="bg-[#f0fdf9]">
+                  <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-l-lg">User</th>
+                  <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Event</th>
+                  <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Type</th>
+                  <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Requested</th>
+                  <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-r-lg">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (reg of pendingRegistrations; track reg.id) {
+                  <tr class="border-t border-[#f7f9fa] hover:bg-[#fafcfd]">
+                    <td class="px-4 py-3">
+                      <p class="text-sm font-medium text-[#0f1419]">{{ reg.userName || '—' }}</p>
+                      <p class="text-[11px] text-[#9ca3af]">{{ reg.userEmail || '—' }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                      <p class="text-sm text-[#536471] max-w-[160px] truncate">{{ getEventTitleForRegistration(reg) }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                      @if (reg.requestedWaitlist) {
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600">Waitlist</span>
+                      } @else {
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">Regular</span>
+                      }
+                    </td>
+                    <td class="px-4 py-3 text-[11px] text-[#9ca3af]">
+                      {{ reg.registrationDate ? (reg.registrationDate | date:'MMM d, h:mm a') : '—' }}
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <button (click)="approveRegistration(reg.id!)"
+                          [disabled]="approvalActionLoading.has(reg.id!)"
+                          class="flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold text-white bg-[#38a9f3] rounded-lg hover:bg-[#2196e3] disabled:opacity-50 transition-all">
+                          @if (approvalActionLoading.has(reg.id!)) {
+                            <div class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          } @else { ✓ Approve }
+                        </button>
+                        <button (click)="rejectRegistration(reg.id!)"
+                          [disabled]="approvalActionLoading.has(reg.id!)"
+                          class="flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold text-red-500 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-all">
+                          @if (approvalActionLoading.has(reg.id!)) {
+                            <div class="w-3 h-3 border-2 border-red-200 border-t-red-500 rounded-full animate-spin"></div>
+                          } @else { ✕ Reject }
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      }
+
+      <!-- Bulk Action Bar -->
+      @if (selectedIds.size > 0) {
+        <div class="flex items-center gap-3 mb-3 px-4 py-2.5 bg-[#f0f9ff] border border-[#bae6fd] rounded-xl">
+          <span class="text-[13px] font-semibold text-[#0369a1]">{{ selectedIds.size }} selected</span>
+          <button (click)="bulkDraft()" [disabled]="isBulkLoading"
+            class="text-[12px] font-semibold px-3 py-1.5 rounded-lg bg-yellow-100 text-yellow-700 border border-yellow-300 hover:bg-yellow-200 disabled:opacity-50">
+            Move to Drafts
+          </button>
+          <button (click)="bulkCancel()" [disabled]="isBulkLoading"
+            class="text-[12px] font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 disabled:opacity-50">
+            Cancel Events
+          </button>
+          <button (click)="selectedIds.clear()"
+            class="ml-auto text-[12px] font-semibold text-[#9ca3af] hover:text-[#536471]">Clear</button>
+        </div>
+      }
+
       <!-- Table -->
-      @if (!isLoading && !error) {
+      @if (!isLoading && !error && activeTab !== 'Approvals') {
       <table class="w-full">
         <thead>
           <tr class="bg-[#f0fdf9]">
-            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-l-lg">Event Name
+            <th class="px-4 py-2.5 rounded-l-lg w-8">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded"
+                [checked]="selectedIds.size === filteredEvents.length && filteredEvents.length > 0"
+                (change)="toggleSelectAll()" />
             </th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Event Name</th>
             <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Date & Time</th>
             <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Location</th>
             <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Attendees</th>
@@ -76,6 +185,11 @@
           @for (event of filteredEvents; track event.id) {
           <tr class="border-t border-[#f7f9fa] cursor-pointer hover:bg-[#fafcfd]"
             [class.bg-[#f7f9ff]]="selectedEvent?.id === event.id" (click)="selectEvent(event)">
+            <td class="px-4 py-3" (click)="$event.stopPropagation()">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded"
+                [checked]="selectedIds.has(event.id)"
+                (change)="toggleSelection(event.id)" />
+            </td>
             <td class="px-4 py-3">
               <div class="flex items-center gap-2.5">
                 <span class="text-lg">{{ getEventIcon(event) }}</span>
@@ -86,12 +200,10 @@
               </div>
             </td>
             <td class="px-4 py-3 text-sm text-[#536471]">{{ formatDate(event.startDate) }}</td>
-            <td class="px-4 py-3 text-sm text-[#536471]">{{ event.location || 'Outdoor' }}</td>
-            <td class="px-4 py-3 text-sm text-[#536471]">{{ event.currentAttendees || 0 }}{{ event.maxAttendees ? ' / '
-              + event.maxAttendees : '' }}</td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ event.location || '—' }}</td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ event.currentAttendees || 0 }}{{ event.maxAttendees ? ' / ' + event.maxAttendees : '' }}</td>
             <td class="px-4 py-3">
-              <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getStatusColor(event) }}">{{
-                getStatusLabel(event) }}</span>
+              <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getStatusColor(event) }}">{{ getStatusLabel(event) }}</span>
             </td>
             <td class="px-4 py-3 text-[#9ca3af]">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -102,7 +214,7 @@
           }
           @if (filteredEvents.length === 0) {
           <tr>
-            <td colspan="6" class="px-4 py-12 text-center text-sm text-[#9ca3af]">No events found in this category.</td>
+            <td colspan="7" class="px-4 py-12 text-center text-sm text-[#9ca3af]">No events found in this category.</td>
           </tr>
           }
         </tbody>
@@ -129,10 +241,6 @@
 
     <div class="grid grid-cols-2 gap-3 mb-5">
       <div>
-        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Type</p>
-        <p class="text-sm font-medium text-[#0f1419] capitalize">Outdoor</p>
-      </div>
-      <div>
         <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Level</p>
         <p class="text-sm font-medium text-[#0f1419] capitalize">{{ (selectedEvent.targetLevel ||
           '—').toLowerCase().replace('_', ' ') }}</p>
@@ -151,8 +259,16 @@
         <p class="text-sm font-medium text-[#0f1419]">{{ selectedEvent.hostName || '—' }}</p>
       </div>
       <div>
-        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Price</p>
-        <p class="text-sm font-medium text-[#0f1419]">Free</p>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Avg Rating</p>
+        @if (selectedEventAvgRating !== null) {
+          <p class="text-sm font-medium text-[#0f1419] flex items-center gap-1">
+            <span class="text-amber-400">★</span>
+            {{ selectedEventAvgRating }}/5
+            <span class="text-[10px] text-[#9ca3af]">({{ selectedEventRatingCount }} review{{ selectedEventRatingCount !== 1 ? 's' : '' }})</span>
+          </p>
+        } @else {
+          <p class="text-sm font-medium text-[#9ca3af]">No ratings yet</p>
+        }
       </div>
     </div>
 
@@ -160,9 +276,6 @@
     <div class="mb-5">
       <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Settings</h4>
       <div class="space-y-2">
-        <div class="flex items-center justify-between bg-[#0f1419] text-white rounded-lg px-3 py-2 text-xs">
-          <span>🎫 Free Entry</span>
-        </div>
         <div class="flex items-center justify-between bg-[#0f1419] text-white rounded-lg px-3 py-2 text-xs">
           <span>{{ selectedEvent.isPublic ? '👥 Public Event' : '🔒 Private Event' }}</span>
           @if (selectedEvent.isPublic) {
@@ -196,6 +309,24 @@
     </div>
     }
 
+    <!-- Extra actions -->
+    <div class="flex gap-2 mt-4 mb-2">
+      <button (click)="exportAttendeesCSV()" title="Export Attendees CSV"
+        class="flex-1 py-2 text-[12px] font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa] flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+        </svg>
+        Export CSV
+      </button>
+      <button (click)="openAnnouncementModal()" title="Send Announcement"
+        class="flex-1 py-2 text-[12px] font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa] flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46" />
+        </svg>
+        Announce
+      </button>
+    </div>
+
     <div class="flex gap-2 mt-4">
       <button (click)="openEditModal(selectedEvent)"
         class="flex-1 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3]">Edit
@@ -205,13 +336,29 @@
         title="Scan QR Check-in">
         📷
       </button>
-      <button (click)="confirmDelete()"
-        class="py-2.5 px-3 text-sm font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-        </svg>
-      </button>
+      @if (selectedEvent.status === 'DRAFT') {
+        <button (click)="undraftEvent()" title="Publish Event"
+          class="py-2.5 px-3 text-sm font-semibold text-green-600 border border-green-200 rounded-xl hover:bg-green-50">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+          </svg>
+        </button>
+      } @else if (selectedEvent.status === 'CANCELLED') {
+        <button (click)="uncancelEvent()" title="Restore to Upcoming"
+          class="py-2.5 px-3 text-sm font-semibold text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+          </svg>
+        </button>
+      } @else {
+        <button (click)="confirmDelete()" title="Move to Drafts"
+          class="py-2.5 px-3 text-sm font-semibold text-yellow-600 border border-yellow-200 rounded-xl hover:bg-yellow-50">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-.375c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v.375c0 .621.504 1.125 1.125 1.125z" />
+          </svg>
+        </button>
+      }
     </div>
   </div>
   }
@@ -356,7 +503,7 @@
           <select [(ngModel)]="formData.hostName" (ngModelChange)="onHostChange($event)"
             class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3] bg-white">
             <option value="">Select a host...</option>
-            @for (host of mockHosts; track host.name) {
+            @for (host of adminUsers; track host.id) {
             <option [value]="host.name">{{ host.name }}</option>
             }
           </select>
@@ -461,30 +608,68 @@
 </div>
 }
 
-<!-- Delete Confirmation -->
+<!-- Move to Drafts Confirmation -->
 @if (showDeleteConfirm) {
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="cancelDelete()">
   <div class="bg-white rounded-2xl shadow-xl w-[400px] p-6" (click)="$event.stopPropagation()">
     <div class="flex items-center gap-3 mb-4">
-      <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-        <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round"
-            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-.375c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v.375c0 .621.504 1.125 1.125 1.125z" />
         </svg>
       </div>
       <div>
-        <h3 class="text-[15px] font-bold text-[#0f1419]">Delete Event</h3>
-        <p class="text-xs text-[#9ca3af]">This action cannot be undone.</p>
+        <h3 class="text-[15px] font-bold text-[#0f1419]">Move to Drafts</h3>
+        <p class="text-xs text-[#9ca3af]">The event will be hidden from users and moved to Drafts.</p>
       </div>
     </div>
-    <p class="text-sm text-[#536471] mb-6">Are you sure you want to delete <strong>{{ selectedEvent?.title }}</strong>?
-    </p>
+    <p class="text-sm text-[#536471] mb-6">Move <strong>{{ selectedEvent?.title }}</strong> to drafts? You can restore it at any time by editing the event.</p>
     <div class="flex gap-3">
       <button (click)="cancelDelete()"
         class="flex-1 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
       <button (click)="deleteEvent()" [disabled]="isDeleting"
-        class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-50">
-        {{ isDeleting ? 'Deleting...' : 'Delete' }}
+        class="flex-1 py-2.5 text-sm font-semibold text-white bg-yellow-500 rounded-xl hover:bg-yellow-600 disabled:opacity-50">
+        {{ isDeleting ? 'Moving...' : 'Move to Drafts' }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Announcement Modal -->
+@if (showAnnouncementModal) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="closeAnnouncementModal()">
+  <div class="bg-white rounded-2xl shadow-xl w-[460px] p-6" (click)="$event.stopPropagation()">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-[15px] font-bold text-[#0f1419]">Send Announcement</h3>
+        <p class="text-xs text-[#9ca3af]">Email all registrants of <strong>{{ selectedEvent?.title }}</strong></p>
+      </div>
+    </div>
+    <div class="space-y-3 mb-5">
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1">Subject</label>
+        <input type="text" [(ngModel)]="announcementSubject" placeholder="e.g. Location change for tomorrow's event"
+          class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#536471] mb-1">Message</label>
+        <textarea [(ngModel)]="announcementMessage" rows="4" placeholder="Write your message here..."
+          class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3] resize-none"></textarea>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button (click)="closeAnnouncementModal()"
+        class="flex-1 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>
+      <button (click)="sendAnnouncement()" [disabled]="isSendingAnnouncement || !announcementSubject.trim() || !announcementMessage.trim()"
+        class="flex-1 py-2.5 text-sm font-semibold text-white bg-[#38a9f3] rounded-xl hover:bg-[#2196e3] disabled:opacity-50">
+        {{ isSendingAnnouncement ? 'Sending...' : 'Send to All Registrants' }}
       </button>
     </div>
   </div>

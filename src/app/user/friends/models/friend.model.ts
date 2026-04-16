@@ -53,6 +53,9 @@ export interface ChatMessage {
   reactions?: string;
   deletedForUsers?: string;
   isRead?: boolean;
+  readAt?: string;
+  isForwarded?: boolean;
+  forwardedFromName?: string;
   createdAt?: string;
 }
 
@@ -75,6 +78,10 @@ export interface DisplayMessage {
   isMine: boolean;
   senderAvatar: string;
   senderName: string;
+  isRead?: boolean;
+  readAt?: string;
+  isForwarded?: boolean;
+  forwardedFromName?: string;
 }
 
 export interface UserStatus {
@@ -83,4 +90,6 @@ export interface UserStatus {
   userAvatar: string;
   isOnline: boolean;
   lastSeen?: string;
+  typingToUserId?: number;
+  typingStartedAt?: string;
 }

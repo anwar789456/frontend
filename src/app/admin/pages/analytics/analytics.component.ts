@@ -1,12 +1,13 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AnalyticsService, AnalyticsDashboard } from './services/analytics.service';
+import { AnalyticsChatbotComponent } from './components/analytics-chatbot/analytics-chatbot.component';
 import Chart from 'chart.js/auto';
 
 @Component({
   selector: 'app-analytics-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AnalyticsChatbotComponent],
   templateUrl: './analytics.component.html'
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {

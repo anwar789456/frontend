@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService, AuthUser } from '../../../shared/services/auth.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { UserService } from '../../user/services/user.service';
 import { FriendsService } from '../services/friends.service';
 import { Friend, FriendRequest, Friendship, ChatMessage, DisplayMessage, UserStatus } from '../models/friend.model';
@@ -34,7 +36,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
   chatLoading = false;
 
   // Tabs
-  activeTab: 'chats' | 'friends' | 'requests' | 'explore' = 'chats';
+  activeTab: 'chats' | 'friends' | 'requests' | 'explore' | 'suggestions' | 'blocked' = 'chats';
 
   // Search
   searchQuery = '';
@@ -73,6 +75,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
   private heartbeatInterval: any;
   private messagePollInterval: any;
   private statusPollInterval: any;
+  private friendsListPollInterval: any;
 
   // Toasts
   toasts: { id: number; message: string; type: 'success' | 'info' | 'warning'; exiting?: boolean }[] = [];
@@ -89,6 +92,36 @@ export class FriendsComponent implements OnInit, OnDestroy {
   messageReactionEmojis = ['❤️', '😂', '😮', '😢', '👍', '👎'];
   quickReactions = ['👋', '❤️', '😂', '👍'];
 
+  // Typing indicator
+  friendIsTyping = false;
+  private typingTimeout: any;
+  private typingPollInterval: any;
+
+  // Forwarding
+  showForwardModal = false;
+  messageToForward: DisplayMessage | null = null;
+
+  // Block/Unblock
+  blockedUsers: { id: number; friendshipId: number; name: string; avatar: string }[] = [];
+
+  // Friend Suggestions
+  friendSuggestions: { id: number; name: string; avatar: string; mutualCount: number }[] = [];
+
+  // User Profile Modal
+  showProfileModal = false;
+  profileUser: { id: number; name: string; avatar: string; online: boolean; lastSeen?: string } | null = null;
+
+  // Push Notifications
+  notificationsEnabled = false;
+  private lastMessageCount = 0;
+
+  // AI Speech-to-Text
+  isSpeechListening = false;
+  speechSupported = false;
+  private speechRecognition: any = null;
+  aiCorrection: { originalText: string; correctedText: string; hasCorrections: boolean; explanation: string } | null = null;
+  aiCorrectionLoading = false;
+
   constructor(
     private friendsService: FriendsService,
     private authService: AuthService,
@@ -101,28 +134,46 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.user = this.authService.currentUser;
     if (!this.user) return;
 
+    // Load everything in parallel immediately
+    this.startHeartbeat();
     this.loadFriends();
     this.loadPendingRequests();
     this.loadAllUsers();
-    this.startHeartbeat();
+    this.loadBlockedUsers();
+    this.requestNotificationPermission();
+    this.initSpeechRecognition();
 
-    // Poll messages every 3s
+    // Poll messages every 1.5s
     this.messagePollInterval = setInterval(() => {
       if (this.selectedFriend) {
         this.pollMessages();
       }
-    }, 3000);
+    }, 1500);
 
-    // Poll statuses every 10s
-    this.statusPollInterval = setInterval(() => this.pollFriendStatuses(), 10000);
+    // Poll statuses every 3s
+    this.statusPollInterval = setInterval(() => this.pollFriendStatuses(), 3000);
+
+    // Poll typing indicator every 1.5s
+    this.typingPollInterval = setInterval(() => this.pollTypingStatus(), 1500);
+
+    // Poll friends list & requests every 5s
+    this.friendsListPollInterval = setInterval(() => {
+      this.loadFriends();
+      this.loadPendingRequests();
+    }, 5000);
   }
 
   ngOnDestroy(): void {
     if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
     if (this.messagePollInterval) clearInterval(this.messagePollInterval);
     if (this.statusPollInterval) clearInterval(this.statusPollInterval);
-    // Set offline
+    if (this.typingPollInterval) clearInterval(this.typingPollInterval);
+    if (this.friendsListPollInterval) clearInterval(this.friendsListPollInterval);
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    if (this.speechRecognition) { try { this.speechRecognition.abort(); } catch(_){} }
+    // Set offline + clear typing
     if (this.user) {
+      this.friendsService.clearTyping(this.user.id).subscribe();
       this.friendsService.setOffline(this.user.id).subscribe();
     }
   }
@@ -147,12 +198,13 @@ export class FriendsComponent implements OnInit, OnDestroy {
       error: (err) => console.error('Load friends error:', err),
       next: (friendships) => {
         this.friends = friendships.map(f => this.mapFriendshipToFriend(f));
-        this.pollFriendStatuses();
-        // Load last messages
-        for (const friend of this.friends) {
-          this.loadLastMessageForFriend(friend);
-        }
         this.cdr.detectChanges();
+
+        // Load statuses + last messages + unread counts all in parallel
+        if (this.friends.length > 0) {
+          this.pollFriendStatuses();
+          this.loadAllLastMessages();
+        }
       }
     });
   }
@@ -171,18 +223,24 @@ export class FriendsComponent implements OnInit, OnDestroy {
     };
   }
 
-  private loadLastMessageForFriend(friend: Friend): void {
+  private loadAllLastMessages(): void {
     if (!this.user) return;
-    this.friendsService.getConversation(this.user.id, friend.id).subscribe({
-      next: (msgs) => {
-        if (msgs.length > 0) {
-          const last = msgs[msgs.length - 1];
-          friend.lastMessage = this.getMessagePreview(last);
-          friend.lastMessageTime = this.getTimeAgo(last.createdAt || '');
-          friend.unreadCount = msgs.filter(m => m.receiverId === this.user!.id && !m.isRead).length;
+    for (const friend of this.friends) {
+      // Use lightweight endpoints instead of full conversation
+      forkJoin({
+        lastMsg: this.friendsService.getLastMessage(this.user!.id, friend.id).pipe(catchError(() => of(null))),
+        unread: this.friendsService.getUnreadMessageCount(friend.id, this.user!.id).pipe(catchError(() => of({ count: 0 })))
+      }).subscribe({
+        next: ({ lastMsg, unread }) => {
+          if (lastMsg) {
+            friend.lastMessage = this.getMessagePreview(lastMsg);
+            friend.lastMessageTime = this.getTimeAgo(lastMsg.createdAt || '');
+          }
+          friend.unreadCount = unread?.count || 0;
+          this.cdr.detectChanges();
         }
-      }
-    });
+      });
+    }
   }
 
   private getMessagePreview(msg: ChatMessage): string {
@@ -228,6 +286,8 @@ export class FriendsComponent implements OnInit, OnDestroy {
           avatar: (u as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.name
         }));
         this.cdr.detectChanges();
+        // Load suggestions once we have both friends and users
+        setTimeout(() => this.loadFriendSuggestions(), 500);
       }
     });
   }
@@ -363,12 +423,29 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.friendsService.getConversation(this.user.id, this.selectedFriend.id).subscribe({
       next: (msgs) => {
         const filtered = this.filterDeletedMessages(msgs);
-        if (filtered.length !== this.messages.length) {
-          this.messages = filtered.map(m => this.mapToDisplayMessage(m));
+        const oldLen = this.messages.length;
+
+        // Check for new incoming messages for push notification
+        if (filtered.length > oldLen) {
+          const newMsgs = filtered.slice(oldLen);
+          for (const m of newMsgs) {
+            if (m.senderId !== this.user!.id) {
+              this.sendBrowserNotification(
+                m.senderName || 'New message',
+                m.content?.substring(0, 60) || 'New message',
+                m.senderAvatar
+              );
+            }
+          }
+        }
+
+        // Always sync — catches new messages, reactions, deletions, edits
+        this.messages = filtered.map(m => this.mapToDisplayMessage(m));
+        if (filtered.length > oldLen) {
           this.scrollToBottom();
           this.friendsService.markConversationRead(this.selectedFriend!.id, this.user!.id).subscribe();
-          this.cdr.detectChanges();
         }
+        this.cdr.detectChanges();
       }
     });
   }
@@ -398,7 +475,11 @@ export class FriendsComponent implements OnInit, OnDestroy {
       time: this.formatMessageTime(m.createdAt || ''),
       isMine: m.senderId === this.user!.id,
       senderAvatar: m.senderAvatar,
-      senderName: m.senderName
+      senderName: m.senderName,
+      isRead: m.isRead,
+      readAt: m.readAt,
+      isForwarded: m.isForwarded,
+      forwardedFromName: m.forwardedFromName
     };
   }
 
@@ -433,6 +514,10 @@ export class FriendsComponent implements OnInit, OnDestroy {
       msg.replyToContent = this.replyingTo.content?.substring(0, 100) || '';
       msg.replyToSenderName = this.replyingTo.senderName;
     }
+
+    // Clear typing indicator on send
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    this.friendsService.clearTyping(this.user.id).subscribe();
 
     this.friendsService.sendMessage(msg).subscribe({
       next: (saved) => {
@@ -526,6 +611,8 @@ export class FriendsComponent implements OnInit, OnDestroy {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.sendMessage();
+    } else {
+      this.onTyping();
     }
   }
 
@@ -852,6 +939,371 @@ export class FriendsComponent implements OnInit, OnDestroy {
       count: data.count,
       userReacted: data.userReacted
     }));
+  }
+
+  // ── Typing Indicator ──
+
+  onTyping(): void {
+    if (!this.user || !this.selectedFriend) return;
+    this.friendsService.setTyping(this.user.id, this.selectedFriend.id).subscribe();
+    // Clear typing after 3s of no input
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    this.typingTimeout = setTimeout(() => {
+      if (this.user) {
+        this.friendsService.clearTyping(this.user.id).subscribe();
+      }
+    }, 3000);
+  }
+
+  private pollTypingStatus(): void {
+    if (!this.user || !this.selectedFriend) {
+      this.friendIsTyping = false;
+      return;
+    }
+    this.friendsService.isTyping(this.selectedFriend.id, this.user.id).subscribe({
+      next: (res) => {
+        this.friendIsTyping = res.typing;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.friendIsTyping = false; }
+    });
+  }
+
+  // ── Message Forwarding ──
+
+  openForwardModal(msg: DisplayMessage): void {
+    this.messageToForward = msg;
+    this.showForwardModal = true;
+    this.activeMessageId = null;
+  }
+
+  closeForwardModal(): void {
+    this.showForwardModal = false;
+    this.messageToForward = null;
+  }
+
+  forwardMessageTo(friend: Friend): void {
+    if (!this.user || !this.messageToForward) return;
+    const original = this.messageToForward;
+
+    const msg: ChatMessage = {
+      senderId: this.user.id,
+      senderName: this.user.name,
+      senderAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      receiverId: friend.id,
+      receiverName: friend.name,
+      content: original.content,
+      messageType: original.messageType,
+      imageUrl: original.imageUrl,
+      gifUrl: original.gifUrl,
+      isRead: false,
+      isForwarded: true,
+      forwardedFromName: original.senderName
+    };
+
+    this.friendsService.sendMessage(msg).subscribe({
+      next: (saved) => {
+        if (this.selectedFriend?.id === friend.id) {
+          this.messages.push(this.mapToDisplayMessage(saved));
+          this.scrollToBottom();
+        }
+        this.addToast(`Message forwarded to ${friend.name}`, 'success');
+        this.closeForwardModal();
+        this.cdr.detectChanges();
+      },
+      error: () => this.addToast('Failed to forward message', 'warning')
+    });
+  }
+
+  // ── Block / Unblock ──
+
+  loadBlockedUsers(): void {
+    if (!this.user) return;
+    this.friendsService.getBlockedUsers(this.user.id).subscribe({
+      next: (blocked) => {
+        this.blockedUsers = blocked.map(f => {
+          const isUser = f.userId === this.user!.id;
+          return {
+            id: isUser ? f.friendId : f.userId,
+            friendshipId: f.id!,
+            name: isUser ? f.friendName : f.userName,
+            avatar: isUser ? f.friendAvatar : f.userAvatar
+          };
+        });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  blockFriend(friend: Friend): void {
+    this.friendsService.blockUser(friend.friendshipId).subscribe({
+      next: () => {
+        this.friends = this.friends.filter(f => f.id !== friend.id);
+        if (this.selectedFriend?.id === friend.id) {
+          this.selectedFriend = null;
+          this.messages = [];
+        }
+        this.blockedUsers.push({ id: friend.id, friendshipId: friend.friendshipId, name: friend.name, avatar: friend.avatar });
+        this.addToast(`${friend.name} has been blocked`, 'info');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  unblockUser(blocked: { id: number; friendshipId: number; name: string; avatar: string }): void {
+    this.friendsService.unblockUser(blocked.friendshipId).subscribe({
+      next: () => {
+        this.blockedUsers = this.blockedUsers.filter(b => b.id !== blocked.id);
+        this.loadFriends();
+        this.addToast(`${blocked.name} has been unblocked`, 'success');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ── Friend Suggestions ──
+
+  loadFriendSuggestions(): void {
+    if (!this.user) return;
+    const friendIds = new Set(this.friends.map(f => f.id));
+    friendIds.add(this.user.id);
+    const blockedIds = new Set(this.blockedUsers.map(b => b.id));
+
+    const suggestions = this.allUsers
+      .filter(u => !friendIds.has(u.id) && !blockedIds.has(u.id) && !this.sentRequests.includes(u.id))
+      .slice(0, 8);
+
+    // Load mutual friends count for each suggestion
+    this.friendSuggestions = suggestions.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, mutualCount: 0 }));
+    this.cdr.detectChanges();
+
+    for (const s of this.friendSuggestions) {
+      this.friendsService.getMutualFriendsCount(this.user.id, s.id).pipe(
+        catchError(() => of({ count: 0 }))
+      ).subscribe({
+        next: (res) => {
+          s.mutualCount = res.count;
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
+  sendSuggestionRequest(suggestion: { id: number; name: string; avatar: string; mutualCount: number }): void {
+    if (!this.user) return;
+    const friendship: Friendship = {
+      userId: this.user.id,
+      userName: this.user.name,
+      userAvatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
+      friendId: suggestion.id,
+      friendName: suggestion.name,
+      friendAvatar: suggestion.avatar,
+      status: 'PENDING'
+    };
+    this.friendsService.sendFriendRequest(friendship).subscribe({
+      next: () => {
+        this.friendSuggestions = this.friendSuggestions.filter(s => s.id !== suggestion.id);
+        this.sentRequests.push(suggestion.id);
+        this.addToast(`Friend request sent to ${suggestion.name}!`, 'success');
+        this.cdr.detectChanges();
+      },
+      error: () => this.addToast('Failed to send request', 'warning')
+    });
+  }
+
+  // ── User Profile Modal ──
+
+  openProfileModal(userId: number, name: string, avatar: string): void {
+    const friend = this.friends.find(f => f.id === userId);
+    this.profileUser = {
+      id: userId,
+      name: name,
+      avatar: avatar,
+      online: friend?.online || false,
+      lastSeen: friend?.lastSeen
+    };
+    this.showProfileModal = true;
+    this.cdr.detectChanges();
+  }
+
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+    this.profileUser = null;
+  }
+
+  startChatFromProfile(): void {
+    if (!this.profileUser) return;
+    const friend = this.friends.find(f => f.id === this.profileUser!.id);
+    if (friend) {
+      this.selectFriend(friend);
+      this.closeProfileModal();
+    }
+  }
+
+  // ── Push Notifications ──
+
+  requestNotificationPermission(): void {
+    if ('Notification' in window) {
+      if (Notification.permission === 'granted') {
+        this.notificationsEnabled = true;
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(perm => {
+          this.notificationsEnabled = perm === 'granted';
+        });
+      }
+    }
+  }
+
+  private sendBrowserNotification(title: string, body: string, icon?: string): void {
+    if (!this.notificationsEnabled || !('Notification' in window)) return;
+    if (document.hasFocus()) return; // Don't notify if tab is focused
+    const notif = new Notification(title, {
+      body,
+      icon: icon || 'https://api.dicebear.com/7.x/avataaars/svg?seed=MinoLingo',
+      tag: 'minolingo-chat'
+    });
+    notif.onclick = () => {
+      window.focus();
+      notif.close();
+    };
+    setTimeout(() => notif.close(), 5000);
+  }
+
+  // ── AI Speech-to-Text ──
+
+  private initSpeechRecognition(): void {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      this.speechSupported = false;
+      return;
+    }
+    this.speechSupported = true;
+
+    this.speechRecognition = new SpeechRecognition();
+    this.speechRecognition.lang = 'en-US';
+    this.speechRecognition.interimResults = true;
+    this.speechRecognition.maxAlternatives = 1;
+    this.speechRecognition.continuous = true;
+
+    this.speechRecognition.onresult = (event: any) => {
+      let finalTranscript = '';
+      let interimTranscript = '';
+
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interimTranscript += result[0].transcript;
+        }
+      }
+
+      // Show real-time text (final + interim combined)
+      this.messageText = finalTranscript + interimTranscript;
+      this.cdr.detectChanges();
+
+      // Only trigger AI correction when we have finalized text and no more interim
+      if (finalTranscript && !interimTranscript) {
+        this.checkAiCorrection(finalTranscript);
+      }
+    };
+
+    this.speechRecognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      this.isSpeechListening = false;
+      if (event.error === 'not-allowed') {
+        this.addToast('Microphone access denied. Please allow it in browser settings.', 'warning');
+      } else if (event.error === 'no-speech') {
+        this.addToast('No speech detected. Try again!', 'info');
+      } else {
+        this.addToast('Speech recognition error: ' + event.error, 'warning');
+      }
+      this.cdr.detectChanges();
+    };
+
+    this.speechRecognition.onend = () => {
+      // In continuous mode, browser may stop unexpectedly — restart if still listening
+      if (this.isSpeechListening) {
+        try { this.speechRecognition.start(); } catch (_) {}
+        return;
+      }
+      this.cdr.detectChanges();
+    };
+  }
+
+  toggleSpeechToText(): void {
+    if (!this.speechSupported) {
+      this.addToast('Speech recognition is not supported in your browser. Try Chrome or Edge.', 'warning');
+      return;
+    }
+
+    if (this.isSpeechListening) {
+      this.stopSpeechToText();
+    } else {
+      this.startSpeechToText();
+    }
+  }
+
+  private startSpeechToText(): void {
+    if (!this.speechRecognition) return;
+    this.aiCorrection = null;
+    this.isSpeechListening = true;
+    this.cdr.detectChanges();
+
+    try {
+      this.speechRecognition.start();
+    } catch (e) {
+      // Already started
+      this.isSpeechListening = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private stopSpeechToText(): void {
+    if (!this.speechRecognition) return;
+    this.speechRecognition.stop();
+    this.isSpeechListening = false;
+    this.cdr.detectChanges();
+  }
+
+  private checkAiCorrection(text: string): void {
+    if (!text || text.trim().length < 2) return;
+    this.aiCorrectionLoading = true;
+    this.cdr.detectChanges();
+
+    this.friendsService.correctText(text).subscribe({
+      next: (result) => {
+        this.aiCorrectionLoading = false;
+        if (result.hasCorrections) {
+          this.aiCorrection = result;
+        } else {
+          this.aiCorrection = null;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('AI correction error:', err);
+        this.aiCorrectionLoading = false;
+        this.aiCorrection = null;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  acceptAiCorrection(): void {
+    if (this.aiCorrection) {
+      this.messageText = this.aiCorrection.correctedText;
+      this.aiCorrection = null;
+      this.cdr.detectChanges();
+      // Focus the input
+      setTimeout(() => this.messageInput?.nativeElement?.focus(), 50);
+    }
+  }
+
+  dismissAiCorrection(): void {
+    this.aiCorrection = null;
+    this.cdr.detectChanges();
+    setTimeout(() => this.messageInput?.nativeElement?.focus(), 50);
   }
 
 }

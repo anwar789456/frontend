@@ -1,0 +1,60 @@
+<div class="p-6 space-y-6">
+  <h1 class="text-2xl font-bold text-[#0f1419]">Subscription Analytics</h1>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total -->
+    <div class="bg-white rounded-xl border border-[#eef1f4] p-5 shadow-sm">
+      <p class="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider mb-1">Total Subscribers</p>
+      <p class="text-3xl font-bold text-[#0f1419]">{{ dashboard?.totalSubscribers ?? '-' }}</p>
+    </div>
+    <!-- Active -->
+    <div class="bg-white rounded-xl border border-[#eef1f4] p-5 shadow-sm">
+      <p class="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider mb-1">Active Subscribers</p>
+      <p class="text-3xl font-bold text-green-600">{{ dashboard?.activeSubscribers ?? '-' }}</p>
+    </div>
+    <!-- Expired -->
+    <div class="bg-white rounded-xl border border-[#eef1f4] p-5 shadow-sm">
+      <p class="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider mb-1">Expired Subscriptions</p>
+      <p class="text-3xl font-bold text-amber-500">{{ dashboard?.expiredSubscribers ?? '-' }}</p>
+    </div>
+    <!-- Cancelled -->
+    <div class="bg-white rounded-xl border border-[#eef1f4] p-5 shadow-sm">
+      <p class="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider mb-1">Cancelled Subscriptions</p>
+      <p class="text-3xl font-bold text-red-500">{{ dashboard?.cancelledSubscribers ?? '-' }}</p>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Revenue Chart -->
+    <div class="bg-white rounded-xl border border-[#eef1f4] p-5 shadow-sm">
+      <h2 class="text-lg font-semibold text-[#0f1419] mb-4">Monthly Revenue (USD)</h2>
+      <canvas #revenueChart></canvas>
+    </div>
+
+    <!-- Growth Chart -->
+    <div class="bg-white rounded-xl border border-[#eef1f4] p-5 shadow-sm">
+      <h2 class="text-lg font-semibold text-[#0f1419] mb-4">
+        Monthly Growth
+        @if (dashboard && dashboard.growthRatePercent !== 0) {
+          <span class="ml-2 text-sm font-bold px-2 py-0.5 rounded-full"
+            [class]="dashboard.growthRatePercent > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+            {{ dashboard.growthRatePercent > 0 ? '+' : '' }}{{ dashboard.growthRatePercent }}%
+          </span>
+        }
+      </h2>
+      <canvas #growthChart></canvas>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="flex justify-center py-12">
+      <div class="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="bg-red-50 text-red-700 rounded-lg p-4 text-sm">{{ errorMessage }}</div>
+  }
+</div>

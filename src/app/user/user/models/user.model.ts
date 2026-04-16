@@ -20,6 +20,10 @@ export interface User {
   banDuration?: string;   // e.g. '1_day', '3_days', '7_days', '30_days', 'permanent'
   banExpiresAt?: string;  // ISO date when ban expires (null for permanent)
 
+  // Face recognition
+  faceRegistered?: boolean;
+  faceImageUrl?: string;
+
   // TUTEUR only
   CIN?: string;
   yearsOfExperience?: number;
