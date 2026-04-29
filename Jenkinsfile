@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  tools {
+    nodejs 'NodeJS 24'
+  }
+
   environment {
     APP_NAME = 'minolingo-frontend'
     IMAGE_NAME = 'minolingo-frontend:local'
