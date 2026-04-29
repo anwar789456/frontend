@@ -7,9 +7,6 @@ pipeline {
 
   environment {
     APP_NAME = 'minolingo-frontend'
-    IMAGE_NAME = 'minolingo-frontend:local'
-    CONTAINER_NAME = 'minolingo-frontend'
-    FRONTEND_PORT = '8081'
   }
 
   stages {
@@ -57,23 +54,6 @@ pipeline {
         }
       }
     }
-
-    stage('Docker Image Build') {
-      steps {
-        script {
-          runCommand("docker build -t ${env.IMAGE_NAME} .")
-        }
-      }
-    }
-
-    stage('Local Docker Deploy') {
-      steps {
-        script {
-          runCommand("docker rm -f ${env.CONTAINER_NAME} || true")
-          runCommand("docker run -d --name ${env.CONTAINER_NAME} -p ${env.FRONTEND_PORT}:80 ${env.IMAGE_NAME}")
-        }
-      }
-    }
   }
 
   post {
@@ -81,7 +61,7 @@ pipeline {
       archiveArtifacts artifacts: 'dist/**', allowEmptyArchive: true
     }
     success {
-      echo "Frontend deployed locally at http://localhost:${FRONTEND_PORT}"
+      echo 'Frontend CI completed: tests, SonarQube analysis, and production build passed.'
     }
   }
 }
