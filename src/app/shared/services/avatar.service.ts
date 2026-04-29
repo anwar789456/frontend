@@ -14,7 +14,7 @@ export interface AvatarChatResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AvatarService {
-  private readonly apiUrl = 'https://minolingo.online/api/cours/ai-avatar';
+  private readonly apiUrl = '/api/cours/ai-avatar';
 
   constructor(private http: HttpClient) {}
 

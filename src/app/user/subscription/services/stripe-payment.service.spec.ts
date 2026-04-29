@@ -6,7 +6,7 @@ import { StripePaymentService } from './stripe-payment.service';
 describe('StripePaymentService', () => {
   let service: StripePaymentService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/abonnements/payments';
+  const apiUrl = '/api/abonnements/payments';
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -51,7 +51,7 @@ describe('StripePaymentService', () => {
     service.sendConfirmationEmail(req).subscribe(r => {
       expect(r.success).toBe(true);
     });
-    httpMock.expectOne('https://minolingo.online/api/abonnements/email/send').flush({ success: true, message: 'Email sent' });
+    httpMock.expectOne('/api/abonnements/email/send').flush({ success: true, message: 'Email sent' });
   });
 
   it('should check health', () => {

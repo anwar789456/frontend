@@ -8,7 +8,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
   let router: Router;
-  const apiUrl = 'https://minolingo.online/api/users';
+  const apiUrl = '/api/users';
 
   const mockUser: AuthUser = {
     id: 1, name: 'John', email: 'j@e.com', role: 'ETUDIANT'

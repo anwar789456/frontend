@@ -53,7 +53,7 @@ export interface SendEmailResponse {
   providedIn: 'root'
 })
 export class StripePaymentService {
-  private readonly apiUrl = 'https://minolingo.online/api/abonnements/payments';
+  private readonly apiUrl = '/api/abonnements/payments';
   private stripe: Stripe | null = null;
 
   constructor(private http: HttpClient) { }
@@ -83,7 +83,7 @@ export class StripePaymentService {
    * Create a Stripe Checkout session
    */
   createCheckoutSession(request: CreateCheckoutSessionRequest): Observable<CreateCheckoutSessionResponse> {
-    const fullUrl = `https://minolingo.online/api/abonnements/payments/create-checkout-session`;
+    const fullUrl = `/api/abonnements/payments/create-checkout-session`;
 
     console.log('=== StripePaymentService: Create Checkout Session ===');
     console.log('Full URL:', fullUrl);
@@ -138,7 +138,7 @@ export class StripePaymentService {
    * Send a confirmation email via the backend
    */
   sendConfirmationEmail(request: SendEmailRequest): Observable<SendEmailResponse> {
-    const fullUrl = `https://minolingo.online/api/abonnements/email/send`;
+    const fullUrl = `/api/abonnements/email/send`;
 
     console.log('=== StripePaymentService: Send Confirmation Email ===');
     console.log('Full URL:', fullUrl);

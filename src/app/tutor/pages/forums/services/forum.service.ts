@@ -7,7 +7,7 @@ import { ForumPost, TrendingTopic } from '../models/forum.model';
   providedIn: 'root'
 })
 export class ForumService {
-  private readonly apiUrl = 'https://minolingo.online/api/forums';
+  private readonly apiUrl = '/api/forums';
 
   constructor(private http: HttpClient) {}
 

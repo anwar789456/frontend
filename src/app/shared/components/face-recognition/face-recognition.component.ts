@@ -30,7 +30,7 @@ export class FaceRecognitionComponent implements AfterViewInit, OnDestroy {
   @ViewChild('videoEl') videoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('canvasEl') canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  private readonly apiUrl = 'https://minolingo.online/api/users/face';
+  private readonly apiUrl = '/api/users/face';
   private stream: MediaStream | null = null;
 
   cameraReady = false;

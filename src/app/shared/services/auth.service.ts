@@ -27,7 +27,7 @@ export interface AuthUser {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = 'https://minolingo.online/api/users';
+  private readonly apiUrl = '/api/users';
   private readonly STORAGE_KEY = 'auth_user';
 
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.getStoredUser());

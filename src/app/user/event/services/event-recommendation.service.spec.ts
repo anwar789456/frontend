@@ -8,7 +8,7 @@ import { firstValueFrom } from 'rxjs';
 describe('EventRecommendationService', () => {
   let service: EventRecommendationService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/events';
+  const apiUrl = '/api/events';
   const ollamaUrl = 'https://minolingo.online/ollama/v1/completions';
 
   const mockEvent: Event = {

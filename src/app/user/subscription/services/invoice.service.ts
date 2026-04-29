@@ -7,7 +7,7 @@ import { Invoice } from '../models/invoice.model';
   providedIn: 'root'
 })
 export class InvoiceService {
-  private readonly apiUrl = 'https://minolingo.online/api/abonnements/invoices';
+  private readonly apiUrl = '/api/abonnements/invoices';
 
   constructor(private http: HttpClient) {}
 

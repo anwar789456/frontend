@@ -7,7 +7,7 @@ import { Invoice } from '../models/invoice.model';
 describe('InvoiceService', () => {
   let service: InvoiceService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/abonnements/invoices';
+  const apiUrl = '/api/abonnements/invoices';
 
   const mockInvoice: Invoice = {
     id: 1, invoiceNumber: 'INV-001', planName: 'Standard',

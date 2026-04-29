@@ -7,7 +7,7 @@ import { WritingPrompt } from '../models/writing.model';
   providedIn: 'root'
 })
 export class TutorWritingService {
-  private readonly apiUrl = 'https://minolingo.online/api/cours/writing';
+  private readonly apiUrl = '/api/cours/writing';
 
   constructor(private http: HttpClient) {}
 

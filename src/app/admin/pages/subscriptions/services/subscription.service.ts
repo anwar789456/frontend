@@ -7,7 +7,7 @@ import { SubscriptionPlan, UserSubscription } from '../models/subscription.model
   providedIn: 'root'
 })
 export class SubscriptionService {
-  private readonly apiUrl = 'https://minolingo.online/api/abonnements';
+  private readonly apiUrl = '/api/abonnements';
 
   constructor(private http: HttpClient) {}
 

@@ -7,7 +7,7 @@ import { Event, EventStatus } from '../models/event.model';
 describe('EventService', () => {
   let service: EventService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/events';
+  const apiUrl = '/api/events';
 
   const mockEvent: Event = {
     id: 1,

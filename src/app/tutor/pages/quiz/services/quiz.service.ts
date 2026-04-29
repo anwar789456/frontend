@@ -7,7 +7,7 @@ import { Quiz, QuestionQuiz, QuizCategory, StoryQuiz, StoryWordBank } from '../m
   providedIn: 'root'
 })
 export class TutorQuizService {
-  private readonly apiUrl = 'https://minolingo.online/api/cours';
+  private readonly apiUrl = '/api/cours';
 
   constructor(private http: HttpClient) {}
 

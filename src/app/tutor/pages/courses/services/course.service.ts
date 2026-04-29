@@ -8,7 +8,7 @@ import { Cours, ContenuPedagogique } from '../models/course.model';
   providedIn: 'root'
 })
 export class CourseService {
-  private readonly apiUrl = 'https://minolingo.online/api/cours';
+  private readonly apiUrl = '/api/cours';
 
   constructor(private http: HttpClient) {}
 
@@ -18,7 +18,7 @@ export class CourseService {
     formData.append('file', file);
 
     return this.http.post(
-      'https://minolingo.online/api/cours/file/upload',
+      '/api/cours/file/upload',
       formData,
       { responseType: 'text' }
     ).pipe(map(url => url.trim()));

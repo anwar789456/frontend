@@ -7,7 +7,7 @@ import { Cours, ContenuPedagogique } from '../models/course.model';
 describe('CourseService', () => {
   let service: CourseService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/cours';
+  const apiUrl = '/api/cours';
 
   const mockCours: Cours = {
     id: 1, title: 'English Basics', description: 'Beginner English course',

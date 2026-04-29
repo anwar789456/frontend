@@ -7,7 +7,7 @@ import { Event } from '../models/event.model';
   providedIn: 'root'
 })
 export class EventService {
-  private readonly apiUrl = 'https://minolingo.online/api/events';
+  private readonly apiUrl = '/api/events';
 
   constructor(private http: HttpClient) { }
 

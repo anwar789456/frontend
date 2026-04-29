@@ -7,7 +7,7 @@ import { Cours, ContenuPedagogique } from '../models/course.model';
   providedIn: 'root'
 })
 export class CourseService {
-  private readonly apiUrl = 'https://minolingo.online/api/cours';
+  private readonly apiUrl = '/api/cours';
 
   constructor(private http: HttpClient) {}
 

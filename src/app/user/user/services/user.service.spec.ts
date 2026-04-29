@@ -7,7 +7,7 @@ import { User } from '../models/user.model';
 describe('UserService', () => {
   let service: UserService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/users';
+  const apiUrl = '/api/users';
 
   const mockUser: User = {
     id: 1, name: 'John Doe', username: 'johndoe', email: 'john@example.com',

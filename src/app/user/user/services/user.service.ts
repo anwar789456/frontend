@@ -8,7 +8,7 @@ import { User } from '../models/user.model';
   providedIn: 'root'
 })
 export class UserService {
-  private readonly apiUrl = 'https://minolingo.online/api/users';
+  private readonly apiUrl = '/api/users';
 
   constructor(private http: HttpClient) { }
 

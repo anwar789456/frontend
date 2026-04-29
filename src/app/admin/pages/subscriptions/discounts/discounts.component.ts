@@ -32,7 +32,7 @@ export class DiscountsComponent implements OnInit {
     maxUses: null as number | null
   };
 
-  private readonly apiUrl = 'https://minolingo.online/api/abonnements';
+  private readonly apiUrl = '/api/abonnements';
 
   constructor(private http: HttpClient) {}
 

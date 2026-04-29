@@ -33,7 +33,7 @@ export interface AiSuggestionResponse {
   providedIn: 'root'
 })
 export class AiDonationService {
-  private readonly apiUrl = 'https://minolingo.online/api/donations/ai';
+  private readonly apiUrl = '/api/donations/ai';
 
   constructor(private http: HttpClient) {}
 

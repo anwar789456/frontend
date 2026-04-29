@@ -28,7 +28,7 @@ export class ImageCaptchaComponent implements OnInit {
   @Output() solved = new EventEmitter<CaptchaResult>();
   @Output() cleared = new EventEmitter<void>();
 
-  private readonly apiUrl = 'https://minolingo.online/api/users/captcha';
+  private readonly apiUrl = '/api/users/captcha';
 
   challenge: CaptchaChallenge | null = null;
   selectedIndex: number | null = null;

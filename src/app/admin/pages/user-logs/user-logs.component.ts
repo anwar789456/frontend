@@ -21,7 +21,7 @@ export interface LoginLog {
   templateUrl: './user-logs.component.html'
 })
 export class UserLogsComponent implements OnInit {
-  private readonly apiUrl = 'https://minolingo.online/api/users/login-logs';
+  private readonly apiUrl = '/api/users/login-logs';
 
   logs: LoginLog[] = [];
   isLoading = false;

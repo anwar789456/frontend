@@ -7,7 +7,7 @@ import { Session, Certification, PracticeItem } from '../models/sessionReservati
   providedIn: 'root'
 })
 export class SessionService {
-  private readonly apiUrl = 'https://minolingo.online/api/cours';
+  private readonly apiUrl = '/api/cours';
 
   constructor(private http: HttpClient) {}
 

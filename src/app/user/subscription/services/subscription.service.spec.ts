@@ -7,7 +7,7 @@ import { SubscriptionPlan, UserSubscription, PlanType, SubscriptionStatus } from
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/abonnements';
+  const apiUrl = '/api/abonnements';
 
   const mockPlan: SubscriptionPlan = {
     id: 1, name: PlanType.STANDARD, price: 9.99, durationDays: 30, description: 'Standard plan'

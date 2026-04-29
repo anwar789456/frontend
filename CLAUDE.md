@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm start          # Dev server at http://localhost:4200 (proxies API to https://minolingo.online)
+npm start          # Dev server at http://localhost:4200 (proxies API to local gateway)
 npm run build      # Production build
 npm test           # Unit tests with Vitest
 npm run watch      # Build in watch mode
@@ -37,8 +37,8 @@ No centralized state library. State is managed via:
 
 ### API Integration
 
-- Base URL: `https://minolingo.online/api` (configured per service)
-- Local dev uses [proxy.conf.json](proxy.conf.json) to forward `/api` requests to the backend
+- Base URL: `/api` (configured per service for local Docker/Nginx proxying)
+- Local dev uses [proxy.conf.json](proxy.conf.json) to forward `/api` requests to the local gateway
 - Pattern: `HttpClient` injected into service classes returning `Observable<T>`
 - Auth token attached manually per request in service methods (no HTTP interceptor)
 

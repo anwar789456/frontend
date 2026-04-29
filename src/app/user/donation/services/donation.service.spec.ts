@@ -7,7 +7,7 @@ import { Donation, DonationStatus, DonationType, ItemCondition } from '../models
 describe('DonationService', () => {
   let service: DonationService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/donations';
+  const apiUrl = '/api/donations';
 
   const mockDonation: Donation = {
     id: 1, userId: 10, type: DonationType.VETEMENT, itemName: 'Winter Jacket',

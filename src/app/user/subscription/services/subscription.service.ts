@@ -19,7 +19,7 @@ export interface ServiceError {
   providedIn: 'root'
 })
 export class SubscriptionService {
-  private readonly apiUrl = 'https://minolingo.online/api/abonnements';
+  private readonly apiUrl = '/api/abonnements';
   private plansCache$?: Observable<SubscriptionPlan[]>;
   private readonly maxRetries = 3;
 

@@ -25,7 +25,7 @@ export interface ChatRequest {
   providedIn: 'root'
 })
 export class AnalyticsChatbotService {
-  private readonly apiUrl = 'https://minolingo.online/api/abonnements/analytics/chat';
+  private readonly apiUrl = '/api/abonnements/analytics/chat';
 
   constructor(private http: HttpClient) {}
 

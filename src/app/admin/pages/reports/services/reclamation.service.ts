@@ -8,7 +8,7 @@ import { Reclamation } from '../models/reclamation.model';
   providedIn: 'root'
 })
 export class ReclamationService {
-  private readonly apiUrl = 'https://minolingo.online/api/reclamations';
+  private readonly apiUrl = '/api/reclamations';
 
   constructor(private http: HttpClient) {}
 

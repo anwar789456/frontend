@@ -7,7 +7,7 @@ import { Event } from '../models/event.model';
 
 @Injectable({ providedIn: 'root' })
 export class EventRecommendationService {
-    private readonly apiUrl = 'https://minolingo.online/api/events';
+    private readonly apiUrl = '/api/events';
     private readonly ollamaUrl = 'https://minolingo.online/ollama/v1/completions';
 
     constructor(private http: HttpClient) {}

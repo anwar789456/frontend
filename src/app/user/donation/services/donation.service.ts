@@ -7,7 +7,7 @@ import { Donation, DonationStatus } from '../models/donation.model';
   providedIn: 'root'
 })
 export class DonationService {
-  private readonly apiUrl = 'https://minolingo.online/api/donations';
+  private readonly apiUrl = '/api/donations';
 
   constructor(private http: HttpClient) {}
 

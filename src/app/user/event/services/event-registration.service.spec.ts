@@ -7,7 +7,7 @@ import { EventRegistration, RegistrationStatus } from '../models/event-registrat
 describe('EventRegistrationService', () => {
   let service: EventRegistrationService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/events/registrations';
+  const apiUrl = '/api/events/registrations';
 
   const mockRegistration: EventRegistration = {
     id: 1,

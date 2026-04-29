@@ -6,7 +6,7 @@ import { AiDonationService, AiAnalysisRequest, AiAnalysisResponse, AiSuggestionR
 describe('AiDonationService', () => {
   let service: AiDonationService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/donations/ai';
+  const apiUrl = '/api/donations/ai';
 
   beforeEach(() => {
     TestBed.configureTestingModule({

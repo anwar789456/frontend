@@ -6,7 +6,7 @@ import { PaymentSimulationService } from './payment-simulation.service';
 describe('PaymentSimulationService', () => {
   let service: PaymentSimulationService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://minolingo.online/api/abonnements/payments';
+  const apiUrl = '/api/abonnements/payments';
 
   beforeEach(() => {
     TestBed.configureTestingModule({

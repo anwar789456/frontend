@@ -5,7 +5,7 @@ import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 const POLL_INTERVAL_MS = 30_000;
-const API_BASE = 'https://minolingo.online/api/users';
+const API_BASE = '/api/users';
 
 @Injectable({ providedIn: 'root' })
 export class SessionMonitorService implements OnDestroy {
