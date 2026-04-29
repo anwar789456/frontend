@@ -39,7 +39,7 @@ pipeline {
 
     stage('SonarQube Scan') {
       steps {
-        withSonarQubeEnv('SonarQube') {
+        withSonarQubeEnv('SonarQube Frontend') {
           script {
             runCommand('npx sonar-scanner')
           }
