@@ -26,3 +26,100 @@ html, body {
     transform: translateY(0);
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   FORUM PAGE — ORANGE EVENTS-STYLE PALETTE
+   Loaded after Tailwind so these win the cascade.
+   Scoped to .forum-container so only the forum is
+   affected; rest of the app stays as-is.
+   ═══════════════════════════════════════════════════ */
+
+.forum-container {
+  background: linear-gradient(135deg, #fff7ed 0%, #fff1e6 50%, #fef3c7 100%) !important;
+}
+
+.forum-container .mino-forum-banner {
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 45%, #FDBA74 100%) !important;
+  border-color: #EA580C !important;
+  border-bottom-color: #C2410C !important;
+  box-shadow: 0 8px 28px rgba(249, 115, 22, 0.32), 0 3px 0 #C2410C !important;
+  border-radius: 22px !important;
+  padding: 16px 20px !important;
+}
+.forum-container .mino-forum-banner h1 {
+  font-size: 1.45rem !important;
+  letter-spacing: -0.015em !important;
+}
+
+.forum-container .bg-\[\#7C3AED\] { background-color: #F97316 !important; }
+.forum-container .bg-\[\#8b5cf6\] { background-color: #FB923C !important; }
+.forum-container .bg-\[\#6025c4\] { background-color: #C2410C !important; }
+.forum-container .bg-\[\#EDE9FE\] { background-color: #FFEDD5 !important; }
+.forum-container .bg-\[\#ddd6fe\] { background-color: #FED7AA !important; }
+.forum-container .bg-\[\#a78bfa\] { background-color: #FDBA74 !important; }
+
+.forum-container .bg-\[\#EC4899\] { background-color: #FB7185 !important; }
+.forum-container .bg-\[\#FCE7F3\] { background-color: #FFE4E6 !important; }
+.forum-container .bg-\[\#fbcfe8\] { background-color: #FECDD3 !important; }
+.forum-container .bg-\[\#d63384\] { background-color: #E11D48 !important; }
+
+.forum-container .border-\[\#7C3AED\] { border-color: #F97316 !important; }
+.forum-container .border-\[\#6025c4\] { border-color: #C2410C !important; }
+.forum-container .border-\[\#ddd6fe\] { border-color: #FED7AA !important; }
+.forum-container .border-b-\[\#6025c4\] { border-bottom-color: #C2410C !important; }
+.forum-container .border-\[\#EC4899\] { border-color: #FB7185 !important; }
+.forum-container .border-\[\#d63384\] { border-color: #E11D48 !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/20"] { border-color: rgba(249, 115, 22, 0.20) !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/30"] { border-color: rgba(249, 115, 22, 0.30) !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/50"] { border-color: rgba(249, 115, 22, 0.55) !important; }
+.forum-container [class*="border-b-\[\#7C3AED\]\/30"] { border-bottom-color: rgba(249, 115, 22, 0.30) !important; }
+
+.forum-container .text-\[\#7C3AED\] { color: #EA580C !important; }
+.forum-container .text-\[\#6025c4\] { color: #C2410C !important; }
+.forum-container .text-\[\#EC4899\] { color: #FB7185 !important; }
+
+.forum-container .hover\:bg-\[\#ddd6fe\]:hover { background-color: #FED7AA !important; }
+.forum-container .hover\:from-\[\#8b5cf6\]:hover { --tw-gradient-from: #FB923C !important; }
+.forum-container .hover\:to-\[\#a78bfa\]:hover { --tw-gradient-to: #FDBA74 !important; }
+.forum-container .hover\:from-\[\#F43F5E\]:hover { --tw-gradient-from: #F43F5E !important; }
+.forum-container .hover\:to-\[\#EC4899\]:hover { --tw-gradient-to: #FB7185 !important; }
+
+.forum-container .from-\[\#7C3AED\] {
+  --tw-gradient-from: #F97316 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(249, 115, 22, 0)) !important;
+}
+.forum-container .via-\[\#8b5cf6\] {
+  --tw-gradient-stops: var(--tw-gradient-from), #FB923C, var(--tw-gradient-to, rgba(251, 146, 60, 0)) !important;
+}
+.forum-container .to-\[\#EC4899\] { --tw-gradient-to: #FB7185 !important; }
+.forum-container .to-\[\#8b5cf6\] { --tw-gradient-to: #FB923C !important; }
+.forum-container .from-\[\#EC4899\] {
+  --tw-gradient-from: #FB7185 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(251, 113, 133, 0)) !important;
+}
+.forum-container .to-\[\#F43F5E\] { --tw-gradient-to: #F43F5E !important; }
+
+/* Belt-and-suspenders for gradient banners — force the full gradient via background-image */
+.forum-container [class*="from-[#7C3AED]"][class*="to-[#EC4899]"],
+.forum-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"] {
+  background-image: linear-gradient(to right, #F97316, #FB923C, #FB7185) !important;
+}
+.forum-container [class*="from-[#EC4899]"][class*="to-[#F43F5E]"] {
+  background-image: linear-gradient(to right, #FB7185, #F43F5E) !important;
+}
+
+.forum-container button:focus-visible,
+.forum-container input:focus-visible,
+.forum-container textarea:focus-visible {
+  outline-color: #F97316 !important;
+}
+
+.forum-container .avatar-ring {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+}
+
+.forum-container ::-webkit-scrollbar-thumb,
+.forum-container *::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #F97316, #FB7185) !important;
+  background-clip: padding-box !important;
+}
