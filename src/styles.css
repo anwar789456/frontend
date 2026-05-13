@@ -43,8 +43,6 @@ html, body {
 .forum-container .mino-forum-banner {
   position: relative !important;
   background: linear-gradient(120deg, #EA580C 0%, #F97316 25%, #FB923C 50%, #FB7185 80%, #F43F5E 100%) !important;
-  background-size: 220% 220% !important;
-  animation: minoBannerShift 12s ease-in-out infinite !important;
   border: 2px solid rgba(255, 255, 255, 0.35) !important;
   border-bottom-color: #C2410C !important;
   box-shadow:
@@ -59,26 +57,20 @@ html, body {
 .forum-container .mino-forum-banner::before {
   content: '';
   position: absolute;
-  inset: -40%;
+  inset: 0;
   background:
-    radial-gradient(circle at 18% 30%, rgba(255, 237, 213, 0.55) 0%, transparent 35%),
-    radial-gradient(circle at 82% 70%, rgba(251, 113, 133, 0.45) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(254, 215, 170, 0.35) 0%, transparent 50%);
-  filter: blur(30px);
-  animation: minoBannerBlobs 14s ease-in-out infinite alternate;
+    radial-gradient(circle at 80% 70%, rgba(251, 113, 133, 0.35) 0%, transparent 50%),
+    radial-gradient(circle at 20% 30%, rgba(255, 237, 213, 0.40) 0%, transparent 50%);
   z-index: 0;
   pointer-events: none;
 }
 .forum-container .mino-forum-banner::after {
   content: '';
   position: absolute;
-  right: -20px;
-  top: -20px;
-  width: 160px;
-  height: 160px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
+  right: -20px; top: -20px;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.20) 0%, transparent 60%);
   border-radius: 50%;
-  animation: minoSparklePulse 3.5s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
 }
@@ -199,39 +191,28 @@ html, body {
    FIRE LAYER — make the forum feel alive
    ═══════════════════════════════════════════════════ */
 
-/* Soft animated aura behind the whole feed area */
+/* Static aura — no animation (saves GPU) */
 .forum-container::before {
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(700px 500px at 15% 20%, rgba(251, 146, 60, 0.18) 0%, transparent 60%),
-    radial-gradient(600px 500px at 85% 80%, rgba(251, 113, 133, 0.15) 0%, transparent 60%),
-    radial-gradient(500px 400px at 50% 50%, rgba(254, 215, 170, 0.12) 0%, transparent 60%);
+    radial-gradient(700px 500px at 15% 20%, rgba(251, 146, 60, 0.15) 0%, transparent 60%),
+    radial-gradient(600px 500px at 85% 80%, rgba(251, 113, 133, 0.12) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
-  animation: minoAuraDrift 18s ease-in-out infinite alternate;
-}
-@keyframes minoAuraDrift {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(-2%, 2%) scale(1.05); }
 }
 
-/* Cards — glassy with peach gradient border */
+/* Cards — solid ivory (no backdrop-filter — that was the main lag) */
 .forum-container .forum-card,
 .forum-container .sidebar-section,
 .forum-container .dm-card {
-  background: rgba(255, 255, 255, 0.78) !important;
-  backdrop-filter: blur(12px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  background: #FFFBF5 !important;
   border: 1.5px solid rgba(254, 215, 170, 0.65) !important;
   box-shadow:
     0 2px 0 rgba(254, 215, 170, 0.5),
-    0 4px 18px rgba(249, 115, 22, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
-  transition: transform 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97),
-              box-shadow 0.25s ease,
-              border-color 0.25s ease !important;
+    0 4px 14px rgba(249, 115, 22, 0.06) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
 .forum-container .forum-card:hover,
 .forum-container .sidebar-section:hover {
@@ -243,25 +224,19 @@ html, body {
     inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
 }
 
-/* Post card — animated coral accent stripe on hover */
+/* Post card — static coral stripe on hover (no infinite animation) */
 .forum-container .post-card { position: relative; overflow: hidden; }
 .forum-container .post-card::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 5px;
-  background: linear-gradient(180deg, #F97316 0%, #FB7185 50%, #FDBA74 100%);
-  background-size: 100% 300%;
+  width: 4px;
+  background: linear-gradient(180deg, #F97316, #FB7185);
   border-radius: 0 6px 6px 0;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  animation: minoStripeShift 4s ease-in-out infinite;
+  transition: opacity 0.25s ease;
 }
 .forum-container .post-card:hover::before { opacity: 1; }
-@keyframes minoStripeShift {
-  0%, 100% { background-position: 0% 0%; }
-  50%      { background-position: 0% 100%; }
-}
 
 /* btn-primary (POST button, View Profile, etc.) — glowing coral CTA */
 .forum-container .btn-primary {
@@ -325,30 +300,22 @@ html, body {
   font-weight: 900 !important;
 }
 
-/* Avatar ring — animated conic spinner */
+/* Avatar ring — static gradient (no spin) */
 .forum-container .avatar-ring {
-  background: conic-gradient(from 0deg, #F97316, #FB7185, #FDBA74, #F43F5E, #F97316) !important;
-  animation: minoAvatarSpin 8s linear infinite !important;
-}
-@keyframes minoAvatarSpin {
-  to { transform: rotate(360deg); }
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
 }
 
-/* Friends & Chat button — full coral fire gradient */
+/* Friends & Chat button — static coral gradient */
 .forum-container a[href="/user/friends"] {
   background: linear-gradient(135deg, #FB7185 0%, #F43F5E 50%, #F97316 100%) !important;
-  background-size: 200% 200% !important;
-  animation: minoBannerShift 8s ease-in-out infinite !important;
   border-bottom-color: #E11D48 !important;
   box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4) !important;
 }
 
-/* "People You May Know" header — animated fire gradient */
+/* "People You May Know" header — static fire gradient */
 .forum-container .from-\[\#7C3AED\].via-\[\#8b5cf6\].to-\[\#EC4899\],
 .forum-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"][class*="to-[#EC4899]"] {
   background: linear-gradient(120deg, #EA580C 0%, #F97316 30%, #FB923C 60%, #FB7185 100%) !important;
-  background-size: 200% 200% !important;
-  animation: minoBannerShift 10s ease-in-out infinite !important;
 }
 
 /* Pretty progress bars (XP, etc.) — coral fill */
@@ -415,93 +382,13 @@ html, body {
    ═══════════════════════════════════════════════════ */
 
 /* ── Aurora top glow across the whole page ── */
-.forum-container::after {
-  content: '';
-  position: fixed;
-  left: -10%;
-  right: -10%;
-  top: -120px;
-  height: 360px;
-  background:
-    radial-gradient(ellipse at 20% 100%, rgba(249, 115, 22, 0.35) 0%, transparent 55%),
-    radial-gradient(ellipse at 55% 100%, rgba(251, 113, 133, 0.30) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 100%, rgba(253, 186, 116, 0.30) 0%, transparent 55%);
-  filter: blur(40px);
-  pointer-events: none;
-  z-index: 0;
-  animation: minoAurora 16s ease-in-out infinite alternate;
-  mix-blend-mode: multiply;
-}
-@keyframes minoAurora {
-  0%   { transform: translateX(-2%) scaleX(1.0); opacity: 0.85; }
-  50%  { transform: translateX(2%) scaleX(1.06); opacity: 1; }
-  100% { transform: translateX(-1%) scaleX(0.98); opacity: 0.9; }
-}
-
-/* ── Heat-haze shimmer over the banner ── */
-.forum-container .mino-forum-banner {
-  /* extend existing — add a moving caustics highlight */
-  background-image:
-    linear-gradient(120deg, #EA580C 0%, #F97316 25%, #FB923C 50%, #FB7185 80%, #F43F5E 100%),
-    repeating-linear-gradient(115deg,
-      rgba(255, 255, 255, 0.08) 0px,
-      rgba(255, 255, 255, 0.08) 2px,
-      transparent 2px,
-      transparent 14px) !important;
-  background-blend-mode: overlay, normal !important;
-}
-.forum-container .mino-forum-banner::before {
-  /* keep blob layer but also add caustic ribbon */
-  background:
-    radial-gradient(circle at 18% 30%, rgba(255, 237, 213, 0.55) 0%, transparent 35%),
-    radial-gradient(circle at 82% 70%, rgba(251, 113, 133, 0.45) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(254, 215, 170, 0.35) 0%, transparent 50%),
-    linear-gradient(75deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 220% 100%;
-  animation: minoBannerBlobs 14s ease-in-out infinite alternate,
-             minoHaze 6s linear infinite;
-}
-@keyframes minoHaze {
-  0%   { background-position: 0 0, 0 0, 0 0, -220% 0; }
-  100% { background-position: 0 0, 0 0, 0 0, 220% 0; }
-}
-
-/* ── Chromatic floor reflection under the banner ── */
-.forum-container .mino-forum-banner {
-  margin-bottom: 20px !important;
-}
-.forum-container .mino-forum-banner + * {
-  position: relative;
-}
-.forum-container .mino-forum-banner::after {
-  /* keep sparkle pulse from before, plus add floor reflection */
-  content: '';
-  position: absolute;
-  right: -20px;
-  top: -20px;
-  width: 160px;
-  height: 160px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
-  border-radius: 50%;
-  animation: minoSparklePulse 3.5s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
-  box-shadow:
-    /* faint glow drop into the area below */
-    0 200px 80px -120px rgba(249, 115, 22, 0.18);
-}
-
-/* ── Animated wordmark — gradient shimmer text on banner title ── */
+/* (aurora ::after removed — was always animating, lag) */
+.forum-container .mino-forum-banner { margin-bottom: 20px !important; }
+.forum-container .mino-forum-banner + * { position: relative; }
+/* (wordmark shimmer removed — was animating text-mask every frame, very expensive) */
 .forum-container .mino-forum-banner h1 {
-  background: linear-gradient(90deg, #fff 0%, #FFEDD5 25%, #fff 50%, #FFE4E6 75%, #fff 100%) !important;
-  background-size: 220% 100% !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  animation: minoWordmarkShimmer 5s linear infinite !important;
-  text-shadow: none !important;
-  filter: drop-shadow(0 2px 8px rgba(194, 65, 12, 0.5)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.15)) !important;
+  color: #fff !important;
+  text-shadow: 0 2px 12px rgba(194, 65, 12, 0.5), 0 1px 0 rgba(0, 0, 0, 0.12) !important;
 }
 @keyframes minoWordmarkShimmer {
   0%   { background-position: 0% 50%; }
@@ -519,23 +406,8 @@ html, body {
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
   pointer-events: none;
 }
-.forum-container .mino-forum-banner .flex-1::before {
-  top: 8px; right: 20%;
-  animation: minoParticleA 7s ease-in-out infinite;
-}
-.forum-container .mino-forum-banner .flex-1::after {
-  bottom: 10px; right: 35%;
-  width: 5px; height: 5px;
-  animation: minoParticleB 9s ease-in-out infinite 1s;
-}
-@keyframes minoParticleA {
-  0%, 100% { transform: translate(0, 0); opacity: 0.6; }
-  50%      { transform: translate(-30px, -10px); opacity: 1; }
-}
-@keyframes minoParticleB {
-  0%, 100% { transform: translate(0, 0); opacity: 0.5; }
-  50%      { transform: translate(20px, -14px); opacity: 0.9; }
-}
+.forum-container .mino-forum-banner .flex-1::before { top: 8px; right: 20%; }
+.forum-container .mino-forum-banner .flex-1::after { bottom: 10px; right: 35%; width: 5px; height: 5px; }
 
 /* ── Neon-glass tabs (Saved / Favorites etc.) ── */
 .forum-container .sidebar-section button {
@@ -623,72 +495,13 @@ html, body {
   letter-spacing: 0.2em !important;
 }
 
-/* ── Pulse halo on POST button ── */
-.forum-container .btn-primary {
-  position: relative;
-}
-.forum-container .btn-primary::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #F97316, #FB7185);
-  filter: blur(14px);
-  opacity: 0.35;
-  z-index: -1;
-  animation: minoCtaPulse 2.6s ease-in-out infinite;
-}
-@keyframes minoCtaPulse {
-  0%, 100% { opacity: 0.30; transform: scale(1); }
-  50%      { opacity: 0.55; transform: scale(1.04); }
-}
+/* (CTA pulse halo + confetti sweep removed — animating box-shadow on a blur is expensive) */
+.forum-container .btn-primary { position: relative; }
 
-/* ── Confetti spark sweep when POST is hovered ── */
-.forum-container .btn-primary:hover::after {
-  left: 130%;
-  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.7), transparent);
-  filter: drop-shadow(0 0 8px #fff);
-}
+/* (Sidebar breathing floats removed — they were running constantly on multiple cards) */
 
-/* ── Right rail / sidebar widgets: soft floating shadow base ── */
-.forum-container .sidebar-section {
-  will-change: transform;
-}
-.forum-container .sidebar-section:nth-child(odd) {
-  animation: minoFloatA 9s ease-in-out infinite;
-}
-.forum-container .sidebar-section:nth-child(even) {
-  animation: minoFloatB 11s ease-in-out infinite;
-}
-@keyframes minoFloatA {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-2px); }
-}
-@keyframes minoFloatB {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(2px); }
-}
-
-/* ── "FRIENDS & CHAT" coral button — fire crown shimmer ── */
-.forum-container a[href="/user/friends"] {
-  position: relative;
-  overflow: hidden;
-}
-.forum-container a[href="/user/friends"]::after {
-  content: '';
-  position: absolute;
-  top: -50%; left: -50%;
-  width: 50%; height: 200%;
-  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
-  transform: rotate(20deg);
-  animation: minoCrownSweep 4s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes minoCrownSweep {
-  0%   { left: -60%; }
-  50%  { left: 120%; }
-  100% { left: 120%; }
-}
+/* (Friends & Chat crown sweep removed — was animating left every frame) */
+.forum-container a[href="/user/friends"] { position: relative; overflow: hidden; }
 
 /* ── Selection color matches the theme ── */
 .forum-container ::selection {
