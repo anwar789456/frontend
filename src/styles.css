@@ -214,6 +214,25 @@ html, body {
     0 4px 14px rgba(249, 115, 22, 0.06) !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
+
+/* Notification panel — force proper dropdown sizing so it cannot push the sidebar */
+.forum-container .notif-panel {
+  position: absolute !important;
+  right: 0 !important;
+  top: 44px !important;
+  width: 320px !important;
+  max-width: 90vw !important;
+  max-height: 70vh !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  box-shadow: 0 18px 50px rgba(249, 115, 22, 0.18), 0 4px 0 rgba(254, 215, 170, 0.5) !important;
+  z-index: 100 !important;
+}
+/* Recolor the notif panel header gradient (it was using purple-pink) */
+.forum-container .notif-panel .bg-gradient-to-r.from-\[\#7C3AED\].via-\[\#8b5cf6\].to-\[\#EC4899\],
+.forum-container .notif-panel [class*="from-[#7C3AED]"][class*="to-[#EC4899]"] {
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 35%, #FB7185 100%) !important;
+}
 .forum-container .forum-card:hover,
 .forum-container .sidebar-section:hover {
   transform: translateY(-2px) !important;
