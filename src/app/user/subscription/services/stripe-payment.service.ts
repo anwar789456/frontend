@@ -19,15 +19,19 @@ export interface CreateCheckoutSessionResponse {
 
 export interface ConfirmPaymentRequest {
   sessionId: string;
-  userId: number;
-  planId: number;
+  userId?: number;
+  planId?: number;
   email?: string;
 }
 
 export interface ConfirmPaymentResponse {
   success: boolean;
   message: string;
-  subscription?: any;
+  subscriptionId?: number;
+  planName?: string;
+  status?: string;
+  subscribedAt?: string;
+  expiresAt?: string;
 }
 
 export interface StripeConfig {

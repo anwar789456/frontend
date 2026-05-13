@@ -126,7 +126,7 @@ export class SubscriptionService {
   // ── Auto-Renew ──
 
   toggleAutoRenew(subscriptionId: number, enabled: boolean): Observable<any> {
-    return this.http.patch(
+    return this.http.post(
       `${this.apiUrl}/${subscriptionId}/auto-renew?enabled=${enabled}`, {}
     ).pipe(
       retry(this.maxRetries),
