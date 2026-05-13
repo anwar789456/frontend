@@ -144,25 +144,22 @@ export class PaymentSuccessComponent implements OnInit {
         if (this.countdown <= 0) {
           clearInterval(timer);
           this.redirecting = true;
-          this.router.navigate(['/user/course']);
+          this.router.navigate(['/courses']);
         }
       }, 1000);
     });
   }
 
-  /**
-   * Manual redirect to courses page (skip countdown)
-   */
   goToCourses(): void {
     this.redirecting = true;
-    this.router.navigate(['/user/course']);
+    this.router.navigate(['/courses']);
   }
 
   goToSubscriptions(): void {
-    this.router.navigate(['/user/subscription']);
+    this.router.navigate(['/subscriptions']);
   }
 
   goToDashboard(): void {
-    this.router.navigate(['/user']);
+    this.router.navigate(['/courses']);
   }
 }
