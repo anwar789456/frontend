@@ -1,13 +1,13 @@
 /* ═══════════════════════════════════════════════════
-   MinoLingo Forum — Unique Vibrant Theme
-   Violet Primary • Pink Reactions • Cyan Comments
+   MinoLingo Forum — Events-Style Orange Theme
+   Orange Primary • Coral Accents • Warm Neutrals
    ═══════════════════════════════════════════════════ */
 
 /* ── Base Container ── */
 .forum-container {
   transition: background-color 0.3s, color 0.3s;
   font-family: 'Nunito', 'Quicksand', 'Comic Neue', sans-serif;
-  background: linear-gradient(135deg, #faf5ff 0%, #f0f9ff 50%, #fdf2f8 100%);
+  background: linear-gradient(135deg, #fff7ed 0%, #fff1e6 50%, #fef3c7 100%);
   background-attachment: fixed;
   position: relative;
 }
@@ -17,13 +17,13 @@
 :host {
   display: block;
   width: 100%;
-  --mino-primary: #7C3AED;
-  --mino-primary-dark: #6025c4;
-  --mino-primary-light: #EDE9FE;
-  --mino-primary-glow: rgba(124,58,237,.25);
-  --mino-pink: #EC4899;
-  --mino-pink-dark: #d63384;
-  --mino-pink-light: #FCE7F3;
+  --mino-primary: #F97316;
+  --mino-primary-dark: #C2410C;
+  --mino-primary-light: #FFEDD5;
+  --mino-primary-glow: rgba(249,115,22,.28);
+  --mino-pink: #FB7185;
+  --mino-pink-dark: #E11D48;
+  --mino-pink-light: #FFE4E6;
   --mino-cyan: #06B6D4;
   --mino-cyan-dark: #0891b2;
   --mino-cyan-light: #CFFAFE;
@@ -512,3 +512,102 @@ button, a { transition: all .15s; }
 .notif-panel .notif-badge {
   animation: gradientDotPulse 2s ease-in-out infinite;
 }
+
+/* ═══════════════════════════════════════════════════
+   EVENTS-STYLE ORANGE PALETTE OVERRIDES
+   Repaints hard-coded violet/pink Tailwind arbitrary
+   classes used throughout the template, without
+   touching the HTML. Must stay last so it wins.
+   ═══════════════════════════════════════════════════ */
+
+/* Primary backgrounds (violet → orange) */
+.forum-container .bg-\[\#7C3AED\] { background-color: #F97316 !important; }
+.forum-container .bg-\[\#8b5cf6\] { background-color: #FB923C !important; }
+.forum-container .bg-\[\#6025c4\] { background-color: #C2410C !important; }
+.forum-container .bg-\[\#EDE9FE\] { background-color: #FFEDD5 !important; }
+.forum-container .bg-\[\#ddd6fe\] { background-color: #FED7AA !important; }
+.forum-container .bg-\[\#a78bfa\] { background-color: #FDBA74 !important; }
+
+/* Pink accents (rose → coral) */
+.forum-container .bg-\[\#EC4899\] { background-color: #FB7185 !important; }
+.forum-container .bg-\[\#FCE7F3\] { background-color: #FFE4E6 !important; }
+.forum-container .bg-\[\#fbcfe8\] { background-color: #FECDD3 !important; }
+.forum-container .bg-\[\#d63384\] { background-color: #E11D48 !important; }
+
+/* Borders */
+.forum-container .border-\[\#7C3AED\] { border-color: #F97316 !important; }
+.forum-container .border-\[\#6025c4\] { border-color: #C2410C !important; }
+.forum-container .border-\[\#ddd6fe\] { border-color: #FED7AA !important; }
+.forum-container .border-b-\[\#6025c4\] { border-bottom-color: #C2410C !important; }
+.forum-container .border-b-\[\#7C3AED\]\/30 { border-bottom-color: rgba(249,115,22,.30) !important; }
+.forum-container .border-\[\#7C3AED\]\/20 { border-color: rgba(249,115,22,.20) !important; }
+.forum-container .border-\[\#7C3AED\]\/50 { border-color: rgba(249,115,22,.55) !important; }
+.forum-container .border-\[\#EC4899\] { border-color: #FB7185 !important; }
+.forum-container .border-\[\#d63384\] { border-color: #E11D48 !important; }
+
+/* Text colors */
+.forum-container .text-\[\#7C3AED\] { color: #EA580C !important; }
+.forum-container .text-\[\#6025c4\] { color: #C2410C !important; }
+.forum-container .text-\[\#EC4899\] { color: #FB7185 !important; }
+
+/* Hover states */
+.forum-container .hover\:bg-\[\#ddd6fe\]:hover { background-color: #FED7AA !important; }
+.forum-container .hover\:from-\[\#8b5cf6\]:hover { --tw-gradient-from: #FB923C !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(251,146,60,0)) !important; }
+.forum-container .hover\:to-\[\#a78bfa\]:hover { --tw-gradient-to: #FDBA74 !important; }
+.forum-container .hover\:from-\[\#F43F5E\]:hover { --tw-gradient-from: #F43F5E !important; }
+.forum-container .hover\:to-\[\#EC4899\]:hover { --tw-gradient-to: #FB7185 !important; }
+
+/* Gradients */
+.forum-container .from-\[\#7C3AED\] { --tw-gradient-from: #F97316 !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(249,115,22,0)) !important; }
+.forum-container .via-\[\#8b5cf6\] { --tw-gradient-stops: var(--tw-gradient-from), #FB923C, var(--tw-gradient-to, rgba(251,146,60,0)) !important; }
+.forum-container .to-\[\#EC4899\] { --tw-gradient-to: #FB7185 !important; }
+.forum-container .to-\[\#8b5cf6\] { --tw-gradient-to: #FB923C !important; }
+.forum-container .from-\[\#EC4899\] { --tw-gradient-from: #FB7185 !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(251,113,133,0)) !important; }
+.forum-container .to-\[\#F43F5E\] { --tw-gradient-to: #F43F5E !important; }
+
+/* Welcome banner — MinoLingo Events hero look */
+.forum-container .bg-\[\#7C3AED\].rounded-xl,
+.forum-container .rounded-xl.border-\[\#6025c4\] {
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDBA74 100%) !important;
+  border-color: #EA580C !important;
+  box-shadow: 0 6px 24px rgba(249,115,22,.25), 0 2px 0 #C2410C !important;
+  padding: 14px 18px !important;
+  border-radius: 18px !important;
+}
+.forum-container .bg-\[\#7C3AED\].rounded-xl h1,
+.forum-container .rounded-xl.border-\[\#6025c4\] h1 {
+  font-size: 1.35rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Avatar ring */
+.avatar-ring { background: linear-gradient(135deg, #F97316, #FB7185) !important; }
+
+/* Post card hover accent stripe */
+.post-card::before { background: linear-gradient(180deg, #F97316, #FB7185, #FDBA74) !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #F97316, #FB7185) !important;
+  background-clip: padding-box !important;
+}
+
+/* Toast/share modal shadows */
+.notif-panel { box-shadow: 0 8px 32px rgba(249,115,22,.15), 0 4px 0 var(--mino-border) !important; }
+.report-modal { box-shadow: 0 20px 60px rgba(249,115,22,.20), 0 4px 0 var(--mino-border) !important; }
+
+/* Dark mode tweaks */
+.forum-dark .action-btn:hover { background: rgba(249,115,22,.15) !important; }
+.forum-dark .forum-card:hover { box-shadow: 0 6px 0 #0F172A, 0 8px 25px rgba(249,115,22,.20) !important; }
+
+/* Focus rings */
+.forum-container button:focus-visible,
+.forum-container input:focus-visible,
+.forum-container textarea:focus-visible { outline-color: #F97316 !important; }
+
+/* XP glow recolor */
+@keyframes xpGlowOrange {
+  0%, 100% { box-shadow: 0 0 4px rgba(249,115,22,.30); }
+  50%      { box-shadow: 0 0 16px rgba(249,115,22,.55); }
+}
+.xp-bar { animation: xpGlowOrange 2s ease-in-out infinite !important; }
