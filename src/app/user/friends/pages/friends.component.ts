@@ -1183,7 +1183,9 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.speechRecognition.lang = 'en-US';
     this.speechRecognition.interimResults = true;
     this.speechRecognition.maxAlternatives = 1;
-    this.speechRecognition.continuous = true;
+    // Short non-continuous sessions are far less prone to "network" errors.
+    // onend will auto-restart while the mic button is active.
+    this.speechRecognition.continuous = false;
 
     this.speechRecognition.onresult = (event: any) => {
       let finalTranscript = '';
@@ -1210,49 +1212,66 @@ export class FriendsComponent implements OnInit, OnDestroy {
 
     this.speechRecognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
-      this.isSpeechListening = false;
-      this.speechNetworkRetries = 0;
       switch (event.error) {
         case 'not-allowed':
         case 'service-not-allowed':
+          this.isSpeechListening = false;
+          this.speechNetworkRetries = 0;
           this.addToast('Microphone access denied. Allow it in browser settings (lock icon → Microphone).', 'warning');
           break;
         case 'no-speech':
-          this.addToast('No speech detected. Try speaking closer to the mic.', 'info');
+          // benign — onend will restart if still listening
           break;
         case 'audio-capture':
+          this.isSpeechListening = false;
+          this.speechNetworkRetries = 0;
           this.addToast('No microphone found. Plug one in or check Windows mic settings.', 'warning');
           break;
         case 'network': {
-          // Web Speech API streams audio to Google\'s servers. "network" means
-          // the browser couldn\'t reach them. Common causes: not on HTTPS,
-          // Brave/Vivaldi without Google services, firewall, or no internet.
+          // Web Speech streams to Google. "network" is often a transient drop
+          // mid-stream. Auto-retry up to 3 times before giving up.
+          if (this.isSpeechListening && this.speechNetworkRetries < 3) {
+            this.speechNetworkRetries++;
+            // onend will fire next and restart for us — nothing to do here
+            return;
+          }
+          this.isSpeechListening = false;
+          this.speechNetworkRetries = 0;
           const isSecure = window.isSecureContext;
           const isBrave = !!(navigator as any).brave;
           if (!isSecure) {
-            this.addToast('Speech needs a secure connection (HTTPS). Open the site via https:// — localhost may also work.', 'warning');
+            this.addToast('Speech needs a secure connection (HTTPS). Open the site via https://', 'warning');
           } else if (isBrave) {
             this.addToast('Brave blocks Google\'s speech servers by default. Try Chrome or Edge for voice input.', 'warning');
           } else {
-            this.addToast('Speech service unreachable. Check your internet — Web Speech needs Google\'s servers.', 'warning');
+            this.addToast('Speech service keeps dropping. Check your internet and try again.', 'warning');
           }
           break;
         }
         case 'aborted':
           // user/system stopped it — don\'t toast
+          this.speechNetworkRetries = 0;
           break;
         default:
+          this.isSpeechListening = false;
+          this.speechNetworkRetries = 0;
           this.addToast('Speech recognition error: ' + event.error, 'warning');
       }
       this.cdr.detectChanges();
     };
 
     this.speechRecognition.onend = () => {
-      // In continuous mode, browser may stop unexpectedly — restart if still listening
+      // Browser stops the recognizer often — restart if user is still listening.
+      // Small delay so we don\'t hammer Google when retrying after a network blip.
       if (this.isSpeechListening) {
-        try { this.speechRecognition.start(); } catch (_) {}
+        const delay = this.speechNetworkRetries > 0 ? 400 * this.speechNetworkRetries : 0;
+        setTimeout(() => {
+          if (!this.isSpeechListening) return;
+          try { this.speechRecognition.start(); } catch (_) {}
+        }, delay);
         return;
       }
+      this.speechNetworkRetries = 0;
       this.cdr.detectChanges();
     };
   }
