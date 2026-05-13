@@ -1,7 +1,7 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StripePaymentService, SendEmailRequest } from '../services/stripe-payment.service';
+import { StripePaymentService, SendEmailRequest, ConfirmPaymentResponse } from '../services/stripe-payment.service';
 
 @Component({
   selector: 'app-payment-success',
@@ -17,10 +17,14 @@ export class PaymentSuccessComponent implements OnInit {
   isLoading = true;
   isConfirmed = false;
   errorMessage = '';
-  subscription: any = null;
+  planName = '';
+  subscribedAt = '';
+  expiresAt = '';
   emailSent = false;
   countdown = 3;
   redirecting = false;
+  private confirmAttempts = 0;
+  private readonly maxConfirmAttempts = 3;
 
   constructor(
     private route: ActivatedRoute,
@@ -32,66 +36,56 @@ export class PaymentSuccessComponent implements OnInit {
   ngOnInit(): void {
     console.log('=== PaymentSuccessComponent: Initialized ===');
 
-    // Get session ID from URL query parameters
+    // Get session ID — try ActivatedRoute first, fallback to raw window.location
     this.sessionId = this.route.snapshot.queryParamMap.get('session_id');
 
-    console.log('Session ID from URL:', this.sessionId);
-    console.log('Full URL Query Params:', this.route.snapshot.queryParamMap);
+    if (!this.sessionId) {
+      // Fallback: parse session_id directly from browser URL (bypasses Angular routing quirks)
+      const params = new URLSearchParams(window.location.search);
+      this.sessionId = params.get('session_id');
+      console.log('session_id from window.location.search:', this.sessionId);
+    }
 
-    // Get userId and planId from local storage (stored before redirect)
-    const storedUserId = localStorage.getItem('stripe_payment_userId');
-    const storedPlanId = localStorage.getItem('stripe_payment_planId');
-    const storedEmail = localStorage.getItem('stripe_payment_email');
+    console.log('Session ID resolved:', this.sessionId);
+    console.log('Current URL:', window.location.href);
 
-    console.log('Local Storage Data:', {
-      userId: storedUserId,
-      planId: storedPlanId,
-      email: storedEmail
-    });
-
-    if (storedUserId) this.userId = parseInt(storedUserId, 10);
-    if (storedPlanId) this.planId = parseInt(storedPlanId, 10);
-
-    console.log('Parsed Values:', {
-      userId: this.userId,
-      planId: this.planId,
-      email: storedEmail
-    });
-
-    if (!this.sessionId || !this.userId || !this.planId) {
-      console.error('Missing required data!');
-      console.error('Session ID:', this.sessionId);
-      console.error('User ID:', this.userId);
-      console.error('Plan ID:', this.planId);
+    if (!this.sessionId) {
+      console.error('session_id missing from URL:', window.location.href);
       this.errorMessage = 'Invalid payment session. Please try again.';
       this.isLoading = false;
       return;
     }
 
-    // Confirm payment with backend
-    console.log('Proceeding to confirm payment...');
-    this.confirmPayment(storedEmail || undefined);
+    // Read optional email from localStorage (non-critical)
+    const storedEmail = localStorage.getItem('stripe_payment_email') || undefined;
+
+    // userId and planId are resolved server-side from Stripe session metadata
+    // Wait 2 seconds before confirming — gives Stripe time to finalize the payment status
+    console.log('Waiting 2s before confirming payment with sessionId:', this.sessionId);
+    setTimeout(() => {
+      this.confirmPayment(storedEmail);
+    }, 2000);
   }
 
   confirmPayment(email?: string): void {
     console.log('=== PaymentSuccessComponent: Confirm Payment ===');
 
-    if (!this.sessionId || !this.userId || !this.planId) {
-      console.error('Missing required parameters for confirmation');
+    if (!this.sessionId) {
+      console.error('Missing session ID for confirmation');
       return;
     }
 
     const requestPayload = {
       sessionId: this.sessionId,
-      userId: this.userId,
-      planId: this.planId,
       email: email
     };
 
     console.log('Confirmation Request Payload:', JSON.stringify(requestPayload, null, 2));
 
+    this.confirmAttempts++;
+
     this.stripeService.confirmPayment(requestPayload).subscribe({
-      next: (response) => {
+      next: (response: ConfirmPaymentResponse) => {
         console.log('=== PaymentSuccessComponent: Payment Confirmed Successfully ===');
         console.log('Response:', response);
 
@@ -100,35 +94,42 @@ export class PaymentSuccessComponent implements OnInit {
         if (response.success) {
           console.log('Payment successful! Subscription created.');
           this.isConfirmed = true;
-          this.subscription = response.subscription;
-          console.log('Subscription Details:', this.subscription);
+          this.planName = response.planName || 'Premium';
+          this.subscribedAt = response.subscribedAt || '';
+          this.expiresAt = response.expiresAt || '';
 
           // Send confirmation email to user
           if (email) {
-            this.sendConfirmationEmail(email, this.subscription);
+            this.sendConfirmationEmail(email, response);
           }
 
           // Clear local storage
-          localStorage.removeItem('stripe_payment_userId');
-          localStorage.removeItem('stripe_payment_planId');
           localStorage.removeItem('stripe_payment_email');
 
           // Start countdown and auto-redirect
           this.startRedirectCountdown();
         } else {
-          console.error('Payment confirmation returned unsuccessful');
-          console.error('Response message:', response.message);
-          this.errorMessage = response.message || 'Failed to confirm payment';
+          // Retry up to maxConfirmAttempts if payment not yet confirmed
+          if (this.confirmAttempts < this.maxConfirmAttempts) {
+            console.warn(`Confirmation attempt ${this.confirmAttempts} failed, retrying in 3s...`);
+            setTimeout(() => this.confirmPayment(email), 3000);
+          } else {
+            this.errorMessage = response.message || 'Failed to confirm payment';
+          }
         }
       },
       error: (error) => {
         console.error('=== PaymentSuccessComponent: Payment Confirmation FAILED ===');
-        console.error('Error:', error);
-        console.error('Error Message:', error.message);
-        console.error('Error Status:', error.status);
-        console.error('Error Details:', error.details);
-        this.isLoading = false;
-        this.errorMessage = error.message || 'Failed to confirm payment';
+        console.error('Error status:', error.status, 'Message:', error.message);
+
+        // Retry on transient errors (not 4xx client errors except 400 = payment timing)
+        if (this.confirmAttempts < this.maxConfirmAttempts && (error.status === 0 || error.status >= 500 || error.status === 400)) {
+          console.warn(`Confirm error attempt ${this.confirmAttempts}, retrying in 3s...`);
+          setTimeout(() => this.confirmPayment(email), 3000);
+        } else {
+          this.isLoading = false;
+          this.errorMessage = error.message || 'Failed to confirm payment';
+        }
       }
     });
   }
@@ -137,16 +138,16 @@ export class PaymentSuccessComponent implements OnInit {
    * Send a confirmation email to user after successful payment.
    * This is fire-and-forget — failures are logged but don't block success UX.
    */
-  private sendConfirmationEmail(userEmail: string, subscription: any): void {
+  private sendConfirmationEmail(userEmail: string, response: ConfirmPaymentResponse): void {
     console.log('=== PaymentSuccessComponent: Sending Confirmation Email ===');
 
-    const planName = subscription?.plan?.name || 'Premium';
-    const amount = subscription?.plan?.price != null ? `$${subscription.plan.price.toFixed(2)}` : '';
-    const subscriptionDate = subscription?.subscribedAt
-      ? new Date(subscription.subscribedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    const planName = response.planName || 'Premium';
+    const amount = '';
+    const subscriptionDate = response.subscribedAt
+      ? new Date(response.subscribedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
       : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const expirationDate = subscription?.expiresAt
-      ? new Date(subscription.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    const expirationDate = response.expiresAt
+      ? new Date(response.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
       : '';
 
     const emailRequest: SendEmailRequest = {
@@ -185,25 +186,22 @@ export class PaymentSuccessComponent implements OnInit {
         if (this.countdown <= 0) {
           clearInterval(timer);
           this.redirecting = true;
-          this.router.navigate(['/user/course']);
+          this.router.navigate(['/courses']);
         }
       }, 1000);
     });
   }
 
-  /**
-   * Manual redirect to courses page (skip countdown)
-   */
   goToCourses(): void {
     this.redirecting = true;
-    this.router.navigate(['/user/course']);
+    this.router.navigate(['/courses']);
   }
 
   goToSubscriptions(): void {
-    this.router.navigate(['/user/subscription']);
+    this.router.navigate(['/subscriptions']);
   }
 
   goToDashboard(): void {
-    this.router.navigate(['/user']);
+    this.router.navigate(['/courses']);
   }
 }

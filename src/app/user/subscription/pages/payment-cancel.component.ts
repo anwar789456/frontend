@@ -13,10 +13,10 @@ export class PaymentCancelComponent {
   constructor(private router: Router) {}
 
   goToSubscriptions(): void {
-    this.router.navigate(['/user/subscription']);
+    this.router.navigate(['/subscriptions']);
   }
 
   goToDashboard(): void {
-    this.router.navigate(['/user']);
+    this.router.navigate(['/courses']);
   }
 }

@@ -25,19 +25,19 @@
         </p>
       </div>
       
-      <div *ngIf="subscription" class="subscription-details">
+      <div *ngIf="planName" class="subscription-details">
         <h3>Subscription Details</h3>
         <div class="detail-item">
           <span class="label">Plan:</span>
-          <span class="value">{{ subscription.plan?.name || 'Premium' }}</span>
+          <span class="value">{{ planName }}</span>
         </div>
         <div class="detail-item">
           <span class="label">Status:</span>
           <span class="value active">Active</span>
         </div>
-        <div class="detail-item">
-          <span class="label">Start Date:</span>
-          <span class="value">{{ subscription.startDate | date:'mediumDate' }}</span>
+        <div *ngIf="expiresAt" class="detail-item">
+          <span class="label">Expires:</span>
+          <span class="value">{{ expiresAt | date:'mediumDate' }}</span>
         </div>
       </div>
 

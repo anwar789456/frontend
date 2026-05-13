@@ -40,6 +40,16 @@ export const routes: Routes = [
       import('./user/user/pages/forgetpassword/reset-password.component')
         .then(m => m.ResetPasswordComponent)
   },
+  // Payment callback routes — must be outside authGuard so session_id is never lost on redirect
+  {
+    path: 'subscriptions/payment-success',
+    loadComponent: () => import('./user/subscription/pages/payment-success.component').then(m => m.PaymentSuccessComponent)
+  },
+  {
+    path: 'subscriptions/payment-cancel',
+    loadComponent: () => import('./user/subscription/pages/payment-cancel.component').then(m => m.PaymentCancelComponent)
+  },
+
   {
     path: '',
     component: LayoutComponent,
