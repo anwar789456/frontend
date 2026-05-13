@@ -38,17 +38,87 @@ html, body {
   background: linear-gradient(135deg, #fff7ed 0%, #fff1e6 50%, #fef3c7 100%) !important;
 }
 
+/* ── HERO BANNER ── Animated multi-stop gradient + glow aura + decorative blobs */
 .forum-container .mino-forum-banner {
-  background: linear-gradient(135deg, #F97316 0%, #FB923C 45%, #FDBA74 100%) !important;
-  border-color: #EA580C !important;
+  position: relative !important;
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 25%, #FB923C 50%, #FB7185 80%, #F43F5E 100%) !important;
+  background-size: 220% 220% !important;
+  animation: minoBannerShift 12s ease-in-out infinite !important;
+  border: 2px solid rgba(255, 255, 255, 0.35) !important;
   border-bottom-color: #C2410C !important;
-  box-shadow: 0 8px 28px rgba(249, 115, 22, 0.32), 0 3px 0 #C2410C !important;
-  border-radius: 22px !important;
-  padding: 16px 20px !important;
+  box-shadow:
+    0 12px 40px rgba(249, 115, 22, 0.35),
+    0 4px 0 #C2410C,
+    inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+  border-radius: 24px !important;
+  padding: 18px 22px !important;
+  overflow: hidden !important;
+  isolation: isolate;
 }
+.forum-container .mino-forum-banner::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 18% 30%, rgba(255, 237, 213, 0.55) 0%, transparent 35%),
+    radial-gradient(circle at 82% 70%, rgba(251, 113, 133, 0.45) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(254, 215, 170, 0.35) 0%, transparent 50%);
+  filter: blur(30px);
+  animation: minoBannerBlobs 14s ease-in-out infinite alternate;
+  z-index: 0;
+  pointer-events: none;
+}
+.forum-container .mino-forum-banner::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
+  border-radius: 50%;
+  animation: minoSparklePulse 3.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.forum-container .mino-forum-banner > * { position: relative; z-index: 1; }
 .forum-container .mino-forum-banner h1 {
-  font-size: 1.45rem !important;
-  letter-spacing: -0.015em !important;
+  font-size: 1.55rem !important;
+  letter-spacing: -0.02em !important;
+  text-shadow: 0 2px 12px rgba(194, 65, 12, 0.4), 0 1px 0 rgba(0, 0, 0, 0.08) !important;
+}
+.forum-container .mino-forum-banner img[alt="MinoLingo Mascot"] {
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.25)) !important;
+}
+/* Stat tiles inside banner — glassmorphism */
+.forum-container .mino-forum-banner .bg-white\/20,
+.forum-container .mino-forum-banner [class*="bg-white/20"] {
+  background: rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.25s ease, background 0.25s ease !important;
+}
+.forum-container .mino-forum-banner .bg-white\/20:hover,
+.forum-container .mino-forum-banner [class*="bg-white/20"]:hover {
+  background: rgba(255, 255, 255, 0.32) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+}
+
+@keyframes minoBannerShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes minoBannerBlobs {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  50%  { transform: translate(4%, -3%) rotate(8deg); }
+  100% { transform: translate(-3%, 4%) rotate(-6deg); }
+}
+@keyframes minoSparklePulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.25); }
 }
 
 .forum-container .bg-\[\#7C3AED\] { background-color: #F97316 !important; }
@@ -122,4 +192,218 @@ html, body {
 .forum-container *::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #F97316, #FB7185) !important;
   background-clip: padding-box !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   FIRE LAYER — make the forum feel alive
+   ═══════════════════════════════════════════════════ */
+
+/* Soft animated aura behind the whole feed area */
+.forum-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(700px 500px at 15% 20%, rgba(251, 146, 60, 0.18) 0%, transparent 60%),
+    radial-gradient(600px 500px at 85% 80%, rgba(251, 113, 133, 0.15) 0%, transparent 60%),
+    radial-gradient(500px 400px at 50% 50%, rgba(254, 215, 170, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: minoAuraDrift 18s ease-in-out infinite alternate;
+}
+@keyframes minoAuraDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-2%, 2%) scale(1.05); }
+}
+
+/* Cards — glassy with peach gradient border */
+.forum-container .forum-card,
+.forum-container .sidebar-section,
+.forum-container .dm-card {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(12px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  border: 1.5px solid rgba(254, 215, 170, 0.65) !important;
+  box-shadow:
+    0 2px 0 rgba(254, 215, 170, 0.5),
+    0 4px 18px rgba(249, 115, 22, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  transition: transform 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease !important;
+}
+.forum-container .forum-card:hover,
+.forum-container .sidebar-section:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(249, 115, 22, 0.45) !important;
+  box-shadow:
+    0 4px 0 rgba(251, 146, 60, 0.35),
+    0 12px 32px rgba(249, 115, 22, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Post card — animated coral accent stripe on hover */
+.forum-container .post-card { position: relative; overflow: hidden; }
+.forum-container .post-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, #F97316 0%, #FB7185 50%, #FDBA74 100%);
+  background-size: 100% 300%;
+  border-radius: 0 6px 6px 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: minoStripeShift 4s ease-in-out infinite;
+}
+.forum-container .post-card:hover::before { opacity: 1; }
+@keyframes minoStripeShift {
+  0%, 100% { background-position: 0% 0%; }
+  50%      { background-position: 0% 100%; }
+}
+
+/* btn-primary (POST button, View Profile, etc.) — glowing coral CTA */
+.forum-container .btn-primary {
+  background: linear-gradient(135deg, #F97316 0%, #FB7185 100%) !important;
+  background-size: 200% 200% !important;
+  color: #fff !important;
+  border: none !important;
+  border-bottom: 3px solid #C2410C !important;
+  border-radius: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  box-shadow:
+    0 6px 20px rgba(249, 115, 22, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transition: all 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
+  position: relative;
+  overflow: hidden;
+}
+.forum-container .btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transition: left 0.6s ease;
+}
+.forum-container .btn-primary:hover {
+  background-position: 100% 100% !important;
+  transform: translateY(-1px) !important;
+  border-bottom-width: 4px !important;
+  box-shadow:
+    0 10px 28px rgba(249, 115, 22, 0.55),
+    0 0 0 4px rgba(249, 115, 22, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.forum-container .btn-primary:hover::after { left: 130%; }
+.forum-container .btn-primary:active {
+  transform: translateY(2px) !important;
+  border-bottom-width: 1px !important;
+}
+
+/* "Saved" tab — keep orange family but accented */
+.forum-container button.bg-\[\#EDE9FE\] {
+  background: linear-gradient(135deg, #FFEDD5, #FED7AA) !important;
+  border-color: #F97316 !important;
+  color: #C2410C !important;
+}
+
+/* "Favorites" tab — amber (kept) but with warm gradient */
+.forum-container button.bg-\[\#FEF3C7\] {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A) !important;
+}
+
+/* Sidebar Level Card (the "Lv.4 / XP / Streak" row) — coral divider strip */
+.forum-container .sidebar-section .text-\[\#7C3AED\] {
+  color: transparent !important;
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  font-weight: 900 !important;
+}
+
+/* Avatar ring — animated conic spinner */
+.forum-container .avatar-ring {
+  background: conic-gradient(from 0deg, #F97316, #FB7185, #FDBA74, #F43F5E, #F97316) !important;
+  animation: minoAvatarSpin 8s linear infinite !important;
+}
+@keyframes minoAvatarSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Friends & Chat button — full coral fire gradient */
+.forum-container a[href="/user/friends"] {
+  background: linear-gradient(135deg, #FB7185 0%, #F43F5E 50%, #F97316 100%) !important;
+  background-size: 200% 200% !important;
+  animation: minoBannerShift 8s ease-in-out infinite !important;
+  border-bottom-color: #E11D48 !important;
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4) !important;
+}
+
+/* "People You May Know" header — animated fire gradient */
+.forum-container .from-\[\#7C3AED\].via-\[\#8b5cf6\].to-\[\#EC4899\],
+.forum-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"][class*="to-[#EC4899]"] {
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 30%, #FB923C 60%, #FB7185 100%) !important;
+  background-size: 200% 200% !important;
+  animation: minoBannerShift 10s ease-in-out infinite !important;
+}
+
+/* Pretty progress bars (XP, etc.) — coral fill */
+.forum-container [style*="width"][class*="bg-\\[\\#7C3AED\\]"],
+.forum-container .bg-gradient-to-r.from-\[\#7C3AED\] {
+  background: linear-gradient(90deg, #F97316, #FB923C, #FB7185) !important;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.5) !important;
+}
+
+/* Notification badge — coral pulse */
+@keyframes minoNotifPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.6); }
+  50%      { box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
+}
+.forum-container .notif-badge {
+  animation: minoNotifPulse 1.6s ease-out infinite !important;
+}
+
+/* Search input — warm focus glow */
+.forum-container input[type="text"]:focus,
+.forum-container input[type="search"]:focus,
+.forum-container .search-input:focus {
+  border-color: #F97316 !important;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.18), 0 2px 0 #F97316 !important;
+}
+
+/* "ADD" buttons in suggestions list — fire mini-pill */
+.forum-container .sidebar-section button[class*="bg-gradient-to-r"][class*="from-[#7C3AED]"] {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+  box-shadow: 0 3px 10px rgba(249, 115, 22, 0.4) !important;
+}
+
+/* Scrollbar — bigger, glowy */
+.forum-container::-webkit-scrollbar,
+.forum-container *::-webkit-scrollbar { width: 10px !important; height: 10px !important; }
+.forum-container ::-webkit-scrollbar-track,
+.forum-container *::-webkit-scrollbar-track { background: rgba(254, 215, 170, 0.15) !important; }
+
+/* Subtle page float-in for the whole feed */
+@keyframes minoFeedFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.forum-container .mino-forum-banner,
+.forum-container .post-card { animation: minoFeedFadeIn 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+/* Tiny flame emoji corner accent on banner (CSS-only) */
+.forum-container .mino-forum-banner h1::after {
+  content: ' 🔥';
+  display: inline-block;
+  animation: minoFlameDance 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+@keyframes minoFlameDance {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25%      { transform: translateY(-2px) rotate(-6deg) scale(1.08); }
+  50%      { transform: translateY(0) rotate(0deg) scale(1.04); }
+  75%      { transform: translateY(-1px) rotate(6deg) scale(1.06); }
 }
