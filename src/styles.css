@@ -28,35 +28,28 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════════════
-   FORUM PAGE — GOLD LUXE THEME
-   Primary: rich gold (#D4A017)
-   Accent : burgundy wine (#8B1538)
-   Ink    : cocoa brown (#3D2817)
-   Surface: ivory/champagne (#FFF8E7)
-   Pop    : emerald jade (#0F766E) — sparingly
+   FORUM PAGE — ORANGE EVENTS-STYLE PALETTE
    Loaded after Tailwind so these win the cascade.
+   Scoped to .forum-container so only the forum is
+   affected; rest of the app stays as-is.
    ═══════════════════════════════════════════════════ */
 
-/* Page surface — soft champagne */
 .forum-container {
-  background:
-    linear-gradient(135deg, #FFFBF0 0%, #FAEFD0 50%, #FFF4D6 100%) !important;
+  background: linear-gradient(135deg, #fff7ed 0%, #fff1e6 50%, #fef3c7 100%) !important;
 }
 
-/* ── HERO BANNER ── Polished gold with wine inlay */
+/* ── HERO BANNER ── Animated multi-stop gradient + glow aura + decorative blobs */
 .forum-container .mino-forum-banner {
   position: relative !important;
-  background:
-    linear-gradient(120deg, #B8860B 0%, #D4A017 20%, #F5C842 45%, #D4A017 70%, #8B1538 100%) !important;
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 25%, #FB923C 50%, #FB7185 80%, #F43F5E 100%) !important;
   background-size: 220% 220% !important;
-  animation: minoBannerShift 14s ease-in-out infinite !important;
-  border: 2px solid rgba(255, 240, 200, 0.55) !important;
-  border-bottom: 4px solid #6B0F2A !important;
+  animation: minoBannerShift 12s ease-in-out infinite !important;
+  border: 2px solid rgba(255, 255, 255, 0.35) !important;
+  border-bottom-color: #C2410C !important;
   box-shadow:
-    0 14px 44px rgba(212, 160, 23, 0.40),
-    0 4px 0 #8B6914,
-    inset 0 1px 0 rgba(255, 248, 220, 0.6),
-    inset 0 -1px 0 rgba(107, 15, 42, 0.2) !important;
+    0 12px 40px rgba(249, 115, 22, 0.35),
+    0 4px 0 #C2410C,
+    inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
   border-radius: 24px !important;
   padding: 18px 22px !important;
   overflow: hidden !important;
@@ -67,73 +60,49 @@ html, body {
   position: absolute;
   inset: -40%;
   background:
-    radial-gradient(circle at 18% 30%, rgba(255, 250, 220, 0.6) 0%, transparent 35%),
-    radial-gradient(circle at 82% 70%, rgba(139, 21, 56, 0.35) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(245, 200, 66, 0.35) 0%, transparent 50%),
-    linear-gradient(75deg, transparent 30%, rgba(255, 248, 220, 0.45) 50%, transparent 70%);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 220% 100%;
-  filter: blur(28px);
-  animation: minoBannerBlobs 16s ease-in-out infinite alternate,
-             minoHaze 7s linear infinite;
+    radial-gradient(circle at 18% 30%, rgba(255, 237, 213, 0.55) 0%, transparent 35%),
+    radial-gradient(circle at 82% 70%, rgba(251, 113, 133, 0.45) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(254, 215, 170, 0.35) 0%, transparent 50%);
+  filter: blur(30px);
+  animation: minoBannerBlobs 14s ease-in-out infinite alternate;
   z-index: 0;
   pointer-events: none;
 }
 .forum-container .mino-forum-banner::after {
   content: '';
   position: absolute;
-  right: -20px; top: -20px;
-  width: 170px; height: 170px;
-  background: radial-gradient(circle, rgba(255, 248, 220, 0.32) 0%, transparent 60%);
+  right: -20px;
+  top: -20px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
   border-radius: 50%;
-  animation: minoSparklePulse 3.8s ease-in-out infinite;
+  animation: minoSparklePulse 3.5s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
-  box-shadow: 0 200px 80px -120px rgba(212, 160, 23, 0.22);
 }
 .forum-container .mino-forum-banner > * { position: relative; z-index: 1; }
-
-/* Wordmark — polished gold leaf */
 .forum-container .mino-forum-banner h1 {
   font-size: 1.55rem !important;
   letter-spacing: -0.02em !important;
-  background: linear-gradient(90deg, #FFFBF0 0%, #FFF4D6 25%, #FFFBF0 50%, #F5E6B8 75%, #FFFBF0 100%) !important;
-  background-size: 220% 100% !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  animation: minoWordmarkShimmer 5s linear infinite !important;
-  filter: drop-shadow(0 2px 8px rgba(107, 15, 42, 0.55))
-          drop-shadow(0 1px 0 rgba(0, 0, 0, 0.18)) !important;
+  text-shadow: 0 2px 12px rgba(194, 65, 12, 0.4), 0 1px 0 rgba(0, 0, 0, 0.08) !important;
 }
-.forum-container .mino-forum-banner h1::after {
-  content: ' 🔥';
-  display: inline-block;
-  -webkit-text-fill-color: initial;
-  animation: minoFlameDance 1.2s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
-}
-
-/* Mascot pop */
 .forum-container .mino-forum-banner img[alt="MinoLingo Mascot"] {
-  filter: drop-shadow(0 4px 14px rgba(107, 15, 42, 0.35)) !important;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.25)) !important;
 }
-
-/* Banner stat tiles — frosted ivory glass */
+/* Stat tiles inside banner — glassmorphism */
 .forum-container .mino-forum-banner .bg-white\/20,
 .forum-container .mino-forum-banner [class*="bg-white/20"] {
-  background: rgba(255, 248, 220, 0.25) !important;
-  backdrop-filter: blur(14px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
-  border: 1px solid rgba(255, 248, 220, 0.45) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 248, 220, 0.6),
-    0 4px 16px rgba(107, 15, 42, 0.15) !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 4px 16px rgba(0, 0, 0, 0.1) !important;
   transition: transform 0.25s ease, background 0.25s ease !important;
 }
 .forum-container .mino-forum-banner .bg-white\/20:hover,
 .forum-container .mino-forum-banner [class*="bg-white/20"]:hover {
-  background: rgba(255, 248, 220, 0.4) !important;
+  background: rgba(255, 255, 255, 0.32) !important;
   transform: translateY(-2px) scale(1.03) !important;
 }
 
@@ -151,13 +120,286 @@ html, body {
   0%, 100% { opacity: 0.4; transform: scale(1); }
   50%      { opacity: 0.9; transform: scale(1.25); }
 }
-@keyframes minoHaze {
-  0%   { background-position: 0 0, 0 0, 0 0, -220% 0; }
-  100% { background-position: 0 0, 0 0, 0 0, 220% 0; }
+
+.forum-container .bg-\[\#7C3AED\] { background-color: #F97316 !important; }
+.forum-container .bg-\[\#8b5cf6\] { background-color: #FB923C !important; }
+.forum-container .bg-\[\#6025c4\] { background-color: #C2410C !important; }
+.forum-container .bg-\[\#EDE9FE\] { background-color: #FFEDD5 !important; }
+.forum-container .bg-\[\#ddd6fe\] { background-color: #FED7AA !important; }
+.forum-container .bg-\[\#a78bfa\] { background-color: #FDBA74 !important; }
+
+.forum-container .bg-\[\#EC4899\] { background-color: #FB7185 !important; }
+.forum-container .bg-\[\#FCE7F3\] { background-color: #FFE4E6 !important; }
+.forum-container .bg-\[\#fbcfe8\] { background-color: #FECDD3 !important; }
+.forum-container .bg-\[\#d63384\] { background-color: #E11D48 !important; }
+
+.forum-container .border-\[\#7C3AED\] { border-color: #F97316 !important; }
+.forum-container .border-\[\#6025c4\] { border-color: #C2410C !important; }
+.forum-container .border-\[\#ddd6fe\] { border-color: #FED7AA !important; }
+.forum-container .border-b-\[\#6025c4\] { border-bottom-color: #C2410C !important; }
+.forum-container .border-\[\#EC4899\] { border-color: #FB7185 !important; }
+.forum-container .border-\[\#d63384\] { border-color: #E11D48 !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/20"] { border-color: rgba(249, 115, 22, 0.20) !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/30"] { border-color: rgba(249, 115, 22, 0.30) !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/50"] { border-color: rgba(249, 115, 22, 0.55) !important; }
+.forum-container [class*="border-b-\[\#7C3AED\]\/30"] { border-bottom-color: rgba(249, 115, 22, 0.30) !important; }
+
+.forum-container .text-\[\#7C3AED\] { color: #EA580C !important; }
+.forum-container .text-\[\#6025c4\] { color: #C2410C !important; }
+.forum-container .text-\[\#EC4899\] { color: #FB7185 !important; }
+
+.forum-container .hover\:bg-\[\#ddd6fe\]:hover { background-color: #FED7AA !important; }
+.forum-container .hover\:from-\[\#8b5cf6\]:hover { --tw-gradient-from: #FB923C !important; }
+.forum-container .hover\:to-\[\#a78bfa\]:hover { --tw-gradient-to: #FDBA74 !important; }
+.forum-container .hover\:from-\[\#F43F5E\]:hover { --tw-gradient-from: #F43F5E !important; }
+.forum-container .hover\:to-\[\#EC4899\]:hover { --tw-gradient-to: #FB7185 !important; }
+
+.forum-container .from-\[\#7C3AED\] {
+  --tw-gradient-from: #F97316 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(249, 115, 22, 0)) !important;
 }
-@keyframes minoWordmarkShimmer {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 220% 50%; }
+.forum-container .via-\[\#8b5cf6\] {
+  --tw-gradient-stops: var(--tw-gradient-from), #FB923C, var(--tw-gradient-to, rgba(251, 146, 60, 0)) !important;
+}
+.forum-container .to-\[\#EC4899\] { --tw-gradient-to: #FB7185 !important; }
+.forum-container .to-\[\#8b5cf6\] { --tw-gradient-to: #FB923C !important; }
+.forum-container .from-\[\#EC4899\] {
+  --tw-gradient-from: #FB7185 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(251, 113, 133, 0)) !important;
+}
+.forum-container .to-\[\#F43F5E\] { --tw-gradient-to: #F43F5E !important; }
+
+/* Belt-and-suspenders for gradient banners — force the full gradient via background-image */
+.forum-container [class*="from-[#7C3AED]"][class*="to-[#EC4899]"],
+.forum-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"] {
+  background-image: linear-gradient(to right, #F97316, #FB923C, #FB7185) !important;
+}
+.forum-container [class*="from-[#EC4899]"][class*="to-[#F43F5E]"] {
+  background-image: linear-gradient(to right, #FB7185, #F43F5E) !important;
+}
+
+.forum-container button:focus-visible,
+.forum-container input:focus-visible,
+.forum-container textarea:focus-visible {
+  outline-color: #F97316 !important;
+}
+
+.forum-container .avatar-ring {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+}
+
+.forum-container ::-webkit-scrollbar-thumb,
+.forum-container *::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #F97316, #FB7185) !important;
+  background-clip: padding-box !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   FIRE LAYER — make the forum feel alive
+   ═══════════════════════════════════════════════════ */
+
+/* Soft animated aura behind the whole feed area */
+.forum-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(700px 500px at 15% 20%, rgba(251, 146, 60, 0.18) 0%, transparent 60%),
+    radial-gradient(600px 500px at 85% 80%, rgba(251, 113, 133, 0.15) 0%, transparent 60%),
+    radial-gradient(500px 400px at 50% 50%, rgba(254, 215, 170, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: minoAuraDrift 18s ease-in-out infinite alternate;
+}
+@keyframes minoAuraDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-2%, 2%) scale(1.05); }
+}
+
+/* Cards — glassy with peach gradient border */
+.forum-container .forum-card,
+.forum-container .sidebar-section,
+.forum-container .dm-card {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(12px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  border: 1.5px solid rgba(254, 215, 170, 0.65) !important;
+  box-shadow:
+    0 2px 0 rgba(254, 215, 170, 0.5),
+    0 4px 18px rgba(249, 115, 22, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  transition: transform 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease !important;
+}
+.forum-container .forum-card:hover,
+.forum-container .sidebar-section:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(249, 115, 22, 0.45) !important;
+  box-shadow:
+    0 4px 0 rgba(251, 146, 60, 0.35),
+    0 12px 32px rgba(249, 115, 22, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Post card — animated coral accent stripe on hover */
+.forum-container .post-card { position: relative; overflow: hidden; }
+.forum-container .post-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, #F97316 0%, #FB7185 50%, #FDBA74 100%);
+  background-size: 100% 300%;
+  border-radius: 0 6px 6px 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: minoStripeShift 4s ease-in-out infinite;
+}
+.forum-container .post-card:hover::before { opacity: 1; }
+@keyframes minoStripeShift {
+  0%, 100% { background-position: 0% 0%; }
+  50%      { background-position: 0% 100%; }
+}
+
+/* btn-primary (POST button, View Profile, etc.) — glowing coral CTA */
+.forum-container .btn-primary {
+  background: linear-gradient(135deg, #F97316 0%, #FB7185 100%) !important;
+  background-size: 200% 200% !important;
+  color: #fff !important;
+  border: none !important;
+  border-bottom: 3px solid #C2410C !important;
+  border-radius: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  box-shadow:
+    0 6px 20px rgba(249, 115, 22, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transition: all 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
+  position: relative;
+  overflow: hidden;
+}
+.forum-container .btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transition: left 0.6s ease;
+}
+.forum-container .btn-primary:hover {
+  background-position: 100% 100% !important;
+  transform: translateY(-1px) !important;
+  border-bottom-width: 4px !important;
+  box-shadow:
+    0 10px 28px rgba(249, 115, 22, 0.55),
+    0 0 0 4px rgba(249, 115, 22, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.forum-container .btn-primary:hover::after { left: 130%; }
+.forum-container .btn-primary:active {
+  transform: translateY(2px) !important;
+  border-bottom-width: 1px !important;
+}
+
+/* "Saved" tab — keep orange family but accented */
+.forum-container button.bg-\[\#EDE9FE\] {
+  background: linear-gradient(135deg, #FFEDD5, #FED7AA) !important;
+  border-color: #F97316 !important;
+  color: #C2410C !important;
+}
+
+/* "Favorites" tab — amber (kept) but with warm gradient */
+.forum-container button.bg-\[\#FEF3C7\] {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A) !important;
+}
+
+/* Sidebar Level Card (the "Lv.4 / XP / Streak" row) — coral divider strip */
+.forum-container .sidebar-section .text-\[\#7C3AED\] {
+  color: transparent !important;
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  font-weight: 900 !important;
+}
+
+/* Avatar ring — animated conic spinner */
+.forum-container .avatar-ring {
+  background: conic-gradient(from 0deg, #F97316, #FB7185, #FDBA74, #F43F5E, #F97316) !important;
+  animation: minoAvatarSpin 8s linear infinite !important;
+}
+@keyframes minoAvatarSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Friends & Chat button — full coral fire gradient */
+.forum-container a[href="/user/friends"] {
+  background: linear-gradient(135deg, #FB7185 0%, #F43F5E 50%, #F97316 100%) !important;
+  background-size: 200% 200% !important;
+  animation: minoBannerShift 8s ease-in-out infinite !important;
+  border-bottom-color: #E11D48 !important;
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4) !important;
+}
+
+/* "People You May Know" header — animated fire gradient */
+.forum-container .from-\[\#7C3AED\].via-\[\#8b5cf6\].to-\[\#EC4899\],
+.forum-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"][class*="to-[#EC4899]"] {
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 30%, #FB923C 60%, #FB7185 100%) !important;
+  background-size: 200% 200% !important;
+  animation: minoBannerShift 10s ease-in-out infinite !important;
+}
+
+/* Pretty progress bars (XP, etc.) — coral fill */
+.forum-container [style*="width"][class*="bg-\\[\\#7C3AED\\]"],
+.forum-container .bg-gradient-to-r.from-\[\#7C3AED\] {
+  background: linear-gradient(90deg, #F97316, #FB923C, #FB7185) !important;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.5) !important;
+}
+
+/* Notification badge — coral pulse */
+@keyframes minoNotifPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.6); }
+  50%      { box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
+}
+.forum-container .notif-badge {
+  animation: minoNotifPulse 1.6s ease-out infinite !important;
+}
+
+/* Search input — warm focus glow */
+.forum-container input[type="text"]:focus,
+.forum-container input[type="search"]:focus,
+.forum-container .search-input:focus {
+  border-color: #F97316 !important;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.18), 0 2px 0 #F97316 !important;
+}
+
+/* "ADD" buttons in suggestions list — fire mini-pill */
+.forum-container .sidebar-section button[class*="bg-gradient-to-r"][class*="from-[#7C3AED]"] {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+  box-shadow: 0 3px 10px rgba(249, 115, 22, 0.4) !important;
+}
+
+/* Scrollbar — bigger, glowy */
+.forum-container::-webkit-scrollbar,
+.forum-container *::-webkit-scrollbar { width: 10px !important; height: 10px !important; }
+.forum-container ::-webkit-scrollbar-track,
+.forum-container *::-webkit-scrollbar-track { background: rgba(254, 215, 170, 0.15) !important; }
+
+/* Subtle page float-in for the whole feed */
+@keyframes minoFeedFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.forum-container .mino-forum-banner,
+.forum-container .post-card { animation: minoFeedFadeIn 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+/* Tiny flame emoji corner accent on banner (CSS-only) */
+.forum-container .mino-forum-banner h1::after {
+  content: ' 🔥';
+  display: inline-block;
+  animation: minoFlameDance 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 @keyframes minoFlameDance {
   0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
@@ -167,134 +409,27 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════════════
-   PALETTE OVERRIDES — repaint hard-coded violet / pink
+   PREMIUM LAYER — aurora, heat-haze, comet trails,
+   neon glass, chromatic reflection, animated wordmark
    ═══════════════════════════════════════════════════ */
 
-/* Primary backgrounds → gold family */
-.forum-container .bg-\[\#7C3AED\] { background-color: #D4A017 !important; }
-.forum-container .bg-\[\#8b5cf6\] { background-color: #F5C842 !important; }
-.forum-container .bg-\[\#6025c4\] { background-color: #8B6914 !important; }
-.forum-container .bg-\[\#EDE9FE\] { background-color: #FFF4D6 !important; }
-.forum-container .bg-\[\#ddd6fe\] { background-color: #FAEFD0 !important; }
-.forum-container .bg-\[\#a78bfa\] { background-color: #F5C842 !important; }
-
-/* Pink accents → wine */
-.forum-container .bg-\[\#EC4899\] { background-color: #8B1538 !important; }
-.forum-container .bg-\[\#FCE7F3\] { background-color: #FBE7EC !important; }
-.forum-container .bg-\[\#fbcfe8\] { background-color: #F4C2CC !important; }
-.forum-container .bg-\[\#d63384\] { background-color: #6B0F2A !important; }
-.forum-container .bg-\[\#F43F5E\] { background-color: #8B1538 !important; }
-
-/* Borders */
-.forum-container .border-\[\#7C3AED\] { border-color: #D4A017 !important; }
-.forum-container .border-\[\#6025c4\] { border-color: #8B6914 !important; }
-.forum-container .border-\[\#ddd6fe\] { border-color: #F5E6B8 !important; }
-.forum-container .border-b-\[\#6025c4\] { border-bottom-color: #8B6914 !important; }
-.forum-container .border-\[\#EC4899\] { border-color: #8B1538 !important; }
-.forum-container .border-\[\#d63384\] { border-color: #6B0F2A !important; }
-.forum-container [class*="border-\[\#7C3AED\]\/20"] { border-color: rgba(212, 160, 23, 0.22) !important; }
-.forum-container [class*="border-\[\#7C3AED\]\/30"] { border-color: rgba(212, 160, 23, 0.32) !important; }
-.forum-container [class*="border-\[\#7C3AED\]\/50"] { border-color: rgba(212, 160, 23, 0.58) !important; }
-.forum-container [class*="border-b-\[\#7C3AED\]\/30"] { border-bottom-color: rgba(212, 160, 23, 0.32) !important; }
-
-/* Text */
-.forum-container .text-\[\#7C3AED\] { color: #B8860B !important; }
-.forum-container .text-\[\#6025c4\] { color: #8B6914 !important; }
-.forum-container .text-\[\#EC4899\] { color: #8B1538 !important; }
-.forum-container .text-\[\#F59E0B\] { color: #B8860B !important; }
-.forum-container .text-\[\#F43F5E\] { color: #8B1538 !important; }
-
-/* Hover variants */
-.forum-container .hover\:bg-\[\#ddd6fe\]:hover { background-color: #FAEFD0 !important; }
-.forum-container .hover\:from-\[\#8b5cf6\]:hover { --tw-gradient-from: #F5C842 !important; }
-.forum-container .hover\:to-\[\#a78bfa\]:hover { --tw-gradient-to: #F5C842 !important; }
-.forum-container .hover\:from-\[\#F43F5E\]:hover { --tw-gradient-from: #8B1538 !important; }
-.forum-container .hover\:to-\[\#EC4899\]:hover { --tw-gradient-to: #8B1538 !important; }
-
-/* Gradients — gold ⟶ wine */
-.forum-container .from-\[\#7C3AED\] {
-  --tw-gradient-from: #D4A017 !important;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(212, 160, 23, 0)) !important;
-}
-.forum-container .via-\[\#8b5cf6\] {
-  --tw-gradient-stops: var(--tw-gradient-from), #F5C842, var(--tw-gradient-to, rgba(245, 200, 66, 0)) !important;
-}
-.forum-container .to-\[\#EC4899\] { --tw-gradient-to: #8B1538 !important; }
-.forum-container .to-\[\#8b5cf6\] { --tw-gradient-to: #F5C842 !important; }
-.forum-container .from-\[\#EC4899\] {
-  --tw-gradient-from: #8B1538 !important;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(139, 21, 56, 0)) !important;
-}
-.forum-container .to-\[\#F43F5E\] { --tw-gradient-to: #6B0F2A !important; }
-
-/* Gradient banners — explicit background-image fallback */
-.forum-container [class*="from-[#7C3AED]"][class*="to-[#EC4899]"],
-.forum-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"] {
-  background-image: linear-gradient(to right, #D4A017, #F5C842, #8B1538) !important;
-}
-.forum-container [class*="from-[#EC4899]"][class*="to-[#F43F5E]"] {
-  background-image: linear-gradient(to right, #8B1538, #6B0F2A) !important;
-}
-
-/* Focus rings */
-.forum-container button:focus-visible,
-.forum-container input:focus-visible,
-.forum-container textarea:focus-visible {
-  outline-color: #D4A017 !important;
-}
-
-/* Avatar ring — conic gold→wine */
-.forum-container .avatar-ring {
-  background: conic-gradient(from 0deg, #D4A017, #F5C842, #FFFBF0, #8B1538, #D4A017) !important;
-  animation: minoAvatarSpin 9s linear infinite !important;
-}
-@keyframes minoAvatarSpin { to { transform: rotate(360deg); } }
-
-/* Scrollbar — gold with wine accent */
-.forum-container ::-webkit-scrollbar-thumb,
-.forum-container *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #D4A017, #8B1538) !important;
-  background-clip: padding-box !important;
-}
-.forum-container::-webkit-scrollbar,
-.forum-container *::-webkit-scrollbar { width: 10px !important; height: 10px !important; }
-.forum-container ::-webkit-scrollbar-track,
-.forum-container *::-webkit-scrollbar-track { background: rgba(245, 230, 184, 0.2) !important; }
-
-/* ═══════════════════════════════════════════════════
-   AMBIENT — page aurora + drifting halos
-   ═══════════════════════════════════════════════════ */
-
-.forum-container::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(720px 520px at 15% 20%, rgba(212, 160, 23, 0.22) 0%, transparent 60%),
-    radial-gradient(640px 520px at 85% 80%, rgba(139, 21, 56, 0.13) 0%, transparent 60%),
-    radial-gradient(520px 420px at 50% 50%, rgba(245, 230, 184, 0.18) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-  animation: minoAuraDrift 18s ease-in-out infinite alternate;
-}
+/* ── Aurora top glow across the whole page ── */
 .forum-container::after {
   content: '';
   position: fixed;
-  left: -10%; right: -10%; top: -120px;
+  left: -10%;
+  right: -10%;
+  top: -120px;
   height: 360px;
   background:
-    radial-gradient(ellipse at 25% 100%, rgba(212, 160, 23, 0.32) 0%, transparent 55%),
-    radial-gradient(ellipse at 60% 100%, rgba(245, 200, 66, 0.28) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 100%, rgba(139, 21, 56, 0.22) 0%, transparent 55%);
+    radial-gradient(ellipse at 20% 100%, rgba(249, 115, 22, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 55% 100%, rgba(251, 113, 133, 0.30) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 100%, rgba(253, 186, 116, 0.30) 0%, transparent 55%);
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
   animation: minoAurora 16s ease-in-out infinite alternate;
   mix-blend-mode: multiply;
-}
-@keyframes minoAuraDrift {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(-2%, 2%) scale(1.05); }
 }
 @keyframes minoAurora {
   0%   { transform: translateX(-2%) scaleX(1.0); opacity: 0.85; }
@@ -302,376 +437,85 @@ html, body {
   100% { transform: translateX(-1%) scaleX(0.98); opacity: 0.9; }
 }
 
-/* ═══════════════════════════════════════════════════
-   SURFACES — glassy ivory cards with gold edges
-   ═══════════════════════════════════════════════════ */
-
-.forum-container .forum-card,
-.forum-container .sidebar-section,
-.forum-container .dm-card {
-  background: rgba(255, 251, 240, 0.82) !important;
-  backdrop-filter: blur(12px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
-  border: 1.5px solid rgba(212, 160, 23, 0.35) !important;
-  box-shadow:
-    0 2px 0 rgba(245, 230, 184, 0.65),
-    0 6px 22px rgba(212, 160, 23, 0.10),
-    inset 0 1px 0 rgba(255, 251, 240, 0.7) !important;
-  transition: transform 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97),
-              box-shadow 0.25s ease,
-              border-color 0.25s ease !important;
+/* ── Heat-haze shimmer over the banner ── */
+.forum-container .mino-forum-banner {
+  /* extend existing — add a moving caustics highlight */
+  background-image:
+    linear-gradient(120deg, #EA580C 0%, #F97316 25%, #FB923C 50%, #FB7185 80%, #F43F5E 100%),
+    repeating-linear-gradient(115deg,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 2px,
+      transparent 2px,
+      transparent 14px) !important;
+  background-blend-mode: overlay, normal !important;
 }
-.forum-container .forum-card:hover,
-.forum-container .sidebar-section:hover {
-  transform: translateY(-2px) !important;
-  border-color: rgba(212, 160, 23, 0.65) !important;
-  box-shadow:
-    0 4px 0 rgba(212, 160, 23, 0.45),
-    0 14px 34px rgba(212, 160, 23, 0.18),
-    0 2px 12px rgba(139, 21, 56, 0.08),
-    inset 0 1px 0 rgba(255, 251, 240, 0.85) !important;
+.forum-container .mino-forum-banner::before {
+  /* keep blob layer but also add caustic ribbon */
+  background:
+    radial-gradient(circle at 18% 30%, rgba(255, 237, 213, 0.55) 0%, transparent 35%),
+    radial-gradient(circle at 82% 70%, rgba(251, 113, 133, 0.45) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(254, 215, 170, 0.35) 0%, transparent 50%),
+    linear-gradient(75deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 220% 100%;
+  animation: minoBannerBlobs 14s ease-in-out infinite alternate,
+             minoHaze 6s linear infinite;
+}
+@keyframes minoHaze {
+  0%   { background-position: 0 0, 0 0, 0 0, -220% 0; }
+  100% { background-position: 0 0, 0 0, 0 0, 220% 0; }
 }
 
-/* Sidebar spotlight that follows hover area */
-.forum-container .sidebar-section { position: relative; }
-.forum-container .sidebar-section::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%),
-              rgba(212, 160, 23, 0.16), transparent 45%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
+/* ── Chromatic floor reflection under the banner ── */
+.forum-container .mino-forum-banner {
+  margin-bottom: 20px !important;
 }
-.forum-container .sidebar-section:hover::after { opacity: 1; }
-
-/* Gentle float on odd/even sidebar cards */
-.forum-container .sidebar-section { will-change: transform; }
-.forum-container .sidebar-section:nth-child(odd)  { animation: minoFloatA 9s ease-in-out infinite; }
-.forum-container .sidebar-section:nth-child(even) { animation: minoFloatB 11s ease-in-out infinite; }
-@keyframes minoFloatA { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-@keyframes minoFloatB { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2px); } }
-
-/* ═══════════════════════════════════════════════════
-   POST CARDS — wine accent stripe + micro-tilt
-   ═══════════════════════════════════════════════════ */
-
-.forum-container .post-card {
+.forum-container .mino-forum-banner + * {
   position: relative;
-  overflow: hidden;
-  transform-style: preserve-3d;
-  perspective: 1000px;
 }
-.forum-container .post-card::before {
+.forum-container .mino-forum-banner::after {
+  /* keep sparkle pulse from before, plus add floor reflection */
   content: '';
   position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 5px;
-  background: linear-gradient(180deg, #D4A017 0%, #F5C842 35%, #8B1538 100%);
-  background-size: 100% 300%;
-  border-radius: 0 6px 6px 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  animation: minoStripeShift 4s ease-in-out infinite;
-}
-.forum-container .post-card:hover::before { opacity: 1; }
-.forum-container .post-card:hover { transform: translateY(-3px) rotateX(0.6deg) !important; }
-@keyframes minoStripeShift {
-  0%, 100% { background-position: 0% 0%; }
-  50%      { background-position: 0% 100%; }
-}
-
-/* Author names — subtle dark-cocoa → gold gradient ink */
-.forum-container .post-card p.font-extrabold,
-.forum-container .post-card .text-\[\#1E293B\].font-extrabold {
-  background: linear-gradient(120deg, #3D2817 0%, #8B6914 60%, #D4A017 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent !important;
-}
-
-/* ═══════════════════════════════════════════════════
-   CTAs — POST, View Profile, Friends & Chat
-   ═══════════════════════════════════════════════════ */
-
-.forum-container .btn-primary {
-  background: linear-gradient(135deg, #D4A017 0%, #F5C842 50%, #8B1538 100%) !important;
-  background-size: 200% 200% !important;
-  color: #FFFBF0 !important;
-  border: none !important;
-  border-bottom: 3px solid #6B0F2A !important;
-  border-radius: 14px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.6px !important;
-  text-transform: uppercase !important;
-  box-shadow:
-    0 6px 22px rgba(212, 160, 23, 0.45),
-    0 0 0 1px rgba(107, 15, 42, 0.3),
-    inset 0 1px 0 rgba(255, 248, 220, 0.5) !important;
-  transition: all 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
-  position: relative;
-  overflow: hidden;
-  text-shadow: 0 1px 0 rgba(107, 15, 42, 0.35);
-}
-.forum-container .btn-primary::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #D4A017, #8B1538);
-  filter: blur(14px);
-  opacity: 0.35;
-  z-index: -1;
-  animation: minoCtaPulse 2.6s ease-in-out infinite;
-}
-.forum-container .btn-primary::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 60%; height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255, 248, 220, 0.55), transparent);
-  transition: left 0.6s ease;
-}
-.forum-container .btn-primary:hover {
-  background-position: 100% 100% !important;
-  transform: translateY(-1px) !important;
-  border-bottom-width: 4px !important;
-  box-shadow:
-    0 12px 30px rgba(212, 160, 23, 0.55),
-    0 0 0 4px rgba(212, 160, 23, 0.15),
-    inset 0 1px 0 rgba(255, 248, 220, 0.6) !important;
-}
-.forum-container .btn-primary:hover::after { left: 130%; }
-.forum-container .btn-primary:active {
-  transform: translateY(2px) !important;
-  border-bottom-width: 1px !important;
-}
-@keyframes minoCtaPulse {
-  0%, 100% { opacity: 0.28; transform: scale(1); }
-  50%      { opacity: 0.55; transform: scale(1.04); }
-}
-
-/* Friends & Chat — deep wine with gold crown sweep */
-.forum-container a[href="/user/friends"] {
-  background: linear-gradient(135deg, #8B1538 0%, #6B0F2A 60%, #D4A017 100%) !important;
-  background-size: 220% 220% !important;
-  animation: minoBannerShift 10s ease-in-out infinite !important;
-  border-bottom-color: #6B0F2A !important;
-  box-shadow: 0 6px 22px rgba(139, 21, 56, 0.45), inset 0 1px 0 rgba(255, 248, 220, 0.3) !important;
-  position: relative;
-  overflow: hidden;
-  color: #FFFBF0 !important;
-}
-.forum-container a[href="/user/friends"]::after {
-  content: '';
-  position: absolute;
-  top: -50%; left: -50%;
-  width: 50%; height: 200%;
-  background: linear-gradient(120deg, transparent, rgba(245, 200, 66, 0.55), transparent);
-  transform: rotate(20deg);
-  animation: minoCrownSweep 4.5s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes minoCrownSweep {
-  0%   { left: -60%; }
-  50%  { left: 120%; }
-  100% { left: 120%; }
-}
-
-/* ADD buttons inside suggestions list */
-.forum-container .sidebar-section button[class*="bg-gradient-to-r"][class*="from-[#7C3AED]"] {
-  background: linear-gradient(135deg, #D4A017, #8B1538) !important;
-  box-shadow: 0 3px 10px rgba(212, 160, 23, 0.4), inset 0 1px 0 rgba(255, 248, 220, 0.3) !important;
-  color: #FFFBF0 !important;
-}
-
-/* ═══════════════════════════════════════════════════
-   ACTION BUTTONS — comet trail
-   ═══════════════════════════════════════════════════ */
-
-.forum-container .action-btn {
-  position: relative;
-  overflow: visible !important;
-}
-.forum-container .action-btn::before {
-  content: '';
-  position: absolute;
-  width: 0; height: 0;
+  right: -20px;
+  top: -20px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(212, 160, 23, 0.55), transparent 70%);
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+  animation: minoSparklePulse 3.5s ease-in-out infinite;
   pointer-events: none;
-  transition: width 0.45s ease, height 0.45s ease, opacity 0.5s ease;
-  opacity: 0;
-  z-index: -1;
-}
-.forum-container .action-btn:hover::before {
-  width: 70px; height: 70px;
-  opacity: 1;
-}
-.forum-container .action-btn:hover {
-  transform: translateY(-1px) scale(1.06) !important;
-}
-
-/* Specific hover tints — keep distinct meaning per action */
-.forum-container .action-btn.react-btn:hover {
-  color: #8B1538 !important;
-  background: #FBE7EC !important;
-  border-color: #8B1538 !important;
-}
-.forum-container .action-btn.save-btn:hover {
-  color: #B8860B !important;
-  background: #FFF4D6 !important;
-  border-color: #D4A017 !important;
-}
-.forum-container .action-btn.fav-btn:hover {
-  color: #B8860B !important;
-  background: #FAEFD0 !important;
-  border-color: #D4A017 !important;
-}
-.forum-container .action-btn.comment-btn:hover {
-  color: #0F766E !important;          /* emerald — the gold-complement pop */
-  background: #D1FAE5 !important;
-  border-color: #0F766E !important;
-}
-.forum-container .action-btn.share-btn:hover {
-  color: #5C3A1E !important;          /* cocoa */
-  background: #FAEFD0 !important;
-  border-color: #5C3A1E !important;
-}
-
-/* ═══════════════════════════════════════════════════
-   AVATARS — rim-lit
-   ═══════════════════════════════════════════════════ */
-
-.forum-container .sidebar-section img[alt][src*="avataaars"],
-.forum-container .sidebar-section .rounded-xl img,
-.forum-container .post-card .rounded-full img,
-.forum-container .post-card .rounded-xl img {
+  z-index: 0;
   box-shadow:
-    0 0 0 2px rgba(255, 251, 240, 0.85),
-    0 4px 12px rgba(212, 160, 23, 0.35),
-    inset 0 0 0 1px rgba(212, 160, 23, 0.4) !important;
-  transition: transform 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97),
-              box-shadow 0.3s ease !important;
-}
-.forum-container .sidebar-section img[alt][src*="avataaars"]:hover,
-.forum-container .sidebar-section .rounded-xl img:hover,
-.forum-container .post-card .rounded-full img:hover,
-.forum-container .post-card .rounded-xl img:hover {
-  transform: scale(1.1) rotate(-3deg) !important;
-  box-shadow:
-    0 0 0 2px rgba(255, 251, 240, 1),
-    0 8px 24px rgba(212, 160, 23, 0.55),
-    0 0 0 4px rgba(212, 160, 23, 0.25) !important;
+    /* faint glow drop into the area below */
+    0 200px 80px -120px rgba(249, 115, 22, 0.18);
 }
 
-/* ═══════════════════════════════════════════════════
-   SIDEBAR DETAILS — level/XP gradient text, headings
-   ═══════════════════════════════════════════════════ */
-
-.forum-container .sidebar-section .text-\[\#7C3AED\] {
-  color: transparent !important;
-  background: linear-gradient(135deg, #D4A017 0%, #8B1538 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  font-weight: 900 !important;
-}
-.forum-container .sidebar-section h3 {
-  background: linear-gradient(90deg, #B8860B, #8B1538) !important;
+/* ── Animated wordmark — gradient shimmer text on banner title ── */
+.forum-container .mino-forum-banner h1 {
+  background: linear-gradient(90deg, #fff 0%, #FFEDD5 25%, #fff 50%, #FFE4E6 75%, #fff 100%) !important;
+  background-size: 220% 100% !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
-  letter-spacing: 0.2em !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: minoWordmarkShimmer 5s linear infinite !important;
+  text-shadow: none !important;
+  filter: drop-shadow(0 2px 8px rgba(194, 65, 12, 0.5)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.15)) !important;
+}
+@keyframes minoWordmarkShimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
 }
 
-/* Saved / Favorites quick-access buttons — gold gradient chip */
-.forum-container button.bg-\[\#EDE9FE\] {
-  background: linear-gradient(135deg, #FFF4D6, #FAEFD0) !important;
-  border-color: #D4A017 !important;
-  color: #8B6914 !important;
-}
-.forum-container button.bg-\[\#FEF3C7\] {
-  background: linear-gradient(135deg, #FFF4D6, #F5E6B8) !important;
-  border-color: #B8860B !important;
-}
-
-/* ═══════════════════════════════════════════════════
-   NEON-GLASS HOVER SWEEP on sidebar buttons
-   ═══════════════════════════════════════════════════ */
-
-.forum-container .sidebar-section button {
-  position: relative;
-  overflow: hidden;
-}
-.forum-container .sidebar-section button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(212, 160, 23, 0.22), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-  pointer-events: none;
-  border-radius: inherit;
-}
-.forum-container .sidebar-section button:hover::before { transform: translateX(100%); }
-
-/* ═══════════════════════════════════════════════════
-   PROGRESS BARS — molten gold fill
-   ═══════════════════════════════════════════════════ */
-
-.forum-container [class*="bg-gradient-to-r"][class*="from-[#7C3AED]"],
-.forum-container .bg-gradient-to-r.from-\[\#7C3AED\] {
-  background: linear-gradient(90deg, #D4A017, #F5C842, #8B1538) !important;
-  box-shadow: 0 0 12px rgba(212, 160, 23, 0.55) !important;
-}
-
-/* ═══════════════════════════════════════════════════
-   NOTIFICATION BADGE — gold pulse
-   ═══════════════════════════════════════════════════ */
-
-@keyframes minoNotifPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0.6); }
-  50%      { box-shadow: 0 0 0 10px rgba(212, 160, 23, 0); }
-}
-.forum-container .notif-badge {
-  animation: minoNotifPulse 1.6s ease-out infinite !important;
-}
-
-/* Search input — warm gold focus glow */
-.forum-container input[type="text"]:focus,
-.forum-container input[type="search"]:focus,
-.forum-container .search-input:focus {
-  border-color: #D4A017 !important;
-  box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.18), 0 2px 0 #D4A017 !important;
-}
-
-/* Selection */
-.forum-container ::selection {
-  background: rgba(212, 160, 23, 0.28);
-  color: #3D2817;
-}
-
-/* Feed entrance fade */
-@keyframes minoFeedFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.forum-container .mino-forum-banner,
-.forum-container .post-card { animation: minoFeedFadeIn 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
-
-/* Floating glass particles in banner */
+/* ── Floating glass particles inside banner ── */
 .forum-container .mino-forum-banner .flex-1::before,
 .forum-container .mino-forum-banner .flex-1::after {
   content: '';
   position: absolute;
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: rgba(255, 248, 220, 0.7);
-  box-shadow: 0 0 12px rgba(255, 248, 220, 0.9);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
   pointer-events: none;
 }
 .forum-container .mino-forum-banner .flex-1::before {
@@ -692,7 +536,192 @@ html, body {
   50%      { transform: translate(20px, -14px); opacity: 0.9; }
 }
 
-/* Respect reduced-motion */
+/* ── Neon-glass tabs (Saved / Favorites etc.) ── */
+.forum-container .sidebar-section button {
+  position: relative;
+  overflow: hidden;
+}
+.forum-container .sidebar-section button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.18), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.forum-container .sidebar-section button:hover::before {
+  transform: translateX(100%);
+}
+
+/* ── Comet trail on action buttons (like/comment/share) ── */
+.forum-container .action-btn {
+  position: relative;
+  overflow: visible !important;
+}
+.forum-container .action-btn::before {
+  content: '';
+  position: absolute;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.55), transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: width 0.45s ease, height 0.45s ease, opacity 0.5s ease;
+  opacity: 0;
+  z-index: -1;
+}
+.forum-container .action-btn:hover::before {
+  width: 70px; height: 70px;
+  opacity: 1;
+}
+.forum-container .action-btn:hover {
+  transform: translateY(-1px) scale(1.06) !important;
+}
+
+/* ── Rim-lit avatars in the suggestions list (and post cards) ── */
+.forum-container .sidebar-section img[alt][src*="avataaars"],
+.forum-container .sidebar-section .rounded-xl img,
+.forum-container .post-card .rounded-full img,
+.forum-container .post-card .rounded-xl img {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.85),
+    0 4px 12px rgba(249, 115, 22, 0.35),
+    inset 0 0 0 1px rgba(249, 115, 22, 0.4) !important;
+  transition: transform 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97),
+              box-shadow 0.3s ease !important;
+}
+.forum-container .sidebar-section img[alt][src*="avataaars"]:hover,
+.forum-container .sidebar-section .rounded-xl img:hover,
+.forum-container .post-card .rounded-full img:hover,
+.forum-container .post-card .rounded-xl img:hover {
+  transform: scale(1.1) rotate(-3deg) !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 1),
+    0 8px 24px rgba(249, 115, 22, 0.55),
+    0 0 0 4px rgba(249, 115, 22, 0.25) !important;
+}
+
+/* ── 3D micro-tilt on post cards ── */
+.forum-container .post-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+.forum-container .post-card:hover {
+  transform: translateY(-3px) rotateX(0.6deg) !important;
+}
+
+/* ── Quick-Access label gets a chip look ── */
+.forum-container .sidebar-section h3 {
+  background: linear-gradient(90deg, #F97316, #FB7185) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  letter-spacing: 0.2em !important;
+}
+
+/* ── Pulse halo on POST button ── */
+.forum-container .btn-primary {
+  position: relative;
+}
+.forum-container .btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #F97316, #FB7185);
+  filter: blur(14px);
+  opacity: 0.35;
+  z-index: -1;
+  animation: minoCtaPulse 2.6s ease-in-out infinite;
+}
+@keyframes minoCtaPulse {
+  0%, 100% { opacity: 0.30; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(1.04); }
+}
+
+/* ── Confetti spark sweep when POST is hovered ── */
+.forum-container .btn-primary:hover::after {
+  left: 130%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  filter: drop-shadow(0 0 8px #fff);
+}
+
+/* ── Right rail / sidebar widgets: soft floating shadow base ── */
+.forum-container .sidebar-section {
+  will-change: transform;
+}
+.forum-container .sidebar-section:nth-child(odd) {
+  animation: minoFloatA 9s ease-in-out infinite;
+}
+.forum-container .sidebar-section:nth-child(even) {
+  animation: minoFloatB 11s ease-in-out infinite;
+}
+@keyframes minoFloatA {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+@keyframes minoFloatB {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(2px); }
+}
+
+/* ── "FRIENDS & CHAT" coral button — fire crown shimmer ── */
+.forum-container a[href="/user/friends"] {
+  position: relative;
+  overflow: hidden;
+}
+.forum-container a[href="/user/friends"]::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 50%; height: 200%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: rotate(20deg);
+  animation: minoCrownSweep 4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes minoCrownSweep {
+  0%   { left: -60%; }
+  50%  { left: 120%; }
+  100% { left: 120%; }
+}
+
+/* ── Selection color matches the theme ── */
+.forum-container ::selection {
+  background: rgba(249, 115, 22, 0.25);
+  color: #7c2d12;
+}
+
+/* ── Subtle text gradient on post author names (h-cards) ── */
+.forum-container .post-card p.font-extrabold,
+.forum-container .post-card .text-\[\#1E293B\].font-extrabold {
+  background: linear-gradient(120deg, #1E293B 0%, #C2410C 70%, #F97316 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* ── Spotlight on hover for sidebar cards ── */
+.forum-container .sidebar-section {
+  position: relative;
+}
+.forum-container .sidebar-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%),
+              rgba(249, 115, 22, 0.12), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.forum-container .sidebar-section:hover::after { opacity: 1; }
+
+/* ── Reduce motion preference — respect users who ask ── */
 @media (prefers-reduced-motion: reduce) {
   .forum-container *,
   .forum-container *::before,
