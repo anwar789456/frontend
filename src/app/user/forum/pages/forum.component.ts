@@ -413,9 +413,9 @@ export class ForumComponent implements OnInit, OnDestroy {
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
       result = result.filter(p =>
-        p.content.toLowerCase().includes(q) ||
-        p.author.toLowerCase().includes(q) ||
-        p.username.toLowerCase().includes(q)
+        (p.content || '').toLowerCase().includes(q) ||
+        (p.author || '').toLowerCase().includes(q) ||
+        (p.username || '').toLowerCase().includes(q)
       );
     }
     // Sort by date: newest first
