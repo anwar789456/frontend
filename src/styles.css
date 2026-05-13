@@ -580,9 +580,132 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .forum-container *,
   .forum-container *::before,
-  .forum-container *::after {
+  .forum-container *::after,
+  .friends-container *,
+  .friends-container *::before,
+  .friends-container *::after {
     animation-duration: 0.001s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001s !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════
+   FRIENDS PAGE — orange/coral theme matched to forum
+   Scoped to .friends-container so only friends are
+   affected. Loaded after Tailwind so these win.
+   ═══════════════════════════════════════════════════ */
+
+/* Page background — warm cream like the forum */
+.friends-container {
+  background: linear-gradient(135deg, #fff7ed 0%, #fff1e6 50%, #fef3c7 100%) !important;
+}
+
+/* Sidebar column (the white left rail) — soft ivory */
+.friends-container .bg-white { background-color: #FFFBF5 !important; }
+.friends-container .border-\[\#E5E5E5\] { border-color: rgba(254, 215, 170, 0.65) !important; }
+.friends-container .bg-\[\#F7F7F7\] { background-color: #FFF7ED !important; }
+
+/* ── Mascot banner — orange gradient (matches forum hero) ── */
+.friends-container .bg-\[\#7C3AED\].rounded-\[20px\],
+.friends-container [class*="bg-[#7C3AED]"][class*="rounded-[20px]"] {
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 30%, #FB923C 55%, #FB7185 100%) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow:
+    0 8px 28px rgba(249, 115, 22, 0.32),
+    0 4px 0 #C2410C,
+    inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+.friends-container .bg-\[\#7C3AED\].rounded-\[20px\] .bg-\[\#8b5cf6\],
+.friends-container .bg-\[\#7C3AED\].rounded-\[20px\] .bg-\[\#6D28D9\] {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* Primary purple → coral orange */
+.friends-container .bg-\[\#7C3AED\] { background-color: #F97316 !important; }
+.friends-container .bg-\[\#8b5cf6\] { background-color: #FB923C !important; }
+.friends-container .bg-\[\#5B21B6\] { background-color: #C2410C !important; }
+.friends-container .bg-\[\#6D28D9\] { background-color: #EA580C !important; }
+.friends-container .bg-\[\#CE82FF\] { background-color: #FB7185 !important; }
+.friends-container .bg-\[\#F3EEFF\] { background-color: #FFEDD5 !important; }
+
+/* Borders */
+.friends-container .border-\[\#7C3AED\] { border-color: #F97316 !important; }
+.friends-container .border-\[\#5B21B6\] { border-color: #C2410C !important; }
+.friends-container .border-\[\#6D28D9\] { border-color: #EA580C !important; }
+.friends-container .border-\[\#8b5cf6\] { border-color: #FB923C !important; }
+.friends-container .border-\[\#CE82FF\] { border-color: #FB7185 !important; }
+.friends-container .focus\:border-\[\#7C3AED\]:focus { border-color: #F97316 !important; }
+
+/* Text */
+.friends-container .text-\[\#7C3AED\] { color: #EA580C !important; }
+.friends-container .text-\[\#5B21B6\] { color: #C2410C !important; }
+.friends-container .text-\[\#6D28D9\] { color: #EA580C !important; }
+.friends-container .text-\[\#8b5cf6\] { color: #FB923C !important; }
+.friends-container .hover\:text-\[\#7C3AED\]:hover { color: #EA580C !important; }
+
+/* Bg with opacity classes used as semi-transparent purple tints */
+.friends-container .bg-\[\#7C3AED\]\/10 { background-color: rgba(249, 115, 22, 0.12) !important; }
+.friends-container .bg-\[\#7C3AED\]\/20 { background-color: rgba(249, 115, 22, 0.22) !important; }
+.friends-container .border-\[\#7C3AED\]\/20 { border-color: rgba(249, 115, 22, 0.25) !important; }
+.friends-container .border-\[\#7C3AED\]\/30 { border-color: rgba(249, 115, 22, 0.32) !important; }
+.friends-container .text-\[\#7C3AED\]\/30 { color: rgba(249, 115, 22, 0.35) !important; }
+
+/* Gradients in friends template */
+.friends-container [class*="from-[#7C3AED]"] { --tw-gradient-from: #F97316 !important; }
+.friends-container [class*="via-[#8b5cf6]"]  { --tw-gradient-stops: var(--tw-gradient-from), #FB923C, var(--tw-gradient-to, rgba(251, 146, 60, 0)) !important; }
+.friends-container [class*="to-[#CE82FF]"]   { --tw-gradient-to: #FB7185 !important; }
+.friends-container [class*="from-[#7C3AED]"][class*="to-[#CE82FF]"],
+.friends-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"] {
+  background-image: linear-gradient(to right, #F97316, #FB923C, #FB7185) !important;
+}
+
+/* Focus rings */
+.friends-container button:focus-visible,
+.friends-container input:focus-visible,
+.friends-container textarea:focus-visible {
+  outline-color: #F97316 !important;
+}
+
+/* Tab pills active state — orange chunky like forum POST */
+.friends-container button.bg-\[\#7C3AED\].text-white {
+  background: linear-gradient(135deg, #F97316 0%, #FB7185 100%) !important;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Online indicator (Duolingo green) — keep, but soften the ring */
+.friends-container .bg-\[\#58CC02\] { box-shadow: 0 0 0 2px #FFFBF5 !important; }
+
+/* Friend rows — warm hover */
+.friends-container .hover\:bg-\[\#F3EEFF\]:hover { background-color: #FFEDD5 !important; }
+.friends-container .hover\:bg-\[\#F7F7F7\]:hover { background-color: #FFF7ED !important; }
+
+/* Avatars — soft orange rim like the forum */
+.friends-container img[src*="avataaars"],
+.friends-container .rounded-full > img,
+.friends-container .rounded-2xl > img,
+.friends-container .rounded-xl > img {
+  box-shadow:
+    0 0 0 2px rgba(255, 251, 245, 0.9),
+    0 2px 8px rgba(249, 115, 22, 0.18) !important;
+}
+
+/* Scrollbar tinted */
+.friends-container ::-webkit-scrollbar { width: 10px; height: 10px; }
+.friends-container ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #F97316, #FB7185) !important;
+  border-radius: 10px;
+  background-clip: padding-box;
+}
+.friends-container ::-webkit-scrollbar-track { background: rgba(254, 215, 170, 0.15); }
+
+/* Selection */
+.friends-container ::selection { background: rgba(249, 115, 22, 0.25); color: #7c2d12; }
+
+/* Toast border colors for friends-page toasts (uses fixed positioning, outside container scope) */
+.friends-container ~ * .border-\[\#7C3AED\] { border-color: #F97316 !important; }
+
+/* Send button / CTAs — coral gradient like forum POST */
+.friends-container button.bg-\[\#7C3AED\]:not(.text-\[\#AFAFAF\]) {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
 }
