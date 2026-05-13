@@ -109,6 +109,24 @@ export class TutorQuizService {
     return this.http.post<{ question: string }>(`${this.apiUrl}/quizzes/generate-single-question`, { title, level, questionNumber });
   }
 
+  generateFullQuiz(params: {
+    title: string;
+    description: string;
+    level: string;
+    status: string;
+    xpReward: number;
+  }): Observable<Quiz> {
+    return this.http.post<Quiz>(`${this.apiUrl}/quizzes/generate-full-quiz`, params);
+  }
+
+  generateFullStoryQuiz(params: {
+    title: string;
+    difficulty: string;
+    xpReward: number;
+  }): Observable<StoryQuiz> {
+    return this.http.post<StoryQuiz>(`${this.apiUrl}/story-quizzes/generate-full-story`, params);
+  }
+
   // ── Word Bank ──
 
   getWordBank(storyQuizId: number): Observable<StoryWordBank> {

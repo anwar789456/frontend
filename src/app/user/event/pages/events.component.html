@@ -136,7 +136,7 @@
               <span class="text-sm font-extrabold text-[#f97316]">✨ Happening This Week</span>
               @if (isEventLive(featuredEvent)) {
                 <span class="ev-badge-live flex items-center gap-1 text-[12px] font-extrabold px-3 py-1 rounded-full badge-live-pulse">
-                  🔴 Live Now
+                  🟢 Ongoing
                 </span>
               }
             </div>
@@ -151,7 +151,7 @@
             <div class="p-5 flex flex-col gap-2">
               <div class="flex items-center gap-3">
                 <span class="text-[13px] font-bold text-[#f97316] bg-[#fff7ed] px-3 py-1 rounded-full border-2 border-orange-100">
-                  📅 {{ formatDate(featuredEvent.startDate) }}
+                  📅 {{ formatDate(featuredEvent.startDate) }} · 🕐 {{ formatTime(featuredEvent.startDate) }}
                 </span>
                 @if (featuredEvent.location) {
                   <span class="text-[13px] font-bold text-[#64748B]">📍 {{ featuredEvent.location }}</span>
@@ -169,6 +169,22 @@
                 </div>
               }
 
+              <!-- Capacity Bar -->
+              @if (featuredEvent.maxAttendees) {
+                <div class="mt-2 mb-1">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-bold text-[#94A3B8]">{{ featuredEvent.currentAttendees || 0 }} / {{ featuredEvent.maxAttendees }} spots</span>
+                    <span class="text-[11px] font-extrabold" [style.color]="getCapacityColor(featuredEvent)">{{ getCapacityPercent(featuredEvent) }}%</span>
+                  </div>
+                  <div class="w-full h-2 bg-[#f1f5f9] rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500"
+                      [style.width.%]="getCapacityPercent(featuredEvent)"
+                      [style.background]="getCapacityColor(featuredEvent)">
+                    </div>
+                  </div>
+                </div>
+              }
+
               <!-- Attendees + CTA -->
               <div class="flex items-center justify-between mt-2">
                 <div class="flex items-center gap-2">
@@ -182,9 +198,20 @@
 
                 <!-- Registration Button group -->
                 <div class="flex items-center gap-2">
-                  @if (isRegistered(featuredEvent.id)) {
+                  @if (isPending(featuredEvent.id)) {
+                    <span class="flex items-center gap-1.5 text-[13px] font-extrabold px-4 py-2 rounded-xl bg-[#fefce8] text-[#b45309] border-2 border-[#fde68a] border-b-[3px] border-b-[#fcd34d]">
+                      🕐 Pending approval
+                    </span>
+                    <button (click)="cancelRegistration(featuredEvent.id)"
+                      class="text-[13px] font-bold text-[#64748B] hover:text-red-500 transition-colors"
+                      [disabled]="registrationLoading.has(featuredEvent.id)">✕</button>
+                  } @else if (isRejected(featuredEvent.id)) {
+                    <span class="flex items-center gap-1.5 text-[13px] font-extrabold px-4 py-2 rounded-xl bg-red-50 text-red-500 border-2 border-red-200">
+                      ✕ Not approved
+                    </span>
+                  } @else if (isRegistered(featuredEvent.id)) {
                     <span class="ev-badge-registered flex items-center gap-1.5 text-[13px] font-extrabold px-4 py-2 rounded-xl">
-                      ✅ Registered
+                      ✅ Going
                     </span>
                     @if (isEventLive(featuredEvent)) {
                       <button (click)="showQrCode(featuredEvent.id)"
@@ -194,14 +221,16 @@
                     }
                     <button (click)="cancelRegistration(featuredEvent.id)"
                       class="text-[13px] font-bold text-[#64748B] hover:text-red-500 transition-colors"
-                      [disabled]="registrationLoading.has(featuredEvent.id)">Cancel</button>
+                      [disabled]="registrationLoading.has(featuredEvent.id)">✕</button>
                   } @else if (isWaitlisted(featuredEvent.id)) {
                     <span class="ev-badge-waitlist flex items-center gap-1.5 text-[13px] font-extrabold px-4 py-2 rounded-xl">
-                      ⏳ On Waitlist
+                      ⏳ @if (getWaitlistPosition(featuredEvent.id)) { #{{ getWaitlistPosition(featuredEvent.id) }} in line } @else { ⏳ }
                     </span>
                     <button (click)="cancelRegistration(featuredEvent.id)"
                       class="text-[13px] font-bold text-[#64748B] hover:text-red-500 transition-colors"
-                      [disabled]="registrationLoading.has(featuredEvent.id)">Leave</button>
+                      [disabled]="registrationLoading.has(featuredEvent.id)">✕</button>
+                  } @else if (!featuredEvent.isRegistrationOpen) {
+                    <span class="text-[13px] font-extrabold px-4 py-2 rounded-xl bg-gray-100 text-gray-400 border-2 border-gray-200">🔒 Registration Closed</span>
                   } @else if (isEventFull(featuredEvent)) {
                     <button (click)="registerForEvent(featuredEvent)"
                       class="text-[14px] font-extrabold text-white bg-amber-500 px-5 py-2.5 rounded-xl border-2 border-amber-600 border-b-4 border-b-amber-700 hover:bg-amber-400 transition-all active:translate-y-0.5"
@@ -225,95 +254,127 @@
           </div>
         }
 
-        <!-- ── UPCOMING EVENTS LIST ── -->
-        <div class="ev-card p-5 anim-fade-up anim-delay-2">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h2 class="text-[17px] font-extrabold text-[#1E293B]">Upcoming Events 🗓️</h2>
-              <p class="text-[12px] font-bold text-[#94A3B8]">{{ upcomingEvents.length }} events coming up</p>
-            </div>
+        <!-- ── UPCOMING EVENTS GRID ── -->
+        <div class="flex items-center justify-between mb-3 anim-fade-up anim-delay-2">
+          <div>
+            <h2 class="text-[17px] font-extrabold text-[#1E293B]">Upcoming Events 🗓️</h2>
+            <p class="text-[12px] font-bold text-[#94A3B8]">{{ upcomingEvents.length }} events coming up</p>
           </div>
+        </div>
 
-          <div class="flex flex-col gap-1">
-            @for (event of paginatedUpcomingEvents; track event.id) {
-              <div class="ev-list-item flex items-start gap-4 border-b border-[#F1F5F9] last:border-0 pb-3 mb-1">
-                <!-- Date Badge -->
-                <div class="ev-date-badge shrink-0">
-                  <span class="ev-month text-[11px] font-extrabold text-[#f97316] uppercase block">{{ getMonth(event.startDate) }}</span>
-                  <span class="ev-day text-[22px] font-extrabold text-[#1E293B] leading-tight block">{{ getDay(event.startDate) }}</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          @for (event of paginatedUpcomingEvents; track event.id) {
+            <div class="ev-card p-4 flex items-start gap-3">
+              <!-- Date Badge -->
+              <div class="ev-date-badge shrink-0">
+                <span class="ev-month text-[11px] font-extrabold text-[#f97316] uppercase block">{{ getMonth(event.startDate) }}</span>
+                <span class="ev-day text-[22px] font-extrabold text-[#1E293B] leading-tight block">{{ getDay(event.startDate) }}</span>
+              </div>
+
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span class="text-[11px] font-bold text-[#94A3B8] uppercase">{{ getDayOfWeek(event.startDate) }}</span>
+                  <span class="text-[11px] font-bold text-[#94A3B8]">· 🕐 {{ formatTime(event.startDate) }}</span>
+                  @if (event.location) {
+                    <span class="text-[11px] text-[#94A3B8] truncate">· 📍 {{ event.location }}</span>
+                  }
                 </div>
-
-                <!-- Info -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-0.5">
-                    <span class="text-[11px] font-bold text-[#94A3B8] uppercase">{{ getDayOfWeek(event.startDate) }}</span>
-                    @if (event.location) {
-                      <span class="text-[11px] text-[#94A3B8]">· 📍 {{ event.location }}</span>
+                <h3 class="text-[15px] font-extrabold text-[#1E293B] mb-0.5 truncate">{{ event.title }}</h3>
+                @if (event.hostName) {
+                  <p class="text-[12px] font-bold text-[#64748B] mb-1 truncate">Hosted by {{ event.hostName }}</p>
+                }
+                @if (event.tags && event.tags.length > 0) {
+                  <div class="flex flex-wrap gap-1.5 mb-1.5">
+                    @for (tag of event.tags.slice(0, 3); track tag) {
+                      <span class="ev-tag bg-[#EDE9FE] text-[#7C3AED] border-[#ddd6fe]" style="padding:2px 8px;font-size:10px;">{{ tag }}</span>
                     }
                   </div>
-                  <h3 class="text-[15px] font-extrabold text-[#1E293B] mb-0.5 truncate">{{ event.title }}</h3>
-                  @if (event.hostName) {
-                    <p class="text-[12px] font-bold text-[#64748B] mb-1">Hosted by {{ event.hostName }}</p>
-                  }
-                  @if (event.tags && event.tags.length > 0) {
-                    <div class="flex flex-wrap gap-1.5 mb-1.5">
-                      @for (tag of event.tags.slice(0, 3); track tag) {
-                        <span class="ev-tag bg-[#EDE9FE] text-[#7C3AED] border-[#ddd6fe]" style="padding:2px 8px;font-size:10px;">{{ tag }}</span>
-                      }
+                }
+                <!-- Capacity Bar -->
+                @if (event.maxAttendees) {
+                  <div class="mt-1.5 mb-1">
+                    <div class="flex items-center justify-between mb-0.5">
+                      <span class="text-[10px] font-bold text-[#94A3B8]">{{ event.currentAttendees || 0 }}/{{ event.maxAttendees }} spots</span>
+                      <span class="text-[10px] font-extrabold" [style.color]="getCapacityColor(event)">{{ getCapacityPercent(event) }}%</span>
                     </div>
-                  }
-                  <span class="text-[11px] font-bold text-[#94A3B8]">
-                    👥 {{ event.currentAttendees || 0 }}/{{ event.maxAttendees || '∞' }} attending
-                  </span>
-                </div>
+                    <div class="w-full h-1.5 bg-[#f1f5f9] rounded-full overflow-hidden">
+                      <div class="h-full rounded-full transition-all duration-500"
+                        [style.width.%]="getCapacityPercent(event)"
+                        [style.background]="getCapacityColor(event)">
+                      </div>
+                    </div>
+                  </div>
+                }
 
-                <!-- CTA -->
-                <div class="flex flex-col items-end gap-1.5 shrink-0">
-                  @if (isRegistered(event.id)) {
-                    <span class="ev-badge-registered flex items-center gap-1 text-[11px] font-extrabold px-3 py-1.5 rounded-xl">✅ Going</span>
-                    @if (isEventLive(event)) {
-                      <button (click)="showQrCode(event.id)"
-                        class="text-[10px] font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-2 py-1 rounded-lg border-2 border-[#ddd6fe] hover:bg-[#ddd6fe] transition-all">📱 QR</button>
-                    }
-                    <button (click)="cancelRegistration(event.id)"
-                      class="text-[11px] font-bold text-[#94A3B8] hover:text-red-500 transition-colors"
-                      [disabled]="registrationLoading.has(event.id)">✕ Cancel</button>
+                <div class="flex items-center justify-between gap-2 mt-1">
+                  <span class="text-[11px] font-bold text-[#94A3B8] truncate">
+                    👥 {{ event.currentAttendees || 0 }}/{{ event.maxAttendees || '∞' }}
+                  </span>
+
+                  <!-- CTA (inline) -->
+                  @if (isPending(event.id)) {
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="text-[10px] font-extrabold px-2 py-1 rounded-lg bg-[#fefce8] text-[#b45309] border-2 border-[#fde68a]">🕐 Pending</span>
+                      <button (click)="cancelRegistration(event.id)"
+                        class="text-[11px] font-bold text-[#94A3B8] hover:text-red-500 transition-colors"
+                        [disabled]="registrationLoading.has(event.id)">✕</button>
+                    </div>
+                  } @else if (isRejected(event.id)) {
+                    <span class="text-[10px] font-extrabold px-2 py-1 rounded-lg bg-red-50 text-red-400 border-2 border-red-100 shrink-0">✕ Rejected</span>
+                  } @else if (isRegistered(event.id)) {
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="ev-badge-registered flex items-center gap-1 text-[10px] font-extrabold px-2 py-1 rounded-lg">✅ Going</span>
+                      @if (isEventLive(event)) {
+                        <button (click)="showQrCode(event.id)"
+                          class="text-[10px] font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-2 py-1 rounded-lg border-2 border-[#ddd6fe] hover:bg-[#ddd6fe] transition-all">📱</button>
+                      }
+                      <button (click)="cancelRegistration(event.id)"
+                        class="text-[11px] font-bold text-[#94A3B8] hover:text-red-500 transition-colors"
+                        [disabled]="registrationLoading.has(event.id)">✕</button>
+                    </div>
                   } @else if (isWaitlisted(event.id)) {
-                    <span class="ev-badge-waitlist flex items-center gap-1 text-[11px] font-extrabold px-3 py-1.5 rounded-xl">⏳ Waitlist</span>
-                    <button (click)="cancelRegistration(event.id)"
-                      class="text-[11px] font-bold text-[#94A3B8] hover:text-red-500 transition-colors"
-                      [disabled]="registrationLoading.has(event.id)">✕ Leave</button>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="ev-badge-waitlist flex items-center gap-1 text-[10px] font-extrabold px-2 py-1 rounded-lg">
+                        ⏳ @if (getWaitlistPosition(event.id)) { #{{ getWaitlistPosition(event.id) }} in line } @else { ⏳ }
+                      </span>
+                      <button (click)="cancelRegistration(event.id)"
+                        class="text-[11px] font-bold text-[#94A3B8] hover:text-red-500 transition-colors"
+                        [disabled]="registrationLoading.has(event.id)">✕</button>
+                    </div>
+                  } @else if (!event.isRegistrationOpen) {
+                    <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-400 border-2 border-gray-200 shrink-0">🔒 Closed</span>
                   } @else if (isEventFull(event)) {
                     <button (click)="registerForEvent(event)"
-                      class="text-[12px] font-extrabold text-amber-700 border-2 border-amber-400 border-b-4 border-b-amber-500 px-4 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 transition-all active:translate-y-0.5"
+                      class="text-[11px] font-extrabold text-amber-700 border-2 border-amber-400 border-b-4 border-b-amber-500 px-3 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 transition-all active:translate-y-0.5 shrink-0"
                       [disabled]="registrationLoading.has(event.id)">
-                      @if (registrationLoading.has(event.id)) { <div class="w-3.5 h-3.5 border-2 border-amber-300 border-t-amber-700 rounded-full animate-spin"></div> }
+                      @if (registrationLoading.has(event.id)) { <div class="w-3 h-3 border-2 border-amber-300 border-t-amber-700 rounded-full animate-spin"></div> }
                       @else { ⏳ Waitlist }
                     </button>
                   } @else {
                     <button (click)="registerForEvent(event)"
-                      class="text-[12px] font-extrabold text-[#f97316] border-2 border-[#f97316] border-b-4 border-b-[#ea580c] px-4 py-1.5 rounded-xl bg-white hover:bg-[#fff7ed] transition-all active:translate-y-0.5"
+                      class="text-[11px] font-extrabold text-[#f97316] border-2 border-[#f97316] border-b-4 border-b-[#ea580c] px-3 py-1 rounded-lg bg-white hover:bg-[#fff7ed] transition-all active:translate-y-0.5 shrink-0"
                       [disabled]="registrationLoading.has(event.id)">
-                      @if (registrationLoading.has(event.id)) { <div class="w-3.5 h-3.5 border-2 border-orange-200 border-t-[#f97316] rounded-full animate-spin"></div> }
+                      @if (registrationLoading.has(event.id)) { <div class="w-3 h-3 border-2 border-orange-200 border-t-[#f97316] rounded-full animate-spin"></div> }
                       @else { Join 🎟️ }
                     </button>
                   }
                 </div>
               </div>
-            }
-          </div>
-
-          <!-- Pagination -->
-          @if (getTotalPages('Explore') > 1) {
-            <div class="flex items-center justify-center gap-2 pt-4 mt-2 border-t border-[#F1F5F9]">
-              <button (click)="goToPage('Explore', currentPage['Explore'] - 1)" [disabled]="currentPage['Explore'] === 1" class="ev-page-btn">‹</button>
-              @for (page of getPageNumbers('Explore'); track page) {
-                <button (click)="goToPage('Explore', page)" class="ev-page-btn" [class.active-page]="currentPage['Explore'] === page">{{ page }}</button>
-              }
-              <button (click)="goToPage('Explore', currentPage['Explore'] + 1)" [disabled]="currentPage['Explore'] === getTotalPages('Explore')" class="ev-page-btn">›</button>
             </div>
           }
         </div>
+
+        <!-- Pagination -->
+        @if (getTotalPages('Explore') > 1) {
+          <div class="flex items-center justify-center gap-2 pt-2 pb-2">
+            <button (click)="goToPage('Explore', currentPage['Explore'] - 1)" [disabled]="currentPage['Explore'] === 1" class="ev-page-btn">‹</button>
+            @for (page of getPageNumbers('Explore'); track page) {
+              <button (click)="goToPage('Explore', page)" class="ev-page-btn" [class.active-page]="currentPage['Explore'] === page">{{ page }}</button>
+            }
+            <button (click)="goToPage('Explore', currentPage['Explore'] + 1)" [disabled]="currentPage['Explore'] === getTotalPages('Explore')" class="ev-page-btn">›</button>
+          </div>
+        }
       }
     }
 
@@ -337,7 +398,7 @@
               <span class="text-xl">🎟️</span>
             </div>
             <div>
-              <h2 class="text-[17px] font-extrabold text-[#1E293B]">Your Upcoming Events</h2>
+              <h2 class="text-[17px] font-extrabold text-[#1E293B]">Your Events</h2>
               <p class="text-[12px] font-bold text-[#94A3B8]">{{ goingEvents.length }} event{{ goingEvents.length !== 1 ? 's' : '' }} registered</p>
             </div>
           </div>
@@ -346,8 +407,12 @@
             @for (event of paginatedGoingEvents; track event.id) {
               <div class="ev-list-item flex items-start gap-4 border-b border-[#F1F5F9] last:border-0 pb-3 mb-1">
                 <!-- Date Badge -->
-                <div class="ev-date-badge shrink-0" style="border-color: #bbf7d0; border-bottom-color: #86efac; background: #f0fdf4;">
-                  <span class="text-[11px] font-extrabold text-[#16a34a] uppercase block">{{ getMonth(event.startDate) }}</span>
+                <div class="ev-date-badge shrink-0"
+                  [style]="isEventCancelled(event)
+                    ? 'border-color: #fecaca; border-bottom-color: #fca5a5; background: #fff1f2;'
+                    : 'border-color: #bbf7d0; border-bottom-color: #86efac; background: #f0fdf4;'">
+                  <span class="text-[11px] font-extrabold uppercase block"
+                    [class]="isEventCancelled(event) ? 'text-red-500' : 'text-[#16a34a]'">{{ getMonth(event.startDate) }}</span>
                   <span class="text-[22px] font-extrabold text-[#1E293B] leading-tight block">{{ getDay(event.startDate) }}</span>
                 </div>
 
@@ -359,32 +424,41 @@
                       <span class="text-[11px] text-[#94A3B8]">· 📍 {{ event.location }}</span>
                     }
                   </div>
-                  <h3 class="text-[15px] font-extrabold text-[#1E293B] mb-1 truncate">{{ event.title }}</h3>
+                  <h3 class="text-[15px] font-extrabold mb-1 truncate"
+                    [class]="isEventCancelled(event) ? 'text-[#94A3B8] line-through' : 'text-[#1E293B]'">{{ event.title }}</h3>
                   @if (event.hostName) {
                     <p class="text-[12px] font-bold text-[#64748B] mb-1">Hosted by {{ event.hostName }}</p>
                   }
                   <div class="flex items-center gap-2">
-                    <span class="ev-badge-registered flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-xl">✅ Registered</span>
-                    @if (isEventLive(event)) {
-                      <span class="ev-badge-live flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-xl badge-live-pulse">🔴 Live Now</span>
+                    @if (isEventCancelled(event)) {
+                      <span class="flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-xl bg-red-100 text-red-600 border border-red-200">❌ Cancelled</span>
+                    } @else {
+                      <span class="ev-badge-registered flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-xl">✅ Going</span>
+                      @if (isEventLive(event)) {
+                        <span class="ev-badge-live flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-xl badge-live-pulse">🟢 Ongoing</span>
+                      }
                     }
                   </div>
                 </div>
 
                 <!-- Actions -->
                 <div class="flex flex-col items-end gap-1.5 shrink-0">
-                  @if (isEventLive(event)) {
-                    <button (click)="showQrCode(event.id)"
-                      class="text-[11px] font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-3 py-1.5 rounded-xl border-2 border-[#ddd6fe] border-b-4 border-b-[#c4b5fd] hover:bg-[#ddd6fe] transition-all active:translate-y-0.5">
-                      📱 QR Code
+                  @if (isEventCancelled(event)) {
+                    <span class="text-[11px] font-bold text-red-400 italic">Event was cancelled</span>
+                  } @else {
+                    @if (isEventLive(event)) {
+                      <button (click)="showQrCode(event.id)"
+                        class="text-[11px] font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-3 py-1.5 rounded-xl border-2 border-[#ddd6fe] border-b-4 border-b-[#c4b5fd] hover:bg-[#ddd6fe] transition-all active:translate-y-0.5">
+                        📱 QR Code
+                      </button>
+                    }
+                    <button (click)="cancelRegistration(event.id)"
+                      class="text-[12px] font-bold text-[#94A3B8] border-2 border-[#E2E8F0] hover:border-red-300 hover:text-red-500 px-3 py-1.5 rounded-xl transition-all"
+                      [disabled]="registrationLoading.has(event.id)">
+                      @if (registrationLoading.has(event.id)) { <div class="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div> }
+                      @else { ✕ Cancel }
                     </button>
                   }
-                  <button (click)="cancelRegistration(event.id)"
-                    class="text-[12px] font-bold text-[#94A3B8] border-2 border-[#E2E8F0] hover:border-red-300 hover:text-red-500 px-3 py-1.5 rounded-xl transition-all"
-                    [disabled]="registrationLoading.has(event.id)">
-                    @if (registrationLoading.has(event.id)) { <div class="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div> }
-                    @else { ✕ Cancel }
-                  </button>
                 </div>
               </div>
             }
@@ -575,7 +649,7 @@
               <div>
                 <p class="text-[13px] font-extrabold text-[#1E293B]">{{ item.title }}</p>
                 @if (item.status === 'ONGOING') {
-                  <span class="text-[11px] font-extrabold text-red-500 flex items-center gap-1">🔴 Live Now</span>
+                  <span class="text-[11px] font-extrabold text-red-500 flex items-center gap-1">🟢 Ongoing</span>
                 }
                 @if (item.subtitle) {
                   <p class="text-[11px] font-bold text-[#94A3B8]">{{ item.subtitle }}</p>
@@ -715,37 +789,73 @@
   </div>
 }
 
-<!-- ════ Phone Number Modal ════ -->
-@if (showPhoneModal) {
-  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
-    (click)="showPhoneModal = false">
-    <div class="bg-white rounded-2xl p-6 max-w-[380px] w-full shadow-2xl ev-modal border-2 border-[#E2E8F0] border-b-4 border-b-[#CBD5E1]"
-      (click)="$event.stopPropagation()">
-      <div class="text-center mb-5">
-        <div class="w-16 h-16 bg-gradient-to-br from-[#EDE9FE] to-[#ddd6fe] rounded-2xl flex items-center justify-center mx-auto mb-3 mascot-bounce border-2 border-[#ddd6fe] border-b-4 border-b-[#c4b5fd]">
-          <span class="text-3xl">📱</span>
-        </div>
-        <h3 class="text-[17px] font-extrabold text-[#1E293B]">Get SMS Reminders? 🔔</h3>
-        <p class="text-[13px] font-bold text-[#64748B] mt-1">We'll text you 24h before the event starts</p>
-      </div>
 
-      <div class="mb-5">
-        <input type="tel" [(ngModel)]="phoneNumber" (keydown.enter)="confirmRegistration()"
-          class="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl text-sm font-bold outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-50 text-center font-mono tracking-wider transition-all"
-          placeholder="+216 XX XXX XXX" />
-        <p class="text-[11px] font-bold text-[#94A3B8] mt-2 text-center">Include country code (e.g. +216)</p>
+<!-- ════ Success Toast ════ -->
+@if (toastVisible) {
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] anim-pop">
+    <div class="flex items-center gap-4 px-5 py-4 rounded-2xl shadow-2xl border-2 border-b-4 min-w-[300px] max-w-[420px]"
+      [class.bg-[#fefce8]]="toastType === 'pending'"
+      [class.border-[#fde68a]]="toastType === 'pending'"
+      [class.border-b-[#fcd34d]]="toastType === 'pending'"
+      [class.bg-[#f0fdf4]]="toastType === 'registered'"
+      [class.border-[#bbf7d0]]="toastType === 'registered'"
+      [class.border-b-[#86efac]]="toastType === 'registered'"
+      [class.bg-[#fffbeb]]="toastType === 'waitlisted'"
+      [class.border-[#fed7aa]]="toastType === 'waitlisted'"
+      [class.border-b-[#fdba74]]="toastType === 'waitlisted'"
+      [class.bg-[#F8FAFC]]="toastType === 'cancelled'"
+      [class.border-[#E2E8F0]]="toastType === 'cancelled'"
+      [class.border-b-[#CBD5E1]]="toastType === 'cancelled'"
+      [class.bg-red-50]="toastType === 'rejected'"
+      [class.border-red-200]="toastType === 'rejected'"
+      [class.border-b-red-300]="toastType === 'rejected'">
+      <!-- Icon -->
+      <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border-2 border-b-4"
+        [class.bg-[#fef9c3]]="toastType === 'pending'"
+        [class.border-[#fde68a]]="toastType === 'pending'"
+        [class.border-b-[#fcd34d]]="toastType === 'pending'"
+        [class.bg-[#dcfce7]]="toastType === 'registered'"
+        [class.border-[#86efac]]="toastType === 'registered'"
+        [class.border-b-[#4ade80]]="toastType === 'registered'"
+        [class.bg-[#fef3c7]]="toastType === 'waitlisted'"
+        [class.border-[#fcd34d]]="toastType === 'waitlisted'"
+        [class.border-b-[#f59e0b]]="toastType === 'waitlisted'"
+        [class.bg-[#F1F5F9]]="toastType === 'cancelled'"
+        [class.border-[#E2E8F0]]="toastType === 'cancelled'"
+        [class.border-b-[#CBD5E1]]="toastType === 'cancelled'"
+        [class.bg-red-100]="toastType === 'rejected'"
+        [class.border-red-200]="toastType === 'rejected'"
+        [class.border-b-red-300]="toastType === 'rejected'">
+        <span class="text-xl">
+          @if (toastType === 'pending') { 🕐 }
+          @if (toastType === 'registered') { 🎉 }
+          @if (toastType === 'waitlisted') { ⏳ }
+          @if (toastType === 'cancelled') { 👋 }
+          @if (toastType === 'rejected') { ✕ }
+        </span>
       </div>
-
-      <div class="flex gap-3">
-        <button (click)="phoneNumber = ''; confirmRegistration()"
-          class="flex-1 py-3 text-sm font-extrabold text-[#64748B] border-2 border-[#E2E8F0] border-b-4 border-b-[#CBD5E1] rounded-xl hover:bg-[#F8FAFC] transition-all active:translate-y-0.5">
-          Skip
-        </button>
-        <button (click)="confirmRegistration()"
-          class="flex-1 py-3 text-sm font-extrabold text-white btn-ev-primary rounded-xl">
-          Register 🎟️
-        </button>
+      <!-- Text -->
+      <div class="flex-1 min-w-0">
+        <p class="text-[14px] font-extrabold"
+          [class.text-[#b45309]]="toastType === 'pending'"
+          [class.text-[#15803d]]="toastType === 'registered'"
+          [class.text-[#c2410c]]="toastType === 'waitlisted'"
+          [class.text-[#475569]]="toastType === 'cancelled'"
+          [class.text-red-600]="toastType === 'rejected'">
+          @if (toastType === 'pending') { Request sent! Waiting for approval }
+          @if (toastType === 'registered') { You're in! }
+          @if (toastType === 'waitlisted') { You're on the waitlist! }
+          @if (toastType === 'cancelled') { Registration cancelled }
+          @if (toastType === 'rejected') { Request not approved }
+        </p>
+        <p class="text-[12px] font-bold text-[#64748B] truncate mt-0.5">{{ toastEventTitle }}</p>
       </div>
+      <!-- Dismiss -->
+      <button (click)="toastVisible = false" class="text-[#94A3B8] hover:text-[#64748B] transition-colors shrink-0">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
   </div>
 }

@@ -61,6 +61,10 @@ export class ForumService {
     return this.http.put<ForumPost>(`${this.apiUrl}/like-forum/${id}`, {});
   }
 
+  unlikePost(id: number): Observable<ForumPost> {
+    return this.http.put<ForumPost>(`${this.apiUrl}/unlike-forum/${id}`, {});
+  }
+
   repostPost(id: number): Observable<ForumPost> {
     return this.http.put<ForumPost>(`${this.apiUrl}/repost-forum/${id}`, {});
   }
@@ -365,6 +369,24 @@ export class ForumService {
 
   unequipBadge(userId: number): void {
     localStorage.removeItem(`forum_equipped_badge_${userId}`);
+  }
+
+  // ── Content Moderation ──
+
+  moderateContent(content: string): Observable<{ isSafe: boolean; reason: string; aiAvailable?: boolean }> {
+    return this.http.post<{ isSafe: boolean; reason: string; aiAvailable?: boolean }>(`${this.apiUrl}/moderate-content`, { content });
+  }
+
+  getModerationWarningCount(userId: number): number {
+    try {
+      return parseInt(localStorage.getItem(`forum_mod_warnings_${userId}`) || '0', 10);
+    } catch { return 0; }
+  }
+
+  incrementModerationWarning(userId: number): number {
+    const count = this.getModerationWarningCount(userId) + 1;
+    localStorage.setItem(`forum_mod_warnings_${userId}`, String(count));
+    return count;
   }
 
   // ── Translation ──

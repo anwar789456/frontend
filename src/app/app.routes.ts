@@ -29,6 +29,16 @@ export const routes: Routes = [
     loadComponent: () => import('./user/user/pages/register/verify-code.component').then(m => m.VerifyCodeComponent)
   },
   {
+    path: 'face-setup',
+    canActivate: [authGuard],
+    loadComponent: () => import('./user/user/pages/face-setup/face-setup.component').then(m => m.FaceSetupComponent)
+  },
+  {
+    path: 'google-setup',
+    canActivate: [authGuard],
+    loadComponent: () => import('./user/user/pages/google-setup/google-setup.component').then(m => m.GoogleSetupComponent)
+  },
+  {
     path: 'forgot-password',
     loadComponent: () =>
       import('./user/user/pages/forgetpassword/forgot-password.component')
@@ -65,10 +75,6 @@ export const routes: Routes = [
         loadChildren: () => import('./user/friends/friends.routes').then(m => m.FRIENDS_ROUTES)
       },
       {
-        path: 'sessions',
-        loadChildren: () => import('./user/sessionreservation/sessionreservation.routes').then(m => m.SESSION_ROUTES)
-      },
-      {
         path: 'quiz',
         loadChildren: () => import('./user/quiz/quiz.routes').then(m => m.QUIZ_ROUTES)
       },
@@ -95,6 +101,10 @@ export const routes: Routes = [
       {
         path: 'subscriptions',
         loadChildren: () => import('./user/subscription/subscription.routes').then(m => m.SUBSCRIPTION_ROUTES)
+      },
+      {
+        path: 'ai-tutor',
+        loadComponent: () => import('./user/ai-tutor/ai-tutor.component').then(m => m.AiTutorComponent)
       }
     ]
   },

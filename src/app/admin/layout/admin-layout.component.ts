@@ -28,6 +28,7 @@ export class AdminLayoutComponent {
       section: 'MANAGEMENT',
       items: [
         { label: 'Users', icon: 'users', route: '/admin/users' },
+        { label: 'User Logs', icon: 'users', route: '/admin/user-logs' },
         { label: 'Reports', icon: 'reports', route: '/admin/reports', badge: 3 },
         { label: 'Forums', icon: 'forums', route: '/admin/forums' },
         { label: 'Donations', icon: 'donations', route: '/admin/donations' },

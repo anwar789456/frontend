@@ -79,6 +79,11 @@ export class ForumComponent implements OnInit, OnDestroy {
   editingPostId: number | null = null;
   editContent = '';
 
+  // Edit Reply
+  editingReplyId: number | null = null;
+  editReplyContent = '';
+  editReplyError = '';
+
   // Menu
   openMenuPostId: number | null = null;
 
@@ -123,6 +128,9 @@ export class ForumComponent implements OnInit, OnDestroy {
   postReactionCounts: Map<number, Map<string, number>> = new Map();
   floatingReaction: { postId: number; emoji: string } | null = null;
 
+  // Interaction debounce for polling
+  private lastInteractionTime = 0;
+
   // GIF Picker
   showGifPicker = false;
   gifSearchQuery = '';
@@ -143,6 +151,12 @@ export class ForumComponent implements OnInit, OnDestroy {
   tagNotifications: any[] = [];
   unreadNotifCount = 0;
   private notifPollInterval: any;
+
+  // Content Moderation
+  isModeratingPost = false;
+  moderationWarning = '';
+  showModerationWarning = false;
+  showModerationBlock = false;
 
   // Share Post
   showShareModal = false;
@@ -337,14 +351,26 @@ export class ForumComponent implements OnInit, OnDestroy {
   }
 
   private pollNewPosts(): void {
+    // Skip poll if user interacted recently (avoid overwriting optimistic updates)
+    if (Date.now() - this.lastInteractionTime < 5000) return;
+
     this.forumService.getAllPosts().subscribe({
       next: (all) => {
-        // Always sync — catches new posts, edits, reactions, replies, deletions
+        // Skip if user interacted while request was in-flight
+        if (Date.now() - this.lastInteractionTime < 5000) return;
+
         this.allPosts = all;
         this.posts = all.filter(p => !p.parentPostId);
         this.countCommentsFromAll();
         this.resolveSharedPosts();
         this.applyFilter();
+
+        // Auto-refresh expanded replies
+        if (this.expandedRepliesPostId) {
+          const replies = this.allPosts.filter(p => p.parentPostId === this.expandedRepliesPostId);
+          this.repliesMap.set(this.expandedRepliesPostId, replies);
+        }
+
         this.cdRef.detectChanges();
       }
     });
@@ -387,9 +413,9 @@ export class ForumComponent implements OnInit, OnDestroy {
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
       result = result.filter(p =>
-        p.content.toLowerCase().includes(q) ||
-        p.author.toLowerCase().includes(q) ||
-        p.username.toLowerCase().includes(q)
+        (p.content || '').toLowerCase().includes(q) ||
+        (p.author || '').toLowerCase().includes(q) ||
+        (p.username || '').toLowerCase().includes(q)
       );
     }
     // Sort by date: newest first
@@ -473,6 +499,67 @@ export class ForumComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.showModerationWarning = false;
+    this.showModerationBlock = false;
+    this.moderationWarning = '';
+    this.isModeratingPost = true;
+    this.cdRef.detectChanges();
+
+    this.forumService.moderateContent(this.newPostContent).subscribe({
+      next: (modResult) => {
+        this.isModeratingPost = false;
+        if (!modResult.isSafe) {
+          const warningCount = this.forumService.incrementModerationWarning(this.user!.id);
+          if (warningCount >= 2) {
+            this.showModerationBlock = true;
+            this.moderationWarning = modResult.reason || 'Your post contains inappropriate content.';
+            this.addNotification('Your post has been reported. Please check your email.', 'warning');
+            this.autoReportPost(this.newPostContent, modResult.reason);
+          } else {
+            this.showModerationWarning = true;
+            this.moderationWarning = modResult.reason || 'Your post contains inappropriate content.';
+            this.addNotification('Your post was blocked. Please revise the content.', 'warning');
+          }
+          this.cdRef.detectChanges();
+          return;
+        }
+        if (modResult.aiAvailable === false) {
+          this.addNotification('AI moderation unavailable — post not checked.', 'warning');
+        }
+        this.proceedWithCreatePost();
+      },
+      error: () => {
+        this.isModeratingPost = false;
+        this.addNotification('AI moderation service is offline — post not checked.', 'warning');
+        this.proceedWithCreatePost();
+      }
+    });
+  }
+
+  private autoReportPost(content: string, reason: string): void {
+    if (!this.user) return;
+    const report: any = {
+      postId: 0,
+      reporterId: 0,
+      reportedUserId: this.user.id,
+      reporterName: 'AI Moderation System',
+      reporterEmail: '',
+      reportedUserName: this.user.name,
+      reason: 'AI_MODERATION',
+      postContent: content.substring(0, 500),
+      description: 'Auto-reported by AI content moderation (2nd offense). Reason: ' + (reason || 'Inappropriate content'),
+      status: 'PENDING'
+    };
+    this.forumService.createReport(report).subscribe();
+  }
+
+  dismissModerationWarning(): void {
+    this.showModerationWarning = false;
+    this.showModerationBlock = false;
+    this.moderationWarning = '';
+  }
+
+  private proceedWithCreatePost(): void {
     const hashtags = this.extractHashtags(this.newPostContent);
     let topicId: number | undefined;
     for (const tag of hashtags) {
@@ -765,6 +852,9 @@ export class ForumComponent implements OnInit, OnDestroy {
   // ── Repost ──
 
   repostPost(post: ForumPost): void {
+    this.lastInteractionTime = Date.now();
+    post.reposts = (post.reposts || 0) + 1;
+    this.cdRef.detectChanges();
     this.forumService.repostPost(post.id).subscribe({
       next: (updated) => {
         const idx = this.posts.findIndex(p => p.id === post.id);
@@ -808,13 +898,48 @@ export class ForumComponent implements OnInit, OnDestroy {
   submitReply(parentPostId: number): void {
     this.replyError = this.validateReplyContent(this.replyContent);
     if (this.replyError || !this.user) return;
+    this.lastInteractionTime = Date.now();
 
+    this.showModerationWarning = false;
+    this.showModerationBlock = false;
+    this.moderationWarning = '';
+
+    this.forumService.moderateContent(this.replyContent).subscribe({
+      next: (modResult) => {
+        if (!modResult.isSafe) {
+          const warningCount = this.forumService.incrementModerationWarning(this.user!.id);
+          if (warningCount >= 2) {
+            this.showModerationBlock = true;
+            this.moderationWarning = modResult.reason || 'Your reply contains inappropriate content.';
+            this.addNotification('Your reply has been reported. Please check your email.', 'warning');
+            this.autoReportPost(this.replyContent, modResult.reason);
+          } else {
+            this.showModerationWarning = true;
+            this.moderationWarning = modResult.reason || 'Your reply contains inappropriate content.';
+            this.addNotification('Your reply was blocked. Please revise the content.', 'warning');
+          }
+          this.cdRef.detectChanges();
+          return;
+        }
+        if (modResult.aiAvailable === false) {
+          this.addNotification('AI moderation unavailable — reply not checked.', 'warning');
+        }
+        this.proceedWithSubmitReply(parentPostId);
+      },
+      error: () => {
+        this.addNotification('AI moderation service is offline — reply not checked.', 'warning');
+        this.proceedWithSubmitReply(parentPostId);
+      }
+    });
+  }
+
+  private proceedWithSubmitReply(parentPostId: number): void {
     const reply: any = {
       content: this.replyContent.trim(),
-      author: this.user.name,
-      username: '@' + this.user.name.replace(/\s+/g, '_').toLowerCase(),
-      avatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user.name,
-      userId: this.user.id,
+      author: this.user!.name,
+      username: '@' + this.user!.name.replace(/\s+/g, '_').toLowerCase(),
+      avatar: (this.user as any).avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + this.user!.name,
+      userId: this.user!.id,
       parentPostId: parentPostId,
       comments: 0,
       reposts: 0,
@@ -841,6 +966,85 @@ export class ForumComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Edit / Delete Reply ──
+
+  isOwnReply(reply: ForumPost): boolean {
+    return !!this.user && reply.userId === this.user.id;
+  }
+
+  startEditReply(reply: ForumPost): void {
+    this.editingReplyId = reply.id;
+    this.editReplyContent = reply.content;
+    this.editReplyError = '';
+  }
+
+  cancelEditReply(): void {
+    this.editingReplyId = null;
+    this.editReplyContent = '';
+    this.editReplyError = '';
+  }
+
+  submitEditReply(reply: ForumPost): void {
+    this.editReplyError = this.validateReplyContent(this.editReplyContent);
+    if (this.editReplyError) return;
+
+    const updated: any = {
+      content: this.editReplyContent.trim(),
+      isEdited: true,
+      image: reply.image,
+      author: reply.author,
+      username: reply.username,
+      avatar: reply.avatar
+    };
+    this.forumService.updatePost(reply.id, updated).subscribe({
+      next: () => {
+        this.editingReplyId = null;
+        this.editReplyContent = '';
+        this.editReplyError = '';
+        this.loadPosts();
+        // Refresh replies for the parent post
+        setTimeout(() => {
+          if (this.expandedRepliesPostId) {
+            const replies = this.allPosts.filter(p => p.parentPostId === this.expandedRepliesPostId);
+            this.repliesMap.set(this.expandedRepliesPostId, replies);
+            this.cdRef.detectChanges();
+          }
+        }, 500);
+        this.addNotification('Reply updated!', 'success');
+      },
+      error: (err) => {
+        this.editReplyError = `Failed to update reply (${err?.status || 'network error'}).`;
+      }
+    });
+  }
+
+  deleteReply(reply: ForumPost, parentPostId: number): void {
+    this.lastInteractionTime = Date.now();
+    // Optimistic: remove reply from local map immediately
+    const replies = this.repliesMap.get(parentPostId);
+    if (replies) {
+      this.repliesMap.set(parentPostId, replies.filter(r => r.id !== reply.id));
+    }
+    // Optimistic: decrement comment count
+    const parentPost = this.posts.find(p => p.id === parentPostId);
+    if (parentPost) parentPost.comments = Math.max(0, parentPost.comments - 1);
+    this.cdRef.detectChanges();
+    this.forumService.deletePost(reply.id).subscribe({
+      next: () => {
+        this.loadPosts();
+        setTimeout(() => {
+          const replies = this.allPosts.filter(p => p.parentPostId === parentPostId);
+          this.repliesMap.set(parentPostId, replies);
+          this.cdRef.detectChanges();
+        }, 500);
+        this.addNotification('Reply deleted', 'info');
+      },
+      error: () => {
+        this.addNotification('Failed to delete reply', 'warning');
+      }
+    });
+  }
+
   // ── Edit Post ──
 
   startEdit(post: ForumPost): void {
@@ -859,6 +1063,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   submitEdit(post: ForumPost): void {
     this.editError = this.validatePostContent(this.editContent);
     if (this.editError) return;
+    this.lastInteractionTime = Date.now();
 
     const hashtags = this.extractHashtags(this.editContent);
     let topicId = post.topicId;
@@ -895,6 +1100,7 @@ export class ForumComponent implements OnInit, OnDestroy {
   // ── Delete Post ──
 
   deletePost(post: ForumPost): void {
+    this.lastInteractionTime = Date.now();
     this.openMenuPostId = null;
     this.posts = this.posts.filter(p => p.id !== post.id);
     this.applyFilter();
@@ -1067,14 +1273,43 @@ export class ForumComponent implements OnInit, OnDestroy {
   reactToPost(post: ForumPost, emoji: string, event: Event): void {
     event.stopPropagation();
     const currentReaction = this.userReactions.get(post.id);
+    const oldLikes = post.likes;
+
+    // Pause polling briefly so it doesn't overwrite optimistic update
+    this.lastInteractionTime = Date.now();
+
+    const updatePostInList = (updated: ForumPost) => {
+      const idx = this.posts.findIndex(p => p.id === post.id);
+      if (idx !== -1) { updated.comments = this.posts[idx].comments; this.posts[idx] = updated; }
+      this.applyFilter();
+      this.cdRef.detectChanges();
+    };
+
+    const revertOnError = () => {
+      post.likes = oldLikes;
+      this.applyFilter();
+      this.cdRef.detectChanges();
+    };
+
     if (currentReaction === emoji) {
+      // Removing reaction → unlike on backend
       this.userReactions.delete(post.id);
       const counts = this.postReactionCounts.get(post.id);
       if (counts) {
         const c = (counts.get(emoji) || 1) - 1;
         if (c <= 0) counts.delete(emoji); else counts.set(emoji, c);
       }
+      // Optimistic: decrement immediately
+      post.likes = Math.max(0, post.likes - 1);
+      this.applyFilter();
+      this.cdRef.detectChanges();
+      this.forumService.unlikePost(post.id).subscribe({
+        next: updatePostInList,
+        error: revertOnError
+      });
     } else {
+      // Switching or adding reaction
+      const hadReaction = !!currentReaction;
       if (currentReaction) {
         const counts = this.postReactionCounts.get(post.id);
         if (counts) {
@@ -1090,16 +1325,18 @@ export class ForumComponent implements OnInit, OnDestroy {
       counts.set(emoji, (counts.get(emoji) || 0) + 1);
       this.floatingReaction = { postId: post.id, emoji };
       setTimeout(() => this.floatingReaction = null, 600);
-      if (!currentReaction) {
+      if (!hadReaction) {
+        // Optimistic: increment immediately
+        post.likes = post.likes + 1;
+        this.applyFilter();
+        this.cdRef.detectChanges();
         this.awardXP(ForumService.XP_REWARDS.reaction, 'reaction');
         this.forumService.likePost(post.id).subscribe({
-          next: (updated) => {
-            const idx = this.posts.findIndex(p => p.id === post.id);
-            if (idx !== -1) { updated.comments = this.posts[idx].comments; this.posts[idx] = updated; }
-            this.applyFilter();
-          }
+          next: updatePostInList,
+          error: revertOnError
         });
       }
+      // If switching reactions, no backend call — like count stays the same
     }
     this.showReactionsPostId = null;
     this.saveReactionsToStorage();

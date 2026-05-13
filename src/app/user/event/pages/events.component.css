@@ -183,10 +183,10 @@
   border-bottom: 3px solid #fcd34d;
 }
 .ev-badge-live {
-  background: var(--ev-red);
+  background: #16a34a;
   color: #fff;
-  border: 2px solid #dc2626;
-  border-bottom: 3px solid #991b1b;
+  border: 2px solid #15803d;
+  border-bottom: 3px solid #166534;
 }
 
 /* ── Sidebar Card ── */
@@ -219,7 +219,7 @@
 }
 
 /* ── Pulse Live Badge ── */
-@keyframes livePulse { 0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5)} 50%{box-shadow:0 0 0 8px transparent} }
+@keyframes livePulse { 0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.5)} 50%{box-shadow:0 0 0 8px transparent} }
 .badge-live-pulse { animation: livePulse 1.5s infinite; }
 
 /* ── Modal entrance ── */

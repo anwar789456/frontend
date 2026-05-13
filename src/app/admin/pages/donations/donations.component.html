@@ -65,8 +65,9 @@
         <thead>
           <tr class="bg-[#f0fdf9]">
             <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-l-lg">Donor</th>
-            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Amount</th>
-            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Payment</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Item</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Type/Condition</th>
+            <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Quantity</th>
             <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Date</th>
             <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5">Status</th>
             <th class="text-left text-[11px] font-semibold text-[#536471] uppercase px-4 py-2.5 rounded-r-lg"></th>
@@ -87,8 +88,14 @@
                 </div>
               </div>
             </td>
-            <td class="px-4 py-3 text-sm font-semibold text-[#0f1419]">{{ donation.amount }} TND</td>
-            <td class="px-4 py-3 text-sm text-[#536471]">{{ donation.paymentMethod || '—' }}</td>
+            <td class="px-4 py-3 text-sm font-semibold text-[#0f1419]">
+              <div class="flex items-center gap-2">
+                <img *ngIf="donation.imageUrl" [src]="getImageSrc(donation.imageUrl)!" alt="item" class="w-8 h-8 rounded object-cover border border-gray-200" />
+                <span>{{ donation.itemName }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-sm text-[#536471]">{{ donation.type }} / {{ donation.condition }}</td>
+            <td class="px-4 py-3 text-sm text-[#0f1419]">{{ donation.quantity }}</td>
             <td class="px-4 py-3 text-sm text-[#536471]">{{ formatDate(donation.donatedAt) }}</td>
             <td class="px-4 py-3">
               <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getStatusColor(donation.status) }}">{{
@@ -103,7 +110,7 @@
           }
           @if (filteredDonations.length === 0) {
           <tr>
-            <td colspan="6" class="px-4 py-12 text-center text-sm text-[#9ca3af]">No donations found.</td>
+            <td colspan="7" class="px-4 py-12 text-center text-sm text-[#9ca3af]">No donations found.</td>
           </tr>
           }
         </tbody>
@@ -114,10 +121,13 @@
 
   <!-- Right Panel -->
   @if (selectedDonation) {
-  <div class="w-[280px] shrink-0 bg-white rounded-2xl border border-[#eef1f4] p-6">
+  <div class="w-[320px] shrink-0 bg-white rounded-2xl border border-[#eef1f4] p-6">
     <div class="text-center mb-5">
       <span class="text-4xl">{{ getStatusIcon(selectedDonation.status) }}</span>
-      <p class="text-3xl font-bold text-[#0f1419] mt-2">{{ selectedDonation.amount }} TND</p>
+      <div class="flex flex-col items-center gap-2 mt-2">
+        <img *ngIf="selectedDonation.imageUrl" [src]="getImageSrc(selectedDonation.imageUrl)!" alt="item" class="w-24 h-24 rounded object-cover border" />
+        <p class="text-xl font-bold text-[#0f1419]">{{ selectedDonation.itemName }}</p>
+      </div>
       <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full {{ getStatusColor(selectedDonation.status) }}">{{
         selectedDonation.status }}</span>
     </div>
@@ -136,8 +146,8 @@
         </p>
       </div>
       <div>
-        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Payment</p>
-        <p class="text-sm font-medium text-[#0f1419]">{{ selectedDonation.paymentMethod || '—' }}</p>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Type</p>
+        <p class="text-sm font-medium text-[#0f1419]">{{ selectedDonation.type }}</p>
       </div>
       <div>
         <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Date</p>
@@ -147,13 +157,21 @@
         <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">ID</p>
         <p class="text-sm font-medium text-[#0f1419]">#{{ selectedDonation.id }}</p>
       </div>
+      <div>
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Quantity</p>
+        <p class="text-sm font-medium text-[#0f1419]">{{ selectedDonation.quantity }}</p>
+      </div>
+      <div class="col-span-2">
+        <p class="text-[10px] font-semibold text-[#9ca3af] uppercase">Condition</p>
+        <p class="text-sm font-medium text-[#0f1419]">{{ selectedDonation.condition }}</p>
+      </div>
     </div>
 
-    @if (selectedDonation.message) {
+    @if (selectedDonation.description) {
     <div class="mb-5">
-      <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Message</h4>
+      <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide mb-2">Description</h4>
       <div class="bg-[#f7f9fa] rounded-xl p-3">
-        <p class="text-xs text-[#536471] leading-relaxed italic">"{{ selectedDonation.message }}"</p>
+        <p class="text-xs text-[#536471] leading-relaxed italic">"{{ selectedDonation.description }}"</p>
       </div>
     </div>
     }
@@ -168,6 +186,40 @@
             d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
         </svg>
       </button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 mt-3">
+      <button (click)="acceptSelected()"
+        class="py-2 text-sm font-semibold text-white bg-green-600 rounded-xl hover:bg-green-700">Accepter</button>
+      <button (click)="rejectSelected()"
+        class="py-2 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700">Rejeter</button>
+    </div>
+
+    <div class="mt-6">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide">Historique de modération</h4>
+        <button (click)="loadReviews()" class="text-xs text-[#38a9f3] hover:underline">Actualiser</button>
+      </div>
+      @if (reviewsLoading) {
+        <p class="text-xs text-[#9ca3af]">Chargement...</p>
+      }
+      @if (!reviewsLoading && reviewError) {
+        <p class="text-xs text-red-500">{{ reviewError }}</p>
+      }
+      @if (!reviewsLoading && !reviewError) {
+        @if (reviews.length === 0) {
+          <p class="text-xs text-[#9ca3af]">Aucune revue.</p>
+        } @else {
+          <ul class="space-y-1">
+            @for (r of reviews; track r.id) {
+              <li class="text-xs text-[#0f1419]">
+                <span class="font-semibold">{{ r.decision }}</span>
+                — {{ r.reason || '—' }} · modérateur #{{ r.moderatorId }} · {{ r.createdAt | date:'short' }}
+              </li>
+            }
+          </ul>
+        }
+      }
     </div>
   </div>
   }
@@ -189,16 +241,13 @@
     <div class="p-6 space-y-5">
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Amount (TND) *</label>
-          <input type="number" [(ngModel)]="formData.amount"
-            class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
-            [class.border-red-400]="formSubmitted && formErrors['amount']"
-            [class.focus:border-red-400]="formSubmitted && formErrors['amount']"
-            [class.border-[#eef1f4]]="!formSubmitted || !formErrors['amount']"
-            [class.focus:border-[#38a9f3]]="!formSubmitted || !formErrors['amount']"
-            placeholder="0.00" />
-          @if (formSubmitted && formErrors['amount']) {
-            <p class="text-[11px] text-red-500 mt-1">{{ formErrors['amount'] }}</p>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Type *</label>
+          <select [(ngModel)]="formData.type" class="w-full px-3 py-2 border rounded-lg text-sm outline-none bg-white">
+            <option value="VETEMENT">VETEMENT</option>
+            <option value="JEU">JEU</option>
+          </select>
+          @if (formSubmitted && formErrors['type']) {
+            <p class="text-[11px] text-red-500 mt-1">{{ formErrors['type'] }}</p>
           }
         </div>
         <div>
@@ -234,38 +283,52 @@
           }
         </div>
         <div>
-          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Payment Method *</label>
-          <input type="text" [(ngModel)]="formData.paymentMethod"
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Nom de l'article *</label>
+          <input type="text" [(ngModel)]="formData.itemName"
             class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
-            [class.border-red-400]="formSubmitted && formErrors['paymentMethod']"
-            [class.focus:border-red-400]="formSubmitted && formErrors['paymentMethod']"
-            [class.border-[#eef1f4]]="!formSubmitted || !formErrors['paymentMethod']"
-            [class.focus:border-[#38a9f3]]="!formSubmitted || !formErrors['paymentMethod']"
-            placeholder="Card, PayPal, Bank..." />
-          @if (formSubmitted && formErrors['paymentMethod']) {
-            <p class="text-[11px] text-red-500 mt-1">{{ formErrors['paymentMethod'] }}</p>
+            [class.border-red-400]="formSubmitted && formErrors['itemName']"
+            [class.focus:border-red-400]="formSubmitted && formErrors['itemName']"
+            [class.border-[#eef1f4]]="!formSubmitted || !formErrors['itemName']"
+            [class.focus:border-[#38a9f3]]="!formSubmitted || !formErrors['itemName']"
+            placeholder="Ex: Manteau enfant" />
+          @if (formSubmitted && formErrors['itemName']) {
+            <p class="text-[11px] text-red-500 mt-1">{{ formErrors['itemName'] }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">Quantité *</label>
+          <input type="number" min="1" [(ngModel)]="formData.quantity"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+            [class.border-red-400]="formSubmitted && formErrors['quantity']"
+            [class.focus:border-red-400]="formSubmitted && formErrors['quantity']"
+            [class.border-[#eef1f4]]="!formSubmitted || !formErrors['quantity']"
+            [class.focus:border-[#38a9f3]]="!formSubmitted || !formErrors['quantity']" />
+          @if (formSubmitted && formErrors['quantity']) {
+            <p class="text-[11px] text-red-500 mt-1">{{ formErrors['quantity'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#536471] mb-1.5">État *</label>
+          <select [(ngModel)]="formData.condition"
+            class="w-full px-3 py-2 border rounded-lg text-sm outline-none bg-white">
+            <option value="NEUF">NEUF</option>
+            <option value="BON_ETAT">BON_ETAT</option>
+            <option value="ACCEPTABLE">ACCEPTABLE</option>
+          </select>
+          @if (formSubmitted && formErrors['condition']) {
+            <p class="text-[11px] text-red-500 mt-1">{{ formErrors['condition'] }}</p>
           }
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Donated At</label>
-        <input type="datetime-local" [(ngModel)]="formData.donatedAt"
-          class="w-full px-3 py-2 border border-[#eef1f4] rounded-lg text-sm outline-none focus:border-[#38a9f3]" />
-      </div>
-
-      <div>
-        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Message</label>
-        <textarea [(ngModel)]="formData.message" rows="3"
+        <label class="block text-xs font-semibold text-[#536471] mb-1.5">Description</label>
+        <textarea [(ngModel)]="formData.description" rows="3"
           class="w-full px-3 py-2 border rounded-lg text-sm outline-none resize-none"
-          [class.border-red-400]="formSubmitted && formErrors['message']"
-          [class.focus:border-red-400]="formSubmitted && formErrors['message']"
-          [class.border-[#eef1f4]]="!formSubmitted || !formErrors['message']"
-          [class.focus:border-[#38a9f3]]="!formSubmitted || !formErrors['message']"
-          placeholder="Optional message from the donor..."></textarea>
-        @if (formSubmitted && formErrors['message']) {
-          <p class="text-[11px] text-red-500 mt-1">{{ formErrors['message'] }}</p>
-        }
+          placeholder="Détails de l'article..."></textarea>
       </div>
 
       <label class="flex items-center gap-2 text-sm text-[#0f1419] cursor-pointer">
@@ -303,8 +366,7 @@
         <p class="text-xs text-[#9ca3af]">This action cannot be undone.</p>
       </div>
     </div>
-    <p class="text-sm text-[#536471] mb-6">Are you sure you want to delete the donation of <strong>{{
-        selectedDonation?.amount }} TND</strong>?</p>
+    <p class="text-sm text-[#536471] mb-6">Are you sure you want to delete the donation <strong>{{ selectedDonation?.itemName }}</strong> (Qty: {{ selectedDonation?.quantity }})?</p>
     <div class="flex gap-3">
       <button (click)="cancelDelete()"
         class="flex-1 py-2.5 text-sm font-semibold text-[#536471] border border-[#eef1f4] rounded-xl hover:bg-[#f7f9fa]">Cancel</button>

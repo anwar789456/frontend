@@ -34,6 +34,7 @@ export class FaceSetupComponent implements OnInit {
   }
 
   continue(): void {
-    this.router.navigate(['/courses']);
+    const role = this.user?.role || 'ETUDIANT';
+    this.router.navigate([this.authService.getRedirectUrlForRole(role)]);
   }
 }

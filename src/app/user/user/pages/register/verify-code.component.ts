@@ -126,7 +126,7 @@ export class VerifyCodeComponent implements OnInit {
         setTimeout(() => {
           // Students go to the face-setup page so they can register their face for fast future logins.
           // Admin/Tutor go straight to their dashboards.
-          const redirectUrl = role === 'ETUDIANT' ? '/face-setup' : this.authService.getRedirectUrlForRole(role);
+          const redirectUrl = (role === 'ETUDIANT' || role === 'TUTEUR') ? '/face-setup' : this.authService.getRedirectUrlForRole(role);
           this.router.navigate([redirectUrl]);
         }, 2000);
       },
@@ -138,7 +138,7 @@ export class VerifyCodeComponent implements OnInit {
         if (message.toLowerCase().includes('already verified')) {
           this.successMessage = 'Already verified! Redirecting...';
           setTimeout(() => {
-            const redirectUrl = this.role === 'ETUDIANT' ? '/face-setup' : this.authService.getRedirectUrlForRole(this.role);
+            const redirectUrl = (this.role === 'ETUDIANT' || this.role === 'TUTEUR') ? '/face-setup' : this.authService.getRedirectUrlForRole(this.role);
             this.router.navigate([redirectUrl]);
           }, 1500);
           return;

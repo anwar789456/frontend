@@ -1,4 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+/* trigger redeploy: forum orange-fire theme */
 @import "tailwindcss";
 @import "./minolingo-animations.css";
 
@@ -25,4 +26,686 @@ html, body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ═══════════════════════════════════════════════════
+   FORUM PAGE — ORANGE EVENTS-STYLE PALETTE
+   Loaded after Tailwind so these win the cascade.
+   Scoped to .forum-container so only the forum is
+   affected; rest of the app stays as-is.
+   ═══════════════════════════════════════════════════ */
+
+.forum-container {
+  background: linear-gradient(135deg, #fff7ed 0%, #fff1e6 50%, #fef3c7 100%) !important;
+}
+
+/* ── HERO BANNER ── Animated multi-stop gradient + glow aura + decorative blobs */
+.forum-container .mino-forum-banner {
+  position: relative !important;
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 25%, #FB923C 50%, #FB7185 80%, #F43F5E 100%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.35) !important;
+  border-bottom-color: #C2410C !important;
+  box-shadow:
+    0 12px 40px rgba(249, 115, 22, 0.35),
+    0 4px 0 #C2410C,
+    inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+  border-radius: 24px !important;
+  padding: 18px 22px !important;
+  overflow: hidden !important;
+  isolation: isolate;
+}
+.forum-container .mino-forum-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 80% 70%, rgba(251, 113, 133, 0.35) 0%, transparent 50%),
+    radial-gradient(circle at 20% 30%, rgba(255, 237, 213, 0.40) 0%, transparent 50%);
+  z-index: 0;
+  pointer-events: none;
+}
+.forum-container .mino-forum-banner::after {
+  content: '';
+  position: absolute;
+  right: -20px; top: -20px;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.20) 0%, transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.forum-container .mino-forum-banner > * { position: relative; z-index: 1; }
+.forum-container .mino-forum-banner h1 {
+  font-size: 1.55rem !important;
+  letter-spacing: -0.02em !important;
+  text-shadow: 0 2px 12px rgba(194, 65, 12, 0.4), 0 1px 0 rgba(0, 0, 0, 0.08) !important;
+}
+.forum-container .mino-forum-banner img[alt="MinoLingo Mascot"] {
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.25)) !important;
+}
+/* Stat tiles inside banner — glassmorphism */
+.forum-container .mino-forum-banner .bg-white\/20,
+.forum-container .mino-forum-banner [class*="bg-white/20"] {
+  background: rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.25s ease, background 0.25s ease !important;
+}
+.forum-container .mino-forum-banner .bg-white\/20:hover,
+.forum-container .mino-forum-banner [class*="bg-white/20"]:hover {
+  background: rgba(255, 255, 255, 0.32) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+}
+
+@keyframes minoBannerShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes minoBannerBlobs {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  50%  { transform: translate(4%, -3%) rotate(8deg); }
+  100% { transform: translate(-3%, 4%) rotate(-6deg); }
+}
+@keyframes minoSparklePulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.25); }
+}
+
+.forum-container .bg-\[\#7C3AED\] { background-color: #F97316 !important; }
+.forum-container .bg-\[\#8b5cf6\] { background-color: #FB923C !important; }
+.forum-container .bg-\[\#6025c4\] { background-color: #C2410C !important; }
+.forum-container .bg-\[\#EDE9FE\] { background-color: #FFEDD5 !important; }
+.forum-container .bg-\[\#ddd6fe\] { background-color: #FED7AA !important; }
+.forum-container .bg-\[\#a78bfa\] { background-color: #FDBA74 !important; }
+
+.forum-container .bg-\[\#EC4899\] { background-color: #FB7185 !important; }
+.forum-container .bg-\[\#FCE7F3\] { background-color: #FFE4E6 !important; }
+.forum-container .bg-\[\#fbcfe8\] { background-color: #FECDD3 !important; }
+.forum-container .bg-\[\#d63384\] { background-color: #E11D48 !important; }
+
+.forum-container .border-\[\#7C3AED\] { border-color: #F97316 !important; }
+.forum-container .border-\[\#6025c4\] { border-color: #C2410C !important; }
+.forum-container .border-\[\#ddd6fe\] { border-color: #FED7AA !important; }
+.forum-container .border-b-\[\#6025c4\] { border-bottom-color: #C2410C !important; }
+.forum-container .border-\[\#EC4899\] { border-color: #FB7185 !important; }
+.forum-container .border-\[\#d63384\] { border-color: #E11D48 !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/20"] { border-color: rgba(249, 115, 22, 0.20) !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/30"] { border-color: rgba(249, 115, 22, 0.30) !important; }
+.forum-container [class*="border-\[\#7C3AED\]\/50"] { border-color: rgba(249, 115, 22, 0.55) !important; }
+.forum-container [class*="border-b-\[\#7C3AED\]\/30"] { border-bottom-color: rgba(249, 115, 22, 0.30) !important; }
+
+.forum-container .text-\[\#7C3AED\] { color: #EA580C !important; }
+.forum-container .text-\[\#6025c4\] { color: #C2410C !important; }
+.forum-container .text-\[\#EC4899\] { color: #FB7185 !important; }
+
+.forum-container .hover\:bg-\[\#ddd6fe\]:hover { background-color: #FED7AA !important; }
+.forum-container .hover\:from-\[\#8b5cf6\]:hover { --tw-gradient-from: #FB923C !important; }
+.forum-container .hover\:to-\[\#a78bfa\]:hover { --tw-gradient-to: #FDBA74 !important; }
+.forum-container .hover\:from-\[\#F43F5E\]:hover { --tw-gradient-from: #F43F5E !important; }
+.forum-container .hover\:to-\[\#EC4899\]:hover { --tw-gradient-to: #FB7185 !important; }
+
+.forum-container .from-\[\#7C3AED\] {
+  --tw-gradient-from: #F97316 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(249, 115, 22, 0)) !important;
+}
+.forum-container .via-\[\#8b5cf6\] {
+  --tw-gradient-stops: var(--tw-gradient-from), #FB923C, var(--tw-gradient-to, rgba(251, 146, 60, 0)) !important;
+}
+.forum-container .to-\[\#EC4899\] { --tw-gradient-to: #FB7185 !important; }
+.forum-container .to-\[\#8b5cf6\] { --tw-gradient-to: #FB923C !important; }
+.forum-container .from-\[\#EC4899\] {
+  --tw-gradient-from: #FB7185 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(251, 113, 133, 0)) !important;
+}
+.forum-container .to-\[\#F43F5E\] { --tw-gradient-to: #F43F5E !important; }
+
+/* Belt-and-suspenders for gradient banners — force the full gradient via background-image */
+.forum-container [class*="from-[#7C3AED]"][class*="to-[#EC4899]"],
+.forum-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"] {
+  background-image: linear-gradient(to right, #F97316, #FB923C, #FB7185) !important;
+}
+.forum-container [class*="from-[#EC4899]"][class*="to-[#F43F5E]"] {
+  background-image: linear-gradient(to right, #FB7185, #F43F5E) !important;
+}
+
+.forum-container button:focus-visible,
+.forum-container input:focus-visible,
+.forum-container textarea:focus-visible {
+  outline-color: #F97316 !important;
+}
+
+.forum-container .avatar-ring {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+}
+
+.forum-container ::-webkit-scrollbar-thumb,
+.forum-container *::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #F97316, #FB7185) !important;
+  background-clip: padding-box !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   FIRE LAYER — make the forum feel alive
+   ═══════════════════════════════════════════════════ */
+
+/* Static aura — no animation (saves GPU) */
+.forum-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(700px 500px at 15% 20%, rgba(251, 146, 60, 0.15) 0%, transparent 60%),
+    radial-gradient(600px 500px at 85% 80%, rgba(251, 113, 133, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Cards — solid ivory (no backdrop-filter — that was the main lag) */
+.forum-container .forum-card,
+.forum-container .sidebar-section,
+.forum-container .dm-card {
+  background: #FFFBF5 !important;
+  border: 1.5px solid rgba(254, 215, 170, 0.65) !important;
+  box-shadow:
+    0 2px 0 rgba(254, 215, 170, 0.5),
+    0 4px 14px rgba(249, 115, 22, 0.06) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* Notification panel — proper dropdown that opens leftward from the bell.
+   The right sidebar column is only 256px wide, so a 320px panel anchored
+   right-0 gets clipped. We override position context to be fixed to the
+   viewport so it can extend beyond the sidebar. */
+.forum-container .notif-panel {
+  position: fixed !important;
+  top: 64px !important;
+  right: 24px !important;
+  left: auto !important;
+  width: 360px !important;
+  max-width: calc(100vw - 32px) !important;
+  max-height: 70vh !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  background: #FFFBF5 !important;
+  border: 1.5px solid rgba(254, 215, 170, 0.7) !important;
+  box-shadow:
+    0 18px 50px rgba(249, 115, 22, 0.22),
+    0 4px 0 rgba(254, 215, 170, 0.5) !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.forum-container .notif-panel > * { flex-shrink: 0; }
+.forum-container .notif-panel > div:last-child { flex: 1 1 auto; min-height: 0; }
+
+/* Recolor the notif panel header gradient (was purple-pink) */
+.forum-container .notif-panel .bg-gradient-to-r.from-\[\#7C3AED\].via-\[\#8b5cf6\].to-\[\#EC4899\],
+.forum-container .notif-panel [class*="from-[#7C3AED]"][class*="to-[#EC4899]"] {
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 35%, #FB7185 100%) !important;
+}
+
+/* Notif items recolor — purple → orange for unread states */
+.forum-container .notif-panel .notif-item.unread {
+  border-left-color: #F97316 !important;
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.07) 0%, transparent 100%) !important;
+}
+.forum-container .notif-panel .notif-item:hover {
+  background: linear-gradient(90deg, rgba(251, 113, 133, 0.08) 0%, transparent 100%) !important;
+}
+.forum-container .forum-card:hover,
+.forum-container .sidebar-section:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(249, 115, 22, 0.45) !important;
+  box-shadow:
+    0 4px 0 rgba(251, 146, 60, 0.35),
+    0 12px 32px rgba(249, 115, 22, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Post card — static coral stripe on hover (no infinite animation) */
+.forum-container .post-card { position: relative; overflow: hidden; }
+.forum-container .post-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #F97316, #FB7185);
+  border-radius: 0 6px 6px 0;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.forum-container .post-card:hover::before { opacity: 1; }
+
+/* btn-primary (POST button, View Profile, etc.) — glowing coral CTA */
+.forum-container .btn-primary {
+  background: linear-gradient(135deg, #F97316 0%, #FB7185 100%) !important;
+  background-size: 200% 200% !important;
+  color: #fff !important;
+  border: none !important;
+  border-bottom: 3px solid #C2410C !important;
+  border-radius: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  box-shadow:
+    0 6px 20px rgba(249, 115, 22, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transition: all 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
+  position: relative;
+  overflow: hidden;
+}
+.forum-container .btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transition: left 0.6s ease;
+}
+.forum-container .btn-primary:hover {
+  background-position: 100% 100% !important;
+  transform: translateY(-1px) !important;
+  border-bottom-width: 4px !important;
+  box-shadow:
+    0 10px 28px rgba(249, 115, 22, 0.55),
+    0 0 0 4px rgba(249, 115, 22, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.forum-container .btn-primary:hover::after { left: 130%; }
+.forum-container .btn-primary:active {
+  transform: translateY(2px) !important;
+  border-bottom-width: 1px !important;
+}
+
+/* "Saved" tab — keep orange family but accented */
+.forum-container button.bg-\[\#EDE9FE\] {
+  background: linear-gradient(135deg, #FFEDD5, #FED7AA) !important;
+  border-color: #F97316 !important;
+  color: #C2410C !important;
+}
+
+/* "Favorites" tab — amber (kept) but with warm gradient */
+.forum-container button.bg-\[\#FEF3C7\] {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A) !important;
+}
+
+/* Sidebar Level Card (the "Lv.4 / XP / Streak" row) — coral divider strip */
+.forum-container .sidebar-section .text-\[\#7C3AED\] {
+  color: transparent !important;
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  font-weight: 900 !important;
+}
+
+/* Avatar ring — static gradient (no spin) */
+.forum-container .avatar-ring {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+}
+
+/* Friends & Chat button — static coral gradient */
+.forum-container a[href="/user/friends"] {
+  background: linear-gradient(135deg, #FB7185 0%, #F43F5E 50%, #F97316 100%) !important;
+  border-bottom-color: #E11D48 !important;
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4) !important;
+}
+
+/* "People You May Know" header — static fire gradient */
+.forum-container .from-\[\#7C3AED\].via-\[\#8b5cf6\].to-\[\#EC4899\],
+.forum-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"][class*="to-[#EC4899]"] {
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 30%, #FB923C 60%, #FB7185 100%) !important;
+}
+
+/* Pretty progress bars (XP, etc.) — coral fill */
+.forum-container [style*="width"][class*="bg-\\[\\#7C3AED\\]"],
+.forum-container .bg-gradient-to-r.from-\[\#7C3AED\] {
+  background: linear-gradient(90deg, #F97316, #FB923C, #FB7185) !important;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.5) !important;
+}
+
+/* Notification badge — coral pulse */
+@keyframes minoNotifPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.6); }
+  50%      { box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
+}
+.forum-container .notif-badge {
+  animation: minoNotifPulse 1.6s ease-out infinite !important;
+}
+
+/* Search input — warm focus glow */
+.forum-container input[type="text"]:focus,
+.forum-container input[type="search"]:focus,
+.forum-container .search-input:focus {
+  border-color: #F97316 !important;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.18), 0 2px 0 #F97316 !important;
+}
+
+/* "ADD" buttons in suggestions list — fire mini-pill */
+.forum-container .sidebar-section button[class*="bg-gradient-to-r"][class*="from-[#7C3AED]"] {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
+  box-shadow: 0 3px 10px rgba(249, 115, 22, 0.4) !important;
+}
+
+/* Scrollbar — bigger, glowy */
+.forum-container::-webkit-scrollbar,
+.forum-container *::-webkit-scrollbar { width: 10px !important; height: 10px !important; }
+.forum-container ::-webkit-scrollbar-track,
+.forum-container *::-webkit-scrollbar-track { background: rgba(254, 215, 170, 0.15) !important; }
+
+/* Subtle page float-in for the whole feed */
+@keyframes minoFeedFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.forum-container .mino-forum-banner,
+.forum-container .post-card { animation: minoFeedFadeIn 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+/* Tiny flame emoji corner accent on banner (CSS-only) */
+.forum-container .mino-forum-banner h1::after {
+  content: ' 🔥';
+  display: inline-block;
+  animation: minoFlameDance 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+@keyframes minoFlameDance {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25%      { transform: translateY(-2px) rotate(-6deg) scale(1.08); }
+  50%      { transform: translateY(0) rotate(0deg) scale(1.04); }
+  75%      { transform: translateY(-1px) rotate(6deg) scale(1.06); }
+}
+
+/* ═══════════════════════════════════════════════════
+   PREMIUM LAYER — aurora, heat-haze, comet trails,
+   neon glass, chromatic reflection, animated wordmark
+   ═══════════════════════════════════════════════════ */
+
+/* ── Aurora top glow across the whole page ── */
+/* (aurora ::after removed — was always animating, lag) */
+.forum-container .mino-forum-banner { margin-bottom: 20px !important; }
+.forum-container .mino-forum-banner + * { position: relative; }
+/* (wordmark shimmer removed — was animating text-mask every frame, very expensive) */
+.forum-container .mino-forum-banner h1 {
+  color: #fff !important;
+  text-shadow: 0 2px 12px rgba(194, 65, 12, 0.5), 0 1px 0 rgba(0, 0, 0, 0.12) !important;
+}
+@keyframes minoWordmarkShimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
+}
+
+/* ── Floating glass particles inside banner ── */
+.forum-container .mino-forum-banner .flex-1::before,
+.forum-container .mino-forum-banner .flex-1::after {
+  content: '';
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+.forum-container .mino-forum-banner .flex-1::before { top: 8px; right: 20%; }
+.forum-container .mino-forum-banner .flex-1::after { bottom: 10px; right: 35%; width: 5px; height: 5px; }
+
+/* ── Neon-glass tabs (Saved / Favorites etc.) ── */
+.forum-container .sidebar-section button {
+  position: relative;
+  overflow: hidden;
+}
+.forum-container .sidebar-section button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.18), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.forum-container .sidebar-section button:hover::before {
+  transform: translateX(100%);
+}
+
+/* ── Comet trail on action buttons (like/comment/share) ── */
+.forum-container .action-btn {
+  position: relative;
+  overflow: visible !important;
+}
+.forum-container .action-btn::before {
+  content: '';
+  position: absolute;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.55), transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: width 0.45s ease, height 0.45s ease, opacity 0.5s ease;
+  opacity: 0;
+  z-index: -1;
+}
+.forum-container .action-btn:hover::before {
+  width: 70px; height: 70px;
+  opacity: 1;
+}
+.forum-container .action-btn:hover {
+  transform: translateY(-1px) scale(1.06) !important;
+}
+
+/* ── Rim-lit avatars in the suggestions list (and post cards) ── */
+.forum-container .sidebar-section img[alt][src*="avataaars"],
+.forum-container .sidebar-section .rounded-xl img,
+.forum-container .post-card .rounded-full img,
+.forum-container .post-card .rounded-xl img {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.85),
+    0 4px 12px rgba(249, 115, 22, 0.35),
+    inset 0 0 0 1px rgba(249, 115, 22, 0.4) !important;
+  transition: transform 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97),
+              box-shadow 0.3s ease !important;
+}
+.forum-container .sidebar-section img[alt][src*="avataaars"]:hover,
+.forum-container .sidebar-section .rounded-xl img:hover,
+.forum-container .post-card .rounded-full img:hover,
+.forum-container .post-card .rounded-xl img:hover {
+  transform: scale(1.1) rotate(-3deg) !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 1),
+    0 8px 24px rgba(249, 115, 22, 0.55),
+    0 0 0 4px rgba(249, 115, 22, 0.25) !important;
+}
+
+/* ── 3D micro-tilt on post cards ── */
+.forum-container .post-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+.forum-container .post-card:hover {
+  transform: translateY(-3px) rotateX(0.6deg) !important;
+}
+
+/* ── Quick-Access label gets a chip look ── */
+.forum-container .sidebar-section h3 {
+  background: linear-gradient(90deg, #F97316, #FB7185) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  letter-spacing: 0.2em !important;
+}
+
+/* (CTA pulse halo + confetti sweep removed — animating box-shadow on a blur is expensive) */
+.forum-container .btn-primary { position: relative; }
+
+/* (Sidebar breathing floats removed — they were running constantly on multiple cards) */
+
+/* (Friends & Chat crown sweep removed — was animating left every frame) */
+.forum-container a[href="/user/friends"] { position: relative; overflow: hidden; }
+
+/* ── Selection color matches the theme ── */
+.forum-container ::selection {
+  background: rgba(249, 115, 22, 0.25);
+  color: #7c2d12;
+}
+
+/* ── Subtle text gradient on post author names (h-cards) ── */
+.forum-container .post-card p.font-extrabold,
+.forum-container .post-card .text-\[\#1E293B\].font-extrabold {
+  background: linear-gradient(120deg, #1E293B 0%, #C2410C 70%, #F97316 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* ── Spotlight on hover for sidebar cards ── */
+.forum-container .sidebar-section {
+  position: relative;
+}
+.forum-container .sidebar-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%),
+              rgba(249, 115, 22, 0.12), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.forum-container .sidebar-section:hover::after { opacity: 1; }
+
+/* ── Reduce motion preference — respect users who ask ── */
+@media (prefers-reduced-motion: reduce) {
+  .forum-container *,
+  .forum-container *::before,
+  .forum-container *::after,
+  .friends-container *,
+  .friends-container *::before,
+  .friends-container *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   FRIENDS PAGE — orange/coral theme matched to forum
+   Scoped to .friends-container so only friends are
+   affected. Loaded after Tailwind so these win.
+   ═══════════════════════════════════════════════════ */
+
+/* Page background — warm cream like the forum */
+.friends-container {
+  background: linear-gradient(135deg, #fff7ed 0%, #fff1e6 50%, #fef3c7 100%) !important;
+}
+
+/* Sidebar column (the white left rail) — soft ivory */
+.friends-container .bg-white { background-color: #FFFBF5 !important; }
+.friends-container .border-\[\#E5E5E5\] { border-color: rgba(254, 215, 170, 0.65) !important; }
+.friends-container .bg-\[\#F7F7F7\] { background-color: #FFF7ED !important; }
+
+/* ── Mascot banner — orange gradient (matches forum hero) ── */
+.friends-container .bg-\[\#7C3AED\].rounded-\[20px\],
+.friends-container [class*="bg-[#7C3AED]"][class*="rounded-[20px]"] {
+  background: linear-gradient(120deg, #EA580C 0%, #F97316 30%, #FB923C 55%, #FB7185 100%) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow:
+    0 8px 28px rgba(249, 115, 22, 0.32),
+    0 4px 0 #C2410C,
+    inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+.friends-container .bg-\[\#7C3AED\].rounded-\[20px\] .bg-\[\#8b5cf6\],
+.friends-container .bg-\[\#7C3AED\].rounded-\[20px\] .bg-\[\#6D28D9\] {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* Primary purple → coral orange */
+.friends-container .bg-\[\#7C3AED\] { background-color: #F97316 !important; }
+.friends-container .bg-\[\#8b5cf6\] { background-color: #FB923C !important; }
+.friends-container .bg-\[\#5B21B6\] { background-color: #C2410C !important; }
+.friends-container .bg-\[\#6D28D9\] { background-color: #EA580C !important; }
+.friends-container .bg-\[\#CE82FF\] { background-color: #FB7185 !important; }
+.friends-container .bg-\[\#F3EEFF\] { background-color: #FFEDD5 !important; }
+
+/* Borders */
+.friends-container .border-\[\#7C3AED\] { border-color: #F97316 !important; }
+.friends-container .border-\[\#5B21B6\] { border-color: #C2410C !important; }
+.friends-container .border-\[\#6D28D9\] { border-color: #EA580C !important; }
+.friends-container .border-\[\#8b5cf6\] { border-color: #FB923C !important; }
+.friends-container .border-\[\#CE82FF\] { border-color: #FB7185 !important; }
+.friends-container .focus\:border-\[\#7C3AED\]:focus { border-color: #F97316 !important; }
+
+/* Text */
+.friends-container .text-\[\#7C3AED\] { color: #EA580C !important; }
+.friends-container .text-\[\#5B21B6\] { color: #C2410C !important; }
+.friends-container .text-\[\#6D28D9\] { color: #EA580C !important; }
+.friends-container .text-\[\#8b5cf6\] { color: #FB923C !important; }
+.friends-container .hover\:text-\[\#7C3AED\]:hover { color: #EA580C !important; }
+
+/* Bg with opacity classes used as semi-transparent purple tints */
+.friends-container .bg-\[\#7C3AED\]\/10 { background-color: rgba(249, 115, 22, 0.12) !important; }
+.friends-container .bg-\[\#7C3AED\]\/20 { background-color: rgba(249, 115, 22, 0.22) !important; }
+.friends-container .border-\[\#7C3AED\]\/20 { border-color: rgba(249, 115, 22, 0.25) !important; }
+.friends-container .border-\[\#7C3AED\]\/30 { border-color: rgba(249, 115, 22, 0.32) !important; }
+.friends-container .text-\[\#7C3AED\]\/30 { color: rgba(249, 115, 22, 0.35) !important; }
+
+/* Gradients in friends template */
+.friends-container [class*="from-[#7C3AED]"] { --tw-gradient-from: #F97316 !important; }
+.friends-container [class*="via-[#8b5cf6]"]  { --tw-gradient-stops: var(--tw-gradient-from), #FB923C, var(--tw-gradient-to, rgba(251, 146, 60, 0)) !important; }
+.friends-container [class*="to-[#CE82FF]"]   { --tw-gradient-to: #FB7185 !important; }
+.friends-container [class*="from-[#7C3AED]"][class*="to-[#CE82FF]"],
+.friends-container [class*="from-[#7C3AED]"][class*="via-[#8b5cf6]"] {
+  background-image: linear-gradient(to right, #F97316, #FB923C, #FB7185) !important;
+}
+
+/* Focus rings */
+.friends-container button:focus-visible,
+.friends-container input:focus-visible,
+.friends-container textarea:focus-visible {
+  outline-color: #F97316 !important;
+}
+
+/* Tab pills active state — orange chunky like forum POST */
+.friends-container button.bg-\[\#7C3AED\].text-white {
+  background: linear-gradient(135deg, #F97316 0%, #FB7185 100%) !important;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Online indicator (Duolingo green) — keep, but soften the ring */
+.friends-container .bg-\[\#58CC02\] { box-shadow: 0 0 0 2px #FFFBF5 !important; }
+
+/* Friend rows — warm hover */
+.friends-container .hover\:bg-\[\#F3EEFF\]:hover { background-color: #FFEDD5 !important; }
+.friends-container .hover\:bg-\[\#F7F7F7\]:hover { background-color: #FFF7ED !important; }
+
+/* Avatars — soft orange rim like the forum */
+.friends-container img[src*="avataaars"],
+.friends-container .rounded-full > img,
+.friends-container .rounded-2xl > img,
+.friends-container .rounded-xl > img {
+  box-shadow:
+    0 0 0 2px rgba(255, 251, 245, 0.9),
+    0 2px 8px rgba(249, 115, 22, 0.18) !important;
+}
+
+/* Scrollbar tinted */
+.friends-container ::-webkit-scrollbar { width: 10px; height: 10px; }
+.friends-container ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #F97316, #FB7185) !important;
+  border-radius: 10px;
+  background-clip: padding-box;
+}
+.friends-container ::-webkit-scrollbar-track { background: rgba(254, 215, 170, 0.15); }
+
+/* Selection */
+.friends-container ::selection { background: rgba(249, 115, 22, 0.25); color: #7c2d12; }
+
+/* Toast border colors for friends-page toasts (uses fixed positioning, outside container scope) */
+.friends-container ~ * .border-\[\#7C3AED\] { border-color: #F97316 !important; }
+
+/* Send button / CTAs — coral gradient like forum POST */
+.friends-container button.bg-\[\#7C3AED\]:not(.text-\[\#AFAFAF\]) {
+  background: linear-gradient(135deg, #F97316, #FB7185) !important;
 }

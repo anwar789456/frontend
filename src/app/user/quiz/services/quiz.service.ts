@@ -125,6 +125,10 @@ export class QuizService {
     return this.http.get<QuizAttempt>(`${this.apiUrl}/quiz-attempts/${attemptId}`);
   }
 
+  sendQuizResults(attemptId: number, userEmail: string, userName: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/quiz-attempts/${attemptId}/send-results`, { userEmail, userName });
+  }
+
   // ── Story Quizzes ──
 
   getAllStoryQuizzes(): Observable<StoryQuiz[]> {
