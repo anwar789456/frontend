@@ -407,3 +407,327 @@ html, body {
   50%      { transform: translateY(0) rotate(0deg) scale(1.04); }
   75%      { transform: translateY(-1px) rotate(6deg) scale(1.06); }
 }
+
+/* ═══════════════════════════════════════════════════
+   PREMIUM LAYER — aurora, heat-haze, comet trails,
+   neon glass, chromatic reflection, animated wordmark
+   ═══════════════════════════════════════════════════ */
+
+/* ── Aurora top glow across the whole page ── */
+.forum-container::after {
+  content: '';
+  position: fixed;
+  left: -10%;
+  right: -10%;
+  top: -120px;
+  height: 360px;
+  background:
+    radial-gradient(ellipse at 20% 100%, rgba(249, 115, 22, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 55% 100%, rgba(251, 113, 133, 0.30) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 100%, rgba(253, 186, 116, 0.30) 0%, transparent 55%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+  animation: minoAurora 16s ease-in-out infinite alternate;
+  mix-blend-mode: multiply;
+}
+@keyframes minoAurora {
+  0%   { transform: translateX(-2%) scaleX(1.0); opacity: 0.85; }
+  50%  { transform: translateX(2%) scaleX(1.06); opacity: 1; }
+  100% { transform: translateX(-1%) scaleX(0.98); opacity: 0.9; }
+}
+
+/* ── Heat-haze shimmer over the banner ── */
+.forum-container .mino-forum-banner {
+  /* extend existing — add a moving caustics highlight */
+  background-image:
+    linear-gradient(120deg, #EA580C 0%, #F97316 25%, #FB923C 50%, #FB7185 80%, #F43F5E 100%),
+    repeating-linear-gradient(115deg,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 2px,
+      transparent 2px,
+      transparent 14px) !important;
+  background-blend-mode: overlay, normal !important;
+}
+.forum-container .mino-forum-banner::before {
+  /* keep blob layer but also add caustic ribbon */
+  background:
+    radial-gradient(circle at 18% 30%, rgba(255, 237, 213, 0.55) 0%, transparent 35%),
+    radial-gradient(circle at 82% 70%, rgba(251, 113, 133, 0.45) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(254, 215, 170, 0.35) 0%, transparent 50%),
+    linear-gradient(75deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 220% 100%;
+  animation: minoBannerBlobs 14s ease-in-out infinite alternate,
+             minoHaze 6s linear infinite;
+}
+@keyframes minoHaze {
+  0%   { background-position: 0 0, 0 0, 0 0, -220% 0; }
+  100% { background-position: 0 0, 0 0, 0 0, 220% 0; }
+}
+
+/* ── Chromatic floor reflection under the banner ── */
+.forum-container .mino-forum-banner {
+  margin-bottom: 20px !important;
+}
+.forum-container .mino-forum-banner + * {
+  position: relative;
+}
+.forum-container .mino-forum-banner::after {
+  /* keep sparkle pulse from before, plus add floor reflection */
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
+  border-radius: 50%;
+  animation: minoSparklePulse 3.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    /* faint glow drop into the area below */
+    0 200px 80px -120px rgba(249, 115, 22, 0.18);
+}
+
+/* ── Animated wordmark — gradient shimmer text on banner title ── */
+.forum-container .mino-forum-banner h1 {
+  background: linear-gradient(90deg, #fff 0%, #FFEDD5 25%, #fff 50%, #FFE4E6 75%, #fff 100%) !important;
+  background-size: 220% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: minoWordmarkShimmer 5s linear infinite !important;
+  text-shadow: none !important;
+  filter: drop-shadow(0 2px 8px rgba(194, 65, 12, 0.5)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.15)) !important;
+}
+@keyframes minoWordmarkShimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
+}
+
+/* ── Floating glass particles inside banner ── */
+.forum-container .mino-forum-banner .flex-1::before,
+.forum-container .mino-forum-banner .flex-1::after {
+  content: '';
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+.forum-container .mino-forum-banner .flex-1::before {
+  top: 8px; right: 20%;
+  animation: minoParticleA 7s ease-in-out infinite;
+}
+.forum-container .mino-forum-banner .flex-1::after {
+  bottom: 10px; right: 35%;
+  width: 5px; height: 5px;
+  animation: minoParticleB 9s ease-in-out infinite 1s;
+}
+@keyframes minoParticleA {
+  0%, 100% { transform: translate(0, 0); opacity: 0.6; }
+  50%      { transform: translate(-30px, -10px); opacity: 1; }
+}
+@keyframes minoParticleB {
+  0%, 100% { transform: translate(0, 0); opacity: 0.5; }
+  50%      { transform: translate(20px, -14px); opacity: 0.9; }
+}
+
+/* ── Neon-glass tabs (Saved / Favorites etc.) ── */
+.forum-container .sidebar-section button {
+  position: relative;
+  overflow: hidden;
+}
+.forum-container .sidebar-section button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.18), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.forum-container .sidebar-section button:hover::before {
+  transform: translateX(100%);
+}
+
+/* ── Comet trail on action buttons (like/comment/share) ── */
+.forum-container .action-btn {
+  position: relative;
+  overflow: visible !important;
+}
+.forum-container .action-btn::before {
+  content: '';
+  position: absolute;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.55), transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: width 0.45s ease, height 0.45s ease, opacity 0.5s ease;
+  opacity: 0;
+  z-index: -1;
+}
+.forum-container .action-btn:hover::before {
+  width: 70px; height: 70px;
+  opacity: 1;
+}
+.forum-container .action-btn:hover {
+  transform: translateY(-1px) scale(1.06) !important;
+}
+
+/* ── Rim-lit avatars in the suggestions list (and post cards) ── */
+.forum-container .sidebar-section img[alt][src*="avataaars"],
+.forum-container .sidebar-section .rounded-xl img,
+.forum-container .post-card .rounded-full img,
+.forum-container .post-card .rounded-xl img {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.85),
+    0 4px 12px rgba(249, 115, 22, 0.35),
+    inset 0 0 0 1px rgba(249, 115, 22, 0.4) !important;
+  transition: transform 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97),
+              box-shadow 0.3s ease !important;
+}
+.forum-container .sidebar-section img[alt][src*="avataaars"]:hover,
+.forum-container .sidebar-section .rounded-xl img:hover,
+.forum-container .post-card .rounded-full img:hover,
+.forum-container .post-card .rounded-xl img:hover {
+  transform: scale(1.1) rotate(-3deg) !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 1),
+    0 8px 24px rgba(249, 115, 22, 0.55),
+    0 0 0 4px rgba(249, 115, 22, 0.25) !important;
+}
+
+/* ── 3D micro-tilt on post cards ── */
+.forum-container .post-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+.forum-container .post-card:hover {
+  transform: translateY(-3px) rotateX(0.6deg) !important;
+}
+
+/* ── Quick-Access label gets a chip look ── */
+.forum-container .sidebar-section h3 {
+  background: linear-gradient(90deg, #F97316, #FB7185) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  letter-spacing: 0.2em !important;
+}
+
+/* ── Pulse halo on POST button ── */
+.forum-container .btn-primary {
+  position: relative;
+}
+.forum-container .btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #F97316, #FB7185);
+  filter: blur(14px);
+  opacity: 0.35;
+  z-index: -1;
+  animation: minoCtaPulse 2.6s ease-in-out infinite;
+}
+@keyframes minoCtaPulse {
+  0%, 100% { opacity: 0.30; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(1.04); }
+}
+
+/* ── Confetti spark sweep when POST is hovered ── */
+.forum-container .btn-primary:hover::after {
+  left: 130%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  filter: drop-shadow(0 0 8px #fff);
+}
+
+/* ── Right rail / sidebar widgets: soft floating shadow base ── */
+.forum-container .sidebar-section {
+  will-change: transform;
+}
+.forum-container .sidebar-section:nth-child(odd) {
+  animation: minoFloatA 9s ease-in-out infinite;
+}
+.forum-container .sidebar-section:nth-child(even) {
+  animation: minoFloatB 11s ease-in-out infinite;
+}
+@keyframes minoFloatA {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+@keyframes minoFloatB {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(2px); }
+}
+
+/* ── "FRIENDS & CHAT" coral button — fire crown shimmer ── */
+.forum-container a[href="/user/friends"] {
+  position: relative;
+  overflow: hidden;
+}
+.forum-container a[href="/user/friends"]::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 50%; height: 200%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: rotate(20deg);
+  animation: minoCrownSweep 4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes minoCrownSweep {
+  0%   { left: -60%; }
+  50%  { left: 120%; }
+  100% { left: 120%; }
+}
+
+/* ── Selection color matches the theme ── */
+.forum-container ::selection {
+  background: rgba(249, 115, 22, 0.25);
+  color: #7c2d12;
+}
+
+/* ── Subtle text gradient on post author names (h-cards) ── */
+.forum-container .post-card p.font-extrabold,
+.forum-container .post-card .text-\[\#1E293B\].font-extrabold {
+  background: linear-gradient(120deg, #1E293B 0%, #C2410C 70%, #F97316 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* ── Spotlight on hover for sidebar cards ── */
+.forum-container .sidebar-section {
+  position: relative;
+}
+.forum-container .sidebar-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%),
+              rgba(249, 115, 22, 0.12), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.forum-container .sidebar-section:hover::after { opacity: 1; }
+
+/* ── Reduce motion preference — respect users who ask ── */
+@media (prefers-reduced-motion: reduce) {
+  .forum-container *,
+  .forum-container *::before,
+  .forum-container *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+}
