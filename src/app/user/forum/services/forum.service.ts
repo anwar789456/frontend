@@ -373,8 +373,8 @@ export class ForumService {
 
   // ── Content Moderation ──
 
-  moderateContent(content: string): Observable<{ isSafe: boolean; reason: string }> {
-    return this.http.post<{ isSafe: boolean; reason: string }>(`${this.apiUrl}/moderate-content`, { content });
+  moderateContent(content: string): Observable<{ isSafe: boolean; reason: string; aiAvailable?: boolean }> {
+    return this.http.post<{ isSafe: boolean; reason: string; aiAvailable?: boolean }>(`${this.apiUrl}/moderate-content`, { content });
   }
 
   getModerationWarningCount(userId: number): number {

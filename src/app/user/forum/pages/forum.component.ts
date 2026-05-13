@@ -523,10 +523,14 @@ export class ForumComponent implements OnInit, OnDestroy {
           this.cdRef.detectChanges();
           return;
         }
+        if (modResult.aiAvailable === false) {
+          this.addNotification('AI moderation unavailable — post not checked.', 'warning');
+        }
         this.proceedWithCreatePost();
       },
       error: () => {
         this.isModeratingPost = false;
+        this.addNotification('AI moderation service is offline — post not checked.', 'warning');
         this.proceedWithCreatePost();
       }
     });
@@ -917,9 +921,13 @@ export class ForumComponent implements OnInit, OnDestroy {
           this.cdRef.detectChanges();
           return;
         }
+        if (modResult.aiAvailable === false) {
+          this.addNotification('AI moderation unavailable — reply not checked.', 'warning');
+        }
         this.proceedWithSubmitReply(parentPostId);
       },
       error: () => {
+        this.addNotification('AI moderation service is offline — reply not checked.', 'warning');
         this.proceedWithSubmitReply(parentPostId);
       }
     });

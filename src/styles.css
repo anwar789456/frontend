@@ -215,23 +215,45 @@ html, body {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
 
-/* Notification panel — force proper dropdown sizing so it cannot push the sidebar */
+/* Notification panel — proper dropdown that opens leftward from the bell.
+   The right sidebar column is only 256px wide, so a 320px panel anchored
+   right-0 gets clipped. We override position context to be fixed to the
+   viewport so it can extend beyond the sidebar. */
 .forum-container .notif-panel {
-  position: absolute !important;
-  right: 0 !important;
-  top: 44px !important;
-  width: 320px !important;
-  max-width: 90vw !important;
+  position: fixed !important;
+  top: 64px !important;
+  right: 24px !important;
+  left: auto !important;
+  width: 360px !important;
+  max-width: calc(100vw - 32px) !important;
   max-height: 70vh !important;
   overflow: hidden !important;
   border-radius: 18px !important;
-  box-shadow: 0 18px 50px rgba(249, 115, 22, 0.18), 0 4px 0 rgba(254, 215, 170, 0.5) !important;
-  z-index: 100 !important;
+  background: #FFFBF5 !important;
+  border: 1.5px solid rgba(254, 215, 170, 0.7) !important;
+  box-shadow:
+    0 18px 50px rgba(249, 115, 22, 0.22),
+    0 4px 0 rgba(254, 215, 170, 0.5) !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
-/* Recolor the notif panel header gradient (it was using purple-pink) */
+.forum-container .notif-panel > * { flex-shrink: 0; }
+.forum-container .notif-panel > div:last-child { flex: 1 1 auto; min-height: 0; }
+
+/* Recolor the notif panel header gradient (was purple-pink) */
 .forum-container .notif-panel .bg-gradient-to-r.from-\[\#7C3AED\].via-\[\#8b5cf6\].to-\[\#EC4899\],
 .forum-container .notif-panel [class*="from-[#7C3AED]"][class*="to-[#EC4899]"] {
   background: linear-gradient(120deg, #EA580C 0%, #F97316 35%, #FB7185 100%) !important;
+}
+
+/* Notif items recolor — purple → orange for unread states */
+.forum-container .notif-panel .notif-item.unread {
+  border-left-color: #F97316 !important;
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.07) 0%, transparent 100%) !important;
+}
+.forum-container .notif-panel .notif-item:hover {
+  background: linear-gradient(90deg, rgba(251, 113, 133, 0.08) 0%, transparent 100%) !important;
 }
 .forum-container .forum-card:hover,
 .forum-container .sidebar-section:hover {
