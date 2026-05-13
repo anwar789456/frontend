@@ -156,11 +156,11 @@ export class FriendsComponent implements OnInit, OnDestroy {
     // Poll typing indicator every 1.5s
     this.typingPollInterval = setInterval(() => this.pollTypingStatus(), 1500);
 
-    // Poll friends list & requests every 5s
+    // Poll friends list & requests every 2s — diff-merged so no flicker
     this.friendsListPollInterval = setInterval(() => {
       this.loadFriends();
       this.loadPendingRequests();
-    }, 5000);
+    }, 2000);
   }
 
   ngOnDestroy(): void {
@@ -197,10 +197,37 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.friendsService.getFriends(this.user.id).subscribe({
       error: (err) => console.error('Load friends error:', err),
       next: (friendships) => {
-        this.friends = friendships.map(f => this.mapFriendshipToFriend(f));
-        this.cdr.detectChanges();
+        // Merge in place: keep existing Friend objects (preserves lastMessage,
+        // online, unreadCount between polls) and only mutate fields that
+        // actually changed. Add new friends, remove dropped ones.
+        const incoming = friendships.map(f => this.mapFriendshipToFriend(f));
+        const byId = new Map(this.friends.map(f => [f.id, f]));
+        const merged: Friend[] = [];
+        let changed = this.friends.length !== incoming.length;
 
-        // Load statuses + last messages + unread counts all in parallel
+        for (const next of incoming) {
+          const existing = byId.get(next.id);
+          if (existing) {
+            // Mutate only differing identity fields. Preserve runtime state.
+            if (existing.name !== next.name) { existing.name = next.name; changed = true; }
+            if (existing.avatar !== next.avatar) { existing.avatar = next.avatar; changed = true; }
+            if (existing.friendshipId !== next.friendshipId) { existing.friendshipId = next.friendshipId; changed = true; }
+            merged.push(existing);
+            byId.delete(next.id);
+          } else {
+            merged.push(next);
+            changed = true;
+          }
+        }
+        // byId now contains friends that disappeared
+        if (byId.size > 0) changed = true;
+
+        if (changed) {
+          this.friends = merged;
+          this.cdr.detectChanges();
+        }
+
+        // Refresh statuses + last messages (these only update fields, no array replace)
         if (this.friends.length > 0) {
           this.pollFriendStatuses();
           this.loadAllLastMessages();
@@ -232,12 +259,16 @@ export class FriendsComponent implements OnInit, OnDestroy {
         unread: this.friendsService.getUnreadMessageCount(friend.id, this.user!.id).pipe(catchError(() => of({ count: 0 })))
       }).subscribe({
         next: ({ lastMsg, unread }) => {
+          let changed = false;
           if (lastMsg) {
-            friend.lastMessage = this.getMessagePreview(lastMsg);
-            friend.lastMessageTime = this.getTimeAgo(lastMsg.createdAt || '');
+            const preview = this.getMessagePreview(lastMsg);
+            const timeAgo = this.getTimeAgo(lastMsg.createdAt || '');
+            if (friend.lastMessage !== preview) { friend.lastMessage = preview; changed = true; }
+            if (friend.lastMessageTime !== timeAgo) { friend.lastMessageTime = timeAgo; changed = true; }
           }
-          friend.unreadCount = unread?.count || 0;
-          this.cdr.detectChanges();
+          const unreadCount = unread?.count || 0;
+          if (friend.unreadCount !== unreadCount) { friend.unreadCount = unreadCount; changed = true; }
+          if (changed) this.cdr.detectChanges();
         }
       });
     }
@@ -257,7 +288,9 @@ export class FriendsComponent implements OnInit, OnDestroy {
     if (!this.user) return;
     this.friendsService.getPendingRequests(this.user.id).subscribe({
       next: (friendships) => {
-        this.friendRequests = friendships.map(f => ({
+        // Diff-merge: only mutate if the set of friendshipIds actually changed
+        const prevIds = this.friendRequests.map(r => r.friendshipId).sort().join(',');
+        const incoming = friendships.map(f => ({
           id: f.userId,
           friendshipId: f.id!,
           name: f.userName,
@@ -265,14 +298,23 @@ export class FriendsComponent implements OnInit, OnDestroy {
           userId: f.userId,
           createdAt: f.createdAt || ''
         }));
-        this.cdr.detectChanges();
+        const newIds = incoming.map(r => r.friendshipId).sort().join(',');
+        if (prevIds !== newIds) {
+          this.friendRequests = incoming;
+          this.cdr.detectChanges();
+        }
       }
     });
-    // Also load sent requests
+    // Also load sent requests — same diff trick
     this.friendsService.getSentRequests(this.user.id).subscribe({
       next: (sent) => {
-        this.sentRequests = sent.map(s => s.friendId);
-        this.cdr.detectChanges();
+        const next = sent.map(s => s.friendId);
+        const prev = this.sentRequests.slice().sort().join(',');
+        const incoming = next.slice().sort().join(',');
+        if (prev !== incoming) {
+          this.sentRequests = next;
+          this.cdr.detectChanges();
+        }
       }
     });
   }
