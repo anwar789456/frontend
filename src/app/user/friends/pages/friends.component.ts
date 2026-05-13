@@ -1211,12 +1211,38 @@ export class FriendsComponent implements OnInit, OnDestroy {
     this.speechRecognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
       this.isSpeechListening = false;
-      if (event.error === 'not-allowed') {
-        this.addToast('Microphone access denied. Please allow it in browser settings.', 'warning');
-      } else if (event.error === 'no-speech') {
-        this.addToast('No speech detected. Try again!', 'info');
-      } else {
-        this.addToast('Speech recognition error: ' + event.error, 'warning');
+      this.speechNetworkRetries = 0;
+      switch (event.error) {
+        case 'not-allowed':
+        case 'service-not-allowed':
+          this.addToast('Microphone access denied. Allow it in browser settings (lock icon → Microphone).', 'warning');
+          break;
+        case 'no-speech':
+          this.addToast('No speech detected. Try speaking closer to the mic.', 'info');
+          break;
+        case 'audio-capture':
+          this.addToast('No microphone found. Plug one in or check Windows mic settings.', 'warning');
+          break;
+        case 'network': {
+          // Web Speech API streams audio to Google\'s servers. "network" means
+          // the browser couldn\'t reach them. Common causes: not on HTTPS,
+          // Brave/Vivaldi without Google services, firewall, or no internet.
+          const isSecure = window.isSecureContext;
+          const isBrave = !!(navigator as any).brave;
+          if (!isSecure) {
+            this.addToast('Speech needs a secure connection (HTTPS). Open the site via https:// — localhost may also work.', 'warning');
+          } else if (isBrave) {
+            this.addToast('Brave blocks Google\'s speech servers by default. Try Chrome or Edge for voice input.', 'warning');
+          } else {
+            this.addToast('Speech service unreachable. Check your internet — Web Speech needs Google\'s servers.', 'warning');
+          }
+          break;
+        }
+        case 'aborted':
+          // user/system stopped it — don\'t toast
+          break;
+        default:
+          this.addToast('Speech recognition error: ' + event.error, 'warning');
       }
       this.cdr.detectChanges();
     };
@@ -1230,6 +1256,7 @@ export class FriendsComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     };
   }
+  private speechNetworkRetries = 0;
 
   toggleSpeechToText(): void {
     if (!this.speechSupported) {
